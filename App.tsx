@@ -111,7 +111,7 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
         <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl w-full max-w-md border border-white/20 shadow-2xl animate-in fade-in zoom-in duration-500">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">FinanzChile</h1>
+            <h1 className="text-4xl font-bold text-white mb-2">Vertikal Finanzas</h1>
             <p className="text-slate-400">Software de Gestión Tributaria</p>
           </div>
 

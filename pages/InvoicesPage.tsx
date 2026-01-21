@@ -496,13 +496,13 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                       <div className="mb-4">
                         {/* Logo Placeholder or Text */}
                         <div className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">
-                          FinanzChile
+                          Vertikal Finanzas
                           <span className="text-blue-600">.SaaS</span>
                         </div>
                       </div>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Soluciones Tecnológicas</p>
                       <p className="text-xs text-slate-400">Av. Providencia 1234, Of. 601, Santiago</p>
-                      <p className="text-xs text-slate-400">contacto@finanzchile.cl</p>
+                      <p className="text-xs text-slate-400">contacto@vertikalfinanzas.cl</p>
                     </div>
                     <div className="text-right">
                       <div className="border-4 border-red-600 p-4 inline-block mb-2">

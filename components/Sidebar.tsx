@@ -112,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
     <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen sticky top-0 shrink-0">
       <div className="p-6">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-          FinanzChile
+          Vertikal Finanzas
         </h1>
         <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">SaaS ERP Edition</p>
       </div>

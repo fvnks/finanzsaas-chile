@@ -1,4 +1,4 @@
-# FinanzChile SaaS - ERP & Facturación Electrónica
+# Vertikal Finanzas - ERP & Facturación Electrónica
 
 Este proyecto es una plataforma integral de gestión tributaria y operativa diseñada para el mercado chileno. Permite la gestión de facturas (Venta/Compra), Clientes, Centros de Costo, Proyectos y Capital Humano (Cuadrillas).
 
