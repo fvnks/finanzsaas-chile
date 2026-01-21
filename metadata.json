@@ -1,0 +1,5 @@
+{
+  "name": "FinanzChile SaaS",
+  "description": "Plataforma integral de gestión de facturación electrónica para el mercado chileno, con soporte para RUT, IVA, centros de costo y generación de imágenes de marca con IA.",
+  "requestFramePermissions": []
+}
