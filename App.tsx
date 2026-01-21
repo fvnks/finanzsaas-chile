@@ -149,7 +149,7 @@ const App: React.FC = () => {
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={handleLogout} />
       <main className="flex-1 p-8 overflow-y-auto">
-        {activeTab === 'dashboard' && <Dashboard invoices={invoices} />}
+        {activeTab === 'dashboard' && <Dashboard invoices={invoices} clients={clients} />}
         {activeTab === 'invoices' && (
           <InvoicesPage invoices={invoices} clients={clients} costCenters={costCenters} projects={projects}
             onAdd={async (inv) => {

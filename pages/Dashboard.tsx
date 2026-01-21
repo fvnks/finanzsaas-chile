@@ -17,9 +17,10 @@ import { formatCLP } from '../constants';
 
 interface DashboardProps {
   invoices: Invoice[];
+  clients: any[];
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ invoices }) => {
+const Dashboard: React.FC<DashboardProps> = ({ invoices, clients }) => {
   const totalSales = invoices
     .filter(i => i.type === InvoiceType.VENTA)
     .reduce((acc, curr) => acc + curr.total, 0);
@@ -133,7 +134,7 @@ const Dashboard: React.FC<DashboardProps> = ({ invoices }) => {
           </div>
           <div className="mt-4">
             <p className="text-sm font-medium text-slate-500">Clientes Activos</p>
-            <p className="text-2xl font-bold text-slate-800">24</p>
+            <p className="text-2xl font-bold text-slate-800">{clients.length}</p>
           </div>
         </div>
       </div>
