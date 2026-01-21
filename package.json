@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "tsx --watch server/index.ts",
+    "start": "tsx server/index.ts",
+    "postinstall": "prisma generate",
     "dev:all": "concurrently \"npm run server\" \"npm run dev\""
   },
   "dependencies": {
@@ -23,7 +25,8 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-is": "19.0.0",
-    "recharts": "3.6.0"
+    "recharts": "3.6.0",
+    "tsx": "^4.19.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -33,7 +36,6 @@
     "@vitejs/plugin-react": "^5.0.0",
     "concurrently": "^9.2.1",
     "prisma": "6.0.0",
-    "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }
