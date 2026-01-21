@@ -184,6 +184,25 @@ const App: React.FC = () => {
                 }
               } catch (err) { console.error("Failed to create invoice", err); }
             }}
+            onUpdate={async (inv) => {
+              try {
+                const res = await fetch(`${API_URL}/invoices/${inv.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(inv)
+                });
+                if (res.ok) {
+                  const saved = await res.json();
+                  const normalized: Invoice = {
+                    ...saved,
+                    net: saved.netAmount,
+                    iva: saved.taxAmount,
+                    total: saved.totalAmount
+                  };
+                  setInvoices(prev => prev.map(item => item.id === normalized.id ? normalized : item));
+                }
+              } catch (err) { console.error("Failed to update invoice", err); }
+            }}
             onDelete={async (id) => {
               try {
                 const res = await fetch(`${API_URL}/invoices/${id}`, { method: 'DELETE' });

@@ -24,6 +24,7 @@ import {
   ChevronUp,
   DollarSign,
   Eraser,
+  Pencil,
   // Added missing Calculator icon
   Calculator
 } from 'lucide-react';
@@ -36,11 +37,14 @@ interface InvoicesPageProps {
   costCenters: CostCenter[];
   projects: Project[];
   onAdd: (invoice: Invoice) => void;
+  onUpdate: (invoice: Invoice) => void;
   onDelete: (id: string) => void;
 }
 
-const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCenters, projects, onAdd, onDelete }) => {
+const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCenters, projects, onAdd, onUpdate, onDelete }) => {
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -173,16 +177,28 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     const iva = Math.round(net * IVA_RATE);
     const total = net + iva;
 
-    const newInvoice: Invoice = {
-      id: Math.random().toString(36).substr(2, 9),
+    // Construct the invoice object
+    const invoiceData: any = {
       ...formData,
       net,
       iva,
       total,
       pdfUrl: '#'
     };
-    onAdd(newInvoice);
+
+    if (isEditing && editingId) {
+      onUpdate({ ...invoiceData, id: editingId });
+    } else {
+      onAdd({ ...invoiceData, id: Math.random().toString(36).substr(2, 9) }); // ID will be replaced by backend
+    }
+
     setShowModal(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setIsEditing(false);
+    setEditingId(null);
     setFormData({
       type: InvoiceType.VENTA,
       number: '',
@@ -196,6 +212,25 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       relatedInvoiceId: '',
       items: []
     });
+  };
+
+  const handleEditClick = (inv: Invoice) => {
+    setIsEditing(true);
+    setEditingId(inv.id);
+    setFormData({
+      type: inv.type,
+      number: inv.number,
+      date: inv.date.split('T')[0],
+      net: inv.net,
+      clientId: inv.clientId,
+      costCenterId: inv.costCenterId || '',
+      projectId: inv.projectId || '',
+      purchaseOrderNumber: inv.purchaseOrderNumber || '',
+      dispatchGuideNumber: inv.dispatchGuideNumber || '',
+      relatedInvoiceId: inv.relatedInvoiceId || '',
+      items: inv.items ? inv.items.map(i => ({ ...i })) : []
+    });
+    setShowModal(true);
   };
 
   const handleDeleteConfirm = () => {
@@ -429,6 +464,13 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                         <Download size={18} />
                       </button>
                       <button
+                        onClick={() => handleEditClick(inv)}
+                        className="text-slate-400 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-all"
+                        title="Editar"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
                         onClick={() => setInvoiceToDelete(inv)}
                         className="text-slate-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-all"
                         title="Anular"
@@ -647,7 +689,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                 <div className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-200">
                   <FileType size={20} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800">Registrar Nueva Factura</h3>
+                <h3 className="text-xl font-bold text-slate-800">{isEditing ? 'Editar Factura' : 'Registrar Nueva Factura'}</h3>
               </div>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-200 rounded-full transition-colors">
                 <X size={24} />

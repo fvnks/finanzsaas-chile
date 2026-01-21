@@ -313,6 +313,54 @@ router.delete("/invoices/:id", async (req, res) => {
     }
 });
 
+router.put("/invoices/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber } = req.body;
+
+        const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
+        const validProjectId = projectId && projectId !== '' ? projectId : undefined;
+
+        const updatedInvoice = await prisma.$transaction(async (tx) => {
+            // Delete existing items
+            await tx.invoiceItem.deleteMany({ where: { invoiceId: id } });
+
+            // Update invoice details and create new items
+            return await tx.invoice.update({
+                where: { id },
+                data: {
+                    number,
+                    netAmount: net,
+                    taxAmount: iva,
+                    totalAmount: total,
+                    date: date ? new Date(date) : undefined,
+                    status,
+                    clientId,
+                    projectId: validProjectId,
+                    costCenterId: validCostCenterId,
+                    type,
+                    purchaseOrderNumber,
+                    dispatchGuideNumber,
+                    items: items && items.length > 0 ? {
+                        create: items.map((item: any) => ({
+                            description: item.description,
+                            quantity: Number(item.quantity),
+                            unitPrice: Number(item.unitPrice),
+                            total: Number(item.total)
+                        }))
+                    } : undefined
+                },
+                include: { items: true }
+            });
+        });
+
+        res.json(updatedInvoice);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update invoice" });
+    }
+});
+
 // --- WORKERS ---
 router.get("/workers", async (req, res) => {
     try {
