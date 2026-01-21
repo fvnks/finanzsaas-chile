@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../src/config.ts';
 
 interface JobTitle {
     id: string;

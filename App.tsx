@@ -15,7 +15,7 @@ import { PurchaseOrdersPage } from './pages/PurchaseOrdersPage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { InventoryPage } from './pages/InventoryPage';
 
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from './src/config.ts';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');

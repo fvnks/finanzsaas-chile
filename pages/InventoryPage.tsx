@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Package, ArrowUp, ArrowDown, History, Plus, Search, Filter } from 'lucide-react';
+import { API_URL } from '../src/config.ts';
 
 interface Material {
     id: string;
@@ -30,7 +31,7 @@ export function InventoryPage() {
 
     const fetchMaterials = async () => {
         try {
-            const res = await fetch('http://localhost:3001/api/inventory/materials');
+            const res = await fetch(`${API_URL}/inventory/materials`);
             const data = res.ok ? await res.json() : [];
             setMaterials(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -44,7 +45,7 @@ export function InventoryPage() {
     const handleMaterialSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:3001/api/inventory/materials', {
+            const res = await fetch(`${API_URL}/inventory/materials`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(materialForm)
@@ -63,7 +64,7 @@ export function InventoryPage() {
     const handleMovementSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:3001/api/inventory/movements', {
+            const res = await fetch(`${API_URL}/inventory/movements`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(movementForm)

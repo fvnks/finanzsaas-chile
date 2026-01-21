@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Trash2, Upload, Search, Link as LinkIcon, File } from 'lucide-react';
+import { API_URL } from '../src/config.ts';
 
 interface Document {
     id: string;
@@ -27,7 +28,7 @@ export function DocumentsPage() {
 
     const fetchDocuments = async () => {
         try {
-            const res = await fetch('http://localhost:3001/api/documents');
+            const res = await fetch(`${API_URL}/documents`);
             const data = res.ok ? await res.json() : [];
             setDocuments(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -41,7 +42,7 @@ export function DocumentsPage() {
     const handleDelete = async (id: string) => {
         if (!confirm("¿Eliminar documento?")) return;
         try {
-            await fetch(`http://localhost:3001/api/documents/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/documents/${id}`, { method: 'DELETE' });
             setDocuments(documents.filter(d => d.id !== id));
         } catch (err) {
             console.error(err);
@@ -51,7 +52,7 @@ export function DocumentsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:3001/api/documents', {
+            const res = await fetch(`${API_URL}/documents`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

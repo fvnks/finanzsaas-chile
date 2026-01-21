@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, FileText, Check, X, Eye } from 'lucide-react';
+import { API_URL } from '../src/config.ts';
 
 
 interface PurchaseOrder {
@@ -38,8 +39,8 @@ export function PurchaseOrdersPage() {
         const loadData = async () => {
             try {
                 const [ordersRes, projectsRes] = await Promise.all([
-                    fetch('http://localhost:3001/api/purchase-orders'),
-                    fetch('http://localhost:3001/api/projects')
+                    fetch(`${API_URL}/purchase-orders`),
+                    fetch(`${API_URL}/projects`)
                 ]);
 
                 const ordersData = ordersRes.ok ? await ordersRes.json() : [];
@@ -61,7 +62,7 @@ export function PurchaseOrdersPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:3001/api/purchase-orders', {
+            const res = await fetch(`${API_URL}/purchase-orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
