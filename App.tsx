@@ -241,12 +241,6 @@ const App: React.FC = () => {
             }}
             onUpdate={async (u) => {
               try {
-                // Backend doesn't have PUT /clients/:id in the snippet I saw? 
-                // Wait, I need to check if PUT route exists in routes.ts!
-                // I only checked POST. I will assume update needs to be added or matches.
-                // Looking at routes.ts (Step 472), I saw GET and POST for clients. I did NOT see PUT or DELETE.
-                // I must ADD PUT and DELETE to routes.ts as well.
-                // For now, I will modify App.tsx to use them, and then I will immediately add them to routes.ts.
                 const res = await fetch(`${API_URL}/clients/${u.id}`, {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
@@ -325,8 +319,22 @@ const App: React.FC = () => {
                 setWorkers([saved, ...workers]);
               } catch (e) { console.error(e); }
             }}
-            onUpdateWorker={(u) => setWorkers(workers.map(w => w.id === u.id ? u : w))}
-            onDeleteWorker={(id) => setWorkers(workers.filter(w => w.id !== id))}
+            onUpdateWorker={async (u) => {
+              try {
+                await fetch(`${API_URL}/workers/${u.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(u)
+                });
+                setWorkers(workers.map(w => w.id === u.id ? u : w));
+              } catch (e) { console.error(e); }
+            }}
+            onDeleteWorker={async (id) => {
+              try {
+                await fetch(`${API_URL}/workers/${id}`, { method: 'DELETE' });
+                setWorkers(workers.filter(w => w.id !== id));
+              } catch (e) { console.error(e); }
+            }}
             onAddCrew={async (c) => {
               try {
                 const res = await fetch(`${API_URL}/crews`, {
@@ -338,8 +346,22 @@ const App: React.FC = () => {
                 setCrews([saved, ...crews]);
               } catch (e) { console.error(e); }
             }}
-            onUpdateCrew={(u) => setCrews(crews.map(c => c.id === u.id ? u : c))}
-            onDeleteCrew={(id) => setCrews(crews.filter(c => c.id !== id))}
+            onUpdateCrew={async (u) => {
+              try {
+                await fetch(`${API_URL}/crews/${u.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(u)
+                });
+                setCrews(crews.map(c => c.id === u.id ? u : c));
+              } catch (e) { console.error(e); }
+            }}
+            onDeleteCrew={async (id) => {
+              try {
+                await fetch(`${API_URL}/crews/${id}`, { method: 'DELETE' });
+                setCrews(crews.filter(c => c.id !== id));
+              } catch (e) { console.error(e); }
+            }}
           />
         )}
 

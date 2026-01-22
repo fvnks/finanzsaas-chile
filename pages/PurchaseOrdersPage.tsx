@@ -28,12 +28,16 @@ export function PurchaseOrdersPage() {
 
     // Form State
     const [formData, setFormData] = useState({
+        id: '',
         number: '',
         provider: '',
         date: new Date().toISOString().split('T')[0],
         projectId: '',
+        status: 'PENDING',
         items: [{ description: '', quantity: 1, unitPrice: 0 }]
     });
+
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -62,20 +66,75 @@ export function PurchaseOrdersPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${API_URL}/purchase-orders`, {
-                method: 'POST',
+            const url = editingId ? `${API_URL}/purchase-orders/${editingId}` : `${API_URL}/purchase-orders`;
+            const method = editingId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
+
             if (res.ok) {
-                const newOrder = await res.json();
-                setOrders([newOrder, ...orders]);
-                setIsModalOpen(false);
-                // Reset form...
+                const saved = await res.json();
+                if (editingId) {
+                    setOrders(orders.map(o => o.id === editingId ? saved : o));
+                } else {
+                    setOrders([saved, ...orders]);
+                }
+                closeModal();
             }
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('¿Eliminar esta orden de compra?')) return;
+        try {
+            const res = await fetch(`${API_URL}/purchase-orders/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setOrders(orders.filter(o => o.id !== id));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const openModal = (order?: PurchaseOrder) => {
+        if (order) {
+            setEditingId(order.id);
+            setFormData({
+                id: order.id,
+                number: order.number,
+                provider: order.provider,
+                date: new Date(order.date).toISOString().split('T')[0],
+                projectId: order.projectId || '',
+                status: order.status,
+                items: order.items && order.items.length > 0 ? order.items.map(i => ({
+                    description: i.description,
+                    quantity: i.quantity,
+                    unitPrice: i.unitPrice
+                })) : [{ description: '', quantity: 1, unitPrice: 0 }]
+            });
+        } else {
+            setEditingId(null);
+            setFormData({
+                id: '',
+                number: '',
+                provider: '',
+                date: new Date().toISOString().split('T')[0],
+                projectId: '',
+                status: 'PENDING',
+                items: [{ description: '', quantity: 1, unitPrice: 0 }]
+            });
+        }
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingId(null);
     };
 
     const addItem = () => {
@@ -103,7 +162,7 @@ export function PurchaseOrdersPage() {
                     <p className="text-slate-500 mt-1">Gestión de adquisiciones y proveedores</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => openModal()}
                     className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition-colors shadow-sm"
                 >
                     <Plus size={20} />
@@ -143,6 +202,10 @@ export function PurchaseOrdersPage() {
                                         order.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'}`}>
                                     {order.status === 'PENDING' ? 'Pendiente' : order.status}
                                 </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => openModal(order)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"><Eye size={18} /></button>
+                                    <button onClick={() => handleDelete(order.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"><X size={18} /></button>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -153,8 +216,8 @@ export function PurchaseOrdersPage() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0">
-                            <h2 className="text-xl font-bold text-gray-800">Nueva Orden de Compra</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <h2 className="text-xl font-bold text-gray-800">{editingId ? 'Editar Orden' : 'Nueva Orden de Compra'}</h2>
+                            <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                                 <X size={24} />
                             </button>
                         </div>
@@ -204,6 +267,21 @@ export function PurchaseOrdersPage() {
                                         ))}
                                     </select>
                                 </div>
+                                {editingId && (
+                                    <div className="col-span-2">
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                                        <select
+                                            className="w-full rounded-lg border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
+                                            value={formData.status}
+                                            onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                        >
+                                            <option value="PENDING">Pendiente</option>
+                                            <option value="APPROVED">Aprobada</option>
+                                            <option value="REJECTED">Rechazada</option>
+                                            <option value="COMPLETED">Completada</option>
+                                        </select>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="border-t pt-4">
@@ -242,7 +320,7 @@ export function PurchaseOrdersPage() {
                             <div className="pt-4 flex justify-end gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={closeModal}
                                     className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg"
                                 >
                                     Cancelar

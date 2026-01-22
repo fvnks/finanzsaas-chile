@@ -385,6 +385,21 @@ router.post("/workers", async (req, res) => {
     }
 });
 
+router.put("/workers/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rut, name, role, specialty, email, phone } = req.body;
+        const updated = await prisma.worker.update({
+            where: { id },
+            data: { rut, name, role, specialty, email, phone }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update worker" });
+    }
+});
+
 router.delete("/workers/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -413,13 +428,14 @@ router.get("/crews", async (req, res) => {
 
 router.post("/crews", async (req, res) => {
     try {
-        const { name, role, workerIds } = req.body;
+        const { name, role, workerIds, projectId } = req.body;
         // workerIds: ["id1", "id2"]
 
         const newCrew = await prisma.crew.create({
             data: {
                 name,
                 role,
+                projectId: projectId && projectId !== '' ? projectId : undefined,
                 workers: {
                     connect: (workerIds || []).map((id: string) => ({ id }))
                 }
@@ -430,6 +446,30 @@ router.post("/crews", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to create crew" });
+    }
+});
+
+router.put("/crews/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, role, workerIds, projectId } = req.body;
+
+        const updated = await prisma.crew.update({
+            where: { id },
+            data: {
+                name,
+                role,
+                projectId: projectId && projectId !== '' ? projectId : null,
+                workers: {
+                    set: (workerIds || []).map((id: string) => ({ id }))
+                }
+            },
+            include: { workers: true }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update crew" });
     }
 });
 
@@ -532,6 +572,21 @@ router.post("/job-titles", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to create job title" });
+    }
+});
+
+router.put("/job-titles/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description } = req.body;
+        const updated = await prisma.jobTitle.update({
+            where: { id },
+            data: { name, description }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update job title" });
     }
 });
 
@@ -641,6 +696,53 @@ router.post("/purchase-orders", async (req, res) => {
     }
 });
 
+router.put("/purchase-orders/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { number, provider, date, projectId, items, status } = req.body;
+
+        const updated = await prisma.$transaction(async (tx) => {
+            // Delete existing items
+            await tx.purchaseOrderItem.deleteMany({ where: { purchaseOrderId: id } });
+
+            // Update PO and create new items
+            return await tx.purchaseOrder.update({
+                where: { id },
+                data: {
+                    number,
+                    provider,
+                    date: new Date(date),
+                    projectId,
+                    status,
+                    items: {
+                        create: items.map((item: any) => ({
+                            description: item.description,
+                            quantity: Number(item.quantity),
+                            unitPrice: Number(item.unitPrice),
+                            total: Number(item.quantity) * Number(item.unitPrice)
+                        }))
+                    }
+                },
+                include: { items: true }
+            });
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update purchase order" });
+    }
+});
+
+router.delete("/purchase-orders/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.purchaseOrder.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete purchase order" });
+    }
+});
+
 // --- NEW MODULES: DOCUMENTS ---
 router.get("/documents", async (req, res) => {
     try {
@@ -654,12 +756,11 @@ router.get("/documents", async (req, res) => {
 router.post("/documents", async (req, res) => {
     try {
         // Metadata only for now. File upload logic requires multer or S3 (out of scope for now, just storing ref).
-        const { type, referenceId, url, name } = req.body;
+        const { type, url, name } = req.body;
 
         const newDoc = await prisma.document.create({
             data: {
                 type, // 'INVOICE', 'CONTRACT', 'RECEIPT', 'OTHER'
-                referenceId,
                 url: url || '', // Placeholder URL
                 name
             }
