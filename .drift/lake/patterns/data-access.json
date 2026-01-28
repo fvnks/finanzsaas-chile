@@ -1,0 +1,8022 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-23T14:47:53.347Z",
+  "checksum": "baa250c25f647c9b",
+  "category": "data-access",
+  "patterns": [
+    {
+      "id": "af4f5c0465b39502",
+      "name": "Query Patterns Detector",
+      "description": "Learns query patterns from your codebase",
+      "subcategory": "query-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 1,
+          "column": 28
+        },
+        {
+          "file": "App.tsx",
+          "line": 2,
+          "column": 16
+        },
+        {
+          "file": "App.tsx",
+          "line": 3,
+          "column": 18
+        },
+        {
+          "file": "App.tsx",
+          "line": 4,
+          "column": 21
+        },
+        {
+          "file": "App.tsx",
+          "line": 5,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 6,
+          "column": 21
+        },
+        {
+          "file": "App.tsx",
+          "line": 7,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 8,
+          "column": 24
+        },
+        {
+          "file": "App.tsx",
+          "line": 9,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 10,
+          "column": 18
+        },
+        {
+          "file": "App.tsx",
+          "line": 11,
+          "column": 25
+        },
+        {
+          "file": "App.tsx",
+          "line": 12,
+          "column": 115
+        },
+        {
+          "file": "App.tsx",
+          "line": 13,
+          "column": 43
+        },
+        {
+          "file": "App.tsx",
+          "line": 14,
+          "column": 31
+        },
+        {
+          "file": "App.tsx",
+          "line": 15,
+          "column": 26
+        },
+        {
+          "file": "App.tsx",
+          "line": 16,
+          "column": 26
+        },
+        {
+          "file": "App.tsx",
+          "line": 18,
+          "column": 20
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 2,
+          "column": 14
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 16,
+          "column": 27
+        },
+        {
+          "file": "index.tsx",
+          "line": 2,
+          "column": 14
+        },
+        {
+          "file": "index.tsx",
+          "line": 3,
+          "column": 23
+        },
+        {
+          "file": "index.tsx",
+          "line": 4,
+          "column": 12
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 2,
+          "column": 11
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 3,
+          "column": 15
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 4,
+          "column": 13
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 2,
+          "column": 11
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 3,
+          "column": 15
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 86
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 2,
+          "column": 11
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 3,
+          "column": 15
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 1,
+          "column": 39
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 16,
+          "column": 27
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 18,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 2,
+          "column": 48
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 33,
+          "column": 62
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 34,
+          "column": 35
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 2,
+          "column": 37
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 23,
+          "column": 62
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 24,
+          "column": 22
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 1,
+          "column": 37
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 2,
+          "column": 74
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 3,
+          "column": 39
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 2,
+          "column": 14
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 15,
+          "column": 33
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 16,
+          "column": 22
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 1,
+          "column": 39
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 2,
+          "column": 69
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 3,
+          "column": 20
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 1,
+          "column": 39
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 2,
+          "column": 71
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 3,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 2,
+          "column": 37
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 4,
+          "column": 17
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 31,
+          "column": 75
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 32,
+          "column": 32
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 1,
+          "column": 28
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 311
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 3,
+          "column": 68
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 4,
+          "column": 22
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 1,
+          "column": 39
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 2,
+          "column": 50
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 3,
+          "column": 20
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 2,
+          "column": 37
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 22,
+          "column": 42
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 23,
+          "column": 22
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 2,
+          "column": 37
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 29,
+          "column": 44
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 30,
+          "column": 24
+        },
+        {
+          "file": "README.md",
+          "line": 12,
+          "column": 23
+        },
+        {
+          "file": "README.md",
+          "line": 13,
+          "column": 23
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 1,
+          "column": 16
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 2,
+          "column": 13
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 3,
+          "column": 13
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 4,
+          "column": 26
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 5,
+          "column": 15
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 1,
+          "column": 12
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 1,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 1,
+          "column": 19
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 2,
+          "column": 19
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 3,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 37,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 37,
+          "column": 54
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 1,
+          "column": 19
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 2,
+          "column": 15
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 2,
+          "column": 24
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 1,
+          "column": 13
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 2,
+          "column": 34
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 3,
+          "column": 14
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-patterns"
+        ]
+      }
+    },
+    {
+      "id": "cf884050947b4866",
+      "name": "Query Patterns Detector",
+      "description": "Learns query patterns from your codebase",
+      "subcategory": "query-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8464705882352941,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 111,
+          "column": 155
+        },
+        {
+          "file": "App.tsx",
+          "line": 171,
+          "column": 45
+        },
+        {
+          "file": "App.tsx",
+          "line": 418,
+          "column": 23
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 461,
+          "column": 88
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 495,
+          "column": 179
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 496,
+          "column": 184
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 511,
+          "column": 91
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 662,
+          "column": 48
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-patterns"
+        ]
+      }
+    },
+    {
+      "id": "fa0db6c95f4c90cd",
+      "name": "Query Patterns Detector",
+      "description": "Learns query patterns from your codebase",
+      "subcategory": "query-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 294,
+          "column": 25
+        },
+        {
+          "file": "App.tsx",
+          "line": 295,
+          "column": 58
+        },
+        {
+          "file": "App.tsx",
+          "line": 295,
+          "column": 71
+        },
+        {
+          "file": "App.tsx",
+          "line": 419,
+          "column": 60
+        },
+        {
+          "file": "App.tsx",
+          "line": 419,
+          "column": 80
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 87,
+          "column": 9
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 98,
+          "column": 27
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 99,
+          "column": 54
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 99,
+          "column": 67
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 68,
+          "column": 11
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 62,
+          "column": 9
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 35,
+          "column": 9
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 29,
+          "column": 11
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 32,
+          "column": 11
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 131,
+          "column": 17
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 128,
+          "column": 9
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 147,
+          "column": 11
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 490,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 512,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 16,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 118,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 130,
+          "column": 42
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 143,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 161,
+          "column": 38
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 210,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 232,
+          "column": 39
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 291,
+          "column": 21
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 309,
+          "column": 39
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 326,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 330,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 393,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 406,
+          "column": 38
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 458,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 479,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 534,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 547,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 583,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 596,
+          "column": 40
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 631,
+          "column": 21
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 114
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 648,
+          "column": 43
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 706,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 710,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 739,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 778,
+          "column": 40
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 826,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 324,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 704,
+          "column": 15
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 14,
+          "column": 7
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 15,
+          "column": 7
+        },
+        {
+          "file": "types.ts",
+          "line": 75,
+          "column": 3
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-patterns"
+        ]
+      }
+    },
+    {
+      "id": "b4fd74a7912ecb90",
+      "name": "Query Patterns Detector",
+      "description": "Learns query patterns from your codebase",
+      "subcategory": "query-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.6464705882352941,
+        "level": "low"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 416,
+          "column": 35
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 15,
+          "column": 3
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 354,
+          "column": 34
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 360,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 15,
+          "column": 3
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 50,
+          "column": 10
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 452,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 479,
+          "column": 60
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 498,
+          "column": 60
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 32,
+          "column": 3
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 22,
+          "column": 3
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 160,
+          "column": 34
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 170,
+          "column": 35
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 6,
+          "column": 3
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 14,
+          "column": 3
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 153,
+          "column": 34
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 162,
+          "column": 35
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 22,
+          "column": 12
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 193,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 196,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 197,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 200,
+          "column": 31
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 48,
+          "column": 10
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 273,
+          "column": 14
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 282,
+          "column": 15
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 501,
+          "column": 8
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 513,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 553,
+          "column": 87
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 564,
+          "column": 102
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 565,
+          "column": 100
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 566,
+          "column": 91
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 573,
+          "column": 54
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 590,
+          "column": 110
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 592,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 598,
+          "column": 60
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 617,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 617,
+          "column": 49
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 619,
+          "column": 28
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 640,
+          "column": 76
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 645,
+          "column": 76
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 650,
+          "column": 74
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 666,
+          "column": 52
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 708,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 723,
+          "column": 23
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 733,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 750,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 887,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 897,
+          "column": 21
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 914,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 924,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 30,
+          "column": 3
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 133,
+          "column": 13
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 133,
+          "column": 51
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 133,
+          "column": 82
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 135,
+          "column": 18
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 259,
+          "column": 38
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 268,
+          "column": 39
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 273,
+          "column": 42
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 282,
+          "column": 43
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 17,
+          "column": 3
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 349,
+          "column": 20
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 364,
+          "column": 21
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 412,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 416,
+          "column": 19
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 121,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 222,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 357,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 396,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 469,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 586,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 729,
+          "column": 18
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-patterns"
+        ]
+      }
+    },
+    {
+      "id": "bb62be2ecaf7178e",
+      "name": "Query Patterns Detector",
+      "description": "Learns query patterns from your codebase",
+      "subcategory": "query-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8825,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 42,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 43,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 44,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 45,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 46,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 47,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 48,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 49,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 50,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 89,
+          "column": 25
+        },
+        {
+          "file": "App.tsx",
+          "line": 157,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 189,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 208,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 225,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 244,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 257,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 275,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 288,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 301,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 313,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 324,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 334,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 340,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 351,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 361,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 372,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 385,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 395,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 410,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 426,
+          "column": 23
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 109,
+          "column": 25
+        },
+        {
+          "file": "index.tsx",
+          "line": 6,
+          "column": 30
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 65,
+          "column": 9
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 72,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 76,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 92,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 103,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 122,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 133,
+          "column": 31
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 151,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 152,
+          "column": 13
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 183,
+          "column": 40
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 183,
+          "column": 69
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 153,
+          "column": 27
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 243,
+          "column": 33
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 53,
+          "column": 43
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 53,
+          "column": 72
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 39,
+          "column": 32
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 39,
+          "column": 53
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 43,
+          "column": 19
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 43,
+          "column": 45
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 49,
+          "column": 23
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 26,
+          "column": 9
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 31,
+          "column": 31
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 45,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 55,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 29,
+          "column": 9
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 34,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 48,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 67,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 76,
+          "column": 17
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 156,
+          "column": 30
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 217,
+          "column": 32
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 294,
+          "column": 53
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 294,
+          "column": 71
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 362,
+          "column": 35
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 538,
+          "column": 66
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 538,
+          "column": 95
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 299,
+          "column": 64
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 306,
+          "column": 64
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 313,
+          "column": 64
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 46,
+          "column": 21
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 47,
+          "column": 21
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 72,
+          "column": 31
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 95,
+          "column": 31
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 39,
+          "column": 39
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 40,
+          "column": 41
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 41,
+          "column": 37
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 16,
+          "column": 40
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 38,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 86,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 171,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 242,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 367,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 416,
+          "column": 41
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 489,
+          "column": 41
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 557,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 606,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 101
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 660,
+          "column": 48
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 749,
+          "column": 44
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 788,
+          "column": 44
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 326,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 706,
+          "column": 40
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 5,
+          "column": 18
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 11,
+          "column": 21
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-patterns"
+        ]
+      }
+    },
+    {
+      "id": "9affcb679d209f4e",
+      "name": "Repository Pattern Detector",
+      "description": "Learns repository patterns from your codebase",
+      "subcategory": "repository-pattern",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.7949999999999999,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 7,
+          "column": 8
+        },
+        {
+          "file": "App.tsx",
+          "line": 7,
+          "column": 34
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "repository-pattern"
+        ]
+      }
+    },
+    {
+      "id": "9b34259945b26e59",
+      "name": "Repository Pattern Detector",
+      "description": "Learns repository patterns from your codebase",
+      "subcategory": "repository-pattern",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8922222222222222,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 404,
+          "column": 13
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 6,
+          "column": 5
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 10,
+          "column": 13
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 14,
+          "column": 62
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 539,
+          "column": 38
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 32,
+          "column": 7
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 32,
+          "column": 29
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 37,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 606,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 620,
+          "column": 19
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "repository-pattern"
+        ]
+      }
+    },
+    {
+      "id": "5e5f395e4310b24c",
+      "name": "Repository Pattern Detector",
+      "description": "Learns repository patterns from your codebase",
+      "subcategory": "repository-pattern",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 416,
+          "column": 27
+        },
+        {
+          "file": "App.tsx",
+          "line": 417,
+          "column": 36
+        },
+        {
+          "file": "App.tsx",
+          "line": 433,
+          "column": 12
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 570,
+          "column": 215
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 50,
+          "column": 16
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 54,
+          "column": 9
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 60,
+          "column": 71
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 68,
+          "column": 33
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 86,
+          "column": 39
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 87,
+          "column": 65
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 88,
+          "column": 61
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 91,
+          "column": 35
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 96,
+          "column": 81
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 110,
+          "column": 100
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 116,
+          "column": 65
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 140,
+          "column": 84
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 218,
+          "column": 45
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 76,
+          "column": 56
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 993,
+          "column": 43
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 540,
+          "column": 45
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 546,
+          "column": 99
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 549,
+          "column": 67
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 553,
+          "column": 40
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 558,
+          "column": 102
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 79,
+          "column": 68
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 115,
+          "column": 74
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 126,
+          "column": 74
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 137,
+          "column": 70
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 137,
+          "column": 94
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 159,
+          "column": 31
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 199,
+          "column": 31
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 219,
+          "column": 20
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 243,
+          "column": 25
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 251,
+          "column": 20
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 270,
+          "column": 14
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 286,
+          "column": 16
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 313,
+          "column": 16
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 328,
+          "column": 16
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 607,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 22
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "repository-pattern"
+        ]
+      }
+    },
+    {
+      "id": "22ff06022db5e948",
+      "name": "DTO Patterns Detector",
+      "description": "Learns Data Transfer Object patterns from your codebase",
+      "subcategory": "dto-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 70,
+          "column": 37
+        },
+        {
+          "file": "App.tsx",
+          "line": 95,
+          "column": 13
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 73,
+          "column": 23
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 74,
+          "column": 40
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 74,
+          "column": 48
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 77,
+          "column": 23
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 78,
+          "column": 40
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 78,
+          "column": 48
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 81,
+          "column": 49
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 51,
+          "column": 9
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 147,
+          "column": 25
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 147,
+          "column": 31
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 149,
+          "column": 24
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 156,
+          "column": 22
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 157,
+          "column": 22
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 169,
+          "column": 19
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 175,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 32,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 33,
+          "column": 40
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 33,
+          "column": 48
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 35,
+          "column": 19
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 36,
+          "column": 40
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 36,
+          "column": 48
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 275,
+          "column": 47
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 159,
+          "column": 25
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 162,
+          "column": 19
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 179,
+          "column": 22
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 180,
+          "column": 22
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 199,
+          "column": 25
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 202,
+          "column": 19
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 218,
+          "column": 22
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 243,
+          "column": 19
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 249,
+          "column": 19
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 60,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 97,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 119,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 144,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 186,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 211,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 259,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 292,
+          "column": 21
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 331,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 379,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 394,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 435,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 459,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 505,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 526,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 569,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 584,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 621,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 632,
+          "column": 21
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 676,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 711,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 762,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 799,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 814,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 827,
+          "column": 17
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 32,
+          "column": 34
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "dto-patterns"
+        ]
+      }
+    },
+    {
+      "id": "44f972e8c60af576",
+      "name": "DTO Patterns Detector",
+      "description": "Learns Data Transfer Object patterns from your codebase",
+      "subcategory": "dto-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 97,
+          "column": 17
+        },
+        {
+          "file": "App.tsx",
+          "line": 100,
+          "column": 18
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 35
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 35
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 522,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 535,
+          "column": 13
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "dto-patterns"
+        ]
+      }
+    },
+    {
+      "id": "17e6c01c90246b87",
+      "name": "N+1 Query Detector",
+      "description": "Learns N+1 query patterns from your codebase",
+      "subcategory": "n-plus-one",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 42,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 43,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 44,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 45,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 46,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 47,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 48,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 49,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 50,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 89,
+          "column": 25
+        },
+        {
+          "file": "App.tsx",
+          "line": 157,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 189,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 208,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 225,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 244,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 257,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 275,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 288,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 301,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 313,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 324,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 334,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 340,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 351,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 361,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 372,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 385,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 395,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 410,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 426,
+          "column": 23
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 30,
+          "column": 12
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 104,
+          "column": 24
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 131,
+          "column": 31
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 134,
+          "column": 57
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 65,
+          "column": 9
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 72,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 76,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 92,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 103,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 122,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 133,
+          "column": 31
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 151,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 152,
+          "column": 13
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 373,
+          "column": 87
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 80,
+          "column": 43
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 81,
+          "column": 21
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 82,
+          "column": 47
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 182,
+          "column": 47
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 51,
+          "column": 27
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 75,
+          "column": 71
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 104,
+          "column": 35
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 412,
+          "column": 60
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 51,
+          "column": 37
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 52,
+          "column": 75
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 26,
+          "column": 9
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 31,
+          "column": 31
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 45,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 55,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 29,
+          "column": 9
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 34,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 48,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 67,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 76,
+          "column": 17
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 86,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 87,
+          "column": 30
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 70,
+          "column": 54
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 71,
+          "column": 43
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 72,
+          "column": 35
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 45,
+          "column": 26
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 46,
+          "column": 37
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 87,
+          "column": 41
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 132,
+          "column": 58
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 142,
+          "column": 39
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 740,
+          "column": 64
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 770,
+          "column": 65
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 46,
+          "column": 21
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 47,
+          "column": 21
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 72,
+          "column": 31
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 95,
+          "column": 31
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 77,
+          "column": 26
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 78,
+          "column": 11
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 82,
+          "column": 26
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 118,
+          "column": 55
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 175,
+          "column": 64
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 424,
+          "column": 53
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 34,
+          "column": 26
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "n-plus-one"
+        ]
+      }
+    },
+    {
+      "id": "ebd2f7fb2dc8d284",
+      "name": "Connection Pooling Detector",
+      "description": "Learns connection pooling patterns from your codebase",
+      "subcategory": "connection-pooling",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 5,
+          "column": 8
+        },
+        {
+          "file": "App.tsx",
+          "line": 5,
+          "column": 34
+        },
+        {
+          "file": "App.tsx",
+          "line": 12,
+          "column": 26
+        },
+        {
+          "file": "index.tsx",
+          "line": 3,
+          "column": 39
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 33,
+          "column": 10
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 23,
+          "column": 44
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 31,
+          "column": 32
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 1,
+          "column": 39
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "connection-pooling"
+        ]
+      }
+    },
+    {
+      "id": "19a2fe516c448b9c",
+      "name": "Connection Pooling Detector",
+      "description": "Learns connection pooling patterns from your codebase",
+      "subcategory": "connection-pooling",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 25,
+          "column": 10
+        },
+        {
+          "file": "App.tsx",
+          "line": 25,
+          "column": 42
+        },
+        {
+          "file": "App.tsx",
+          "line": 232,
+          "column": 41
+        },
+        {
+          "file": "App.tsx",
+          "line": 250,
+          "column": 30
+        },
+        {
+          "file": "App.tsx",
+          "line": 259,
+          "column": 30
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 6,
+          "column": 9
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 18,
+          "column": 15
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 23,
+          "column": 15
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 30,
+          "column": 15
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 35
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 5,
+          "column": 9
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 17,
+          "column": 15
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 30,
+          "column": 15
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 31,
+          "column": 15
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 37,
+          "column": 15
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 35
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 5,
+          "column": 9
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 34
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 15
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 27,
+          "column": 15
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 34,
+          "column": 15
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 35
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 48,
+          "column": 10
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 48,
+          "column": 56
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 49,
+          "column": 54
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 54,
+          "column": 54
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 64,
+          "column": 49
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 79,
+          "column": 12
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 84,
+          "column": 7
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 93,
+          "column": 28
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 93,
+          "column": 37
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 95,
+          "column": 24
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 97,
+          "column": 14
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 98,
+          "column": 22
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 99,
+          "column": 26
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 100,
+          "column": 16
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 101,
+          "column": 19
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 102,
+          "column": 16
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 159,
+          "column": 16
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 203,
+          "column": 61
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 211,
+          "column": 23
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 229,
+          "column": 32
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 230,
+          "column": 21
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 235,
+          "column": 19
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 238,
+          "column": 56
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 239,
+          "column": 58
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 256,
+          "column": 26
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 267,
+          "column": 36
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 284,
+          "column": 161
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 562,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 583,
+          "column": 16
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 36,
+          "column": 93
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 314,
+          "column": 38
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 314,
+          "column": 69
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 23,
+          "column": 58
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 136,
+          "column": 63
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 137,
+          "column": 63
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 44,
+          "column": 64
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 71,
+          "column": 9
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 72,
+          "column": 9
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 82,
+          "column": 58
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 437,
+          "column": 26
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 437,
+          "column": 57
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 440,
+          "column": 26
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 440,
+          "column": 57
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 564,
+          "column": 75
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 564,
+          "column": 118
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 565,
+          "column": 73
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 565,
+          "column": 116
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 566,
+          "column": 64
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 566,
+          "column": 107
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 746,
+          "column": 52
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 890,
+          "column": 37
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 893,
+          "column": 52
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 894,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 968,
+          "column": 39
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 969,
+          "column": 129
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 29,
+          "column": 3
+        },
+        {
+          "file": "README.md",
+          "line": 3,
+          "column": 157
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 42,
+          "column": 26
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 251,
+          "column": 56
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 266,
+          "column": 21
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 319,
+          "column": 56
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 338,
+          "column": 21
+        },
+        {
+          "file": "types.ts",
+          "line": 65,
+          "column": 3
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "connection-pooling"
+        ]
+      }
+    },
+    {
+      "id": "21a3f2b3442e29b8",
+      "name": "Connection Pooling Detector",
+      "description": "Learns connection pooling patterns from your codebase",
+      "subcategory": "connection-pooling",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8825,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 152,
+          "column": 70
+        },
+        {
+          "file": "App.tsx",
+          "line": 152,
+          "column": 79
+        },
+        {
+          "file": "App.tsx",
+          "line": 154,
+          "column": 45
+        },
+        {
+          "file": "App.tsx",
+          "line": 154,
+          "column": 54
+        },
+        {
+          "file": "App.tsx",
+          "line": 222,
+          "column": 12
+        },
+        {
+          "file": "App.tsx",
+          "line": 222,
+          "column": 24
+        },
+        {
+          "file": "App.tsx",
+          "line": 222,
+          "column": 33
+        },
+        {
+          "file": "App.tsx",
+          "line": 369,
+          "column": 94
+        },
+        {
+          "file": "App.tsx",
+          "line": 369,
+          "column": 103
+        },
+        {
+          "file": "App.tsx",
+          "line": 433,
+          "column": 90
+        },
+        {
+          "file": "App.tsx",
+          "line": 433,
+          "column": 99
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 5
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 5
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 5
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 37,
+          "column": 3
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 37,
+          "column": 12
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 41,
+          "column": 11
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 41,
+          "column": 19
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 42,
+          "column": 14
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 42,
+          "column": 22
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 46,
+          "column": 7
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 46,
+          "column": 29
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 46,
+          "column": 52
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 180,
+          "column": 26
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 30,
+          "column": 3
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 30,
+          "column": 12
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 36,
+          "column": 3
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 36,
+          "column": 12
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 68,
+          "column": 13
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 68,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 68,
+          "column": 53
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 96,
+          "column": 5
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 207,
+          "column": 7
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 225,
+          "column": 7
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 225,
+          "column": 21
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 743,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 743,
+          "column": 44
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 743,
+          "column": 75
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 891,
+          "column": 65
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 173,
+          "column": 24
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 173,
+          "column": 48
+        },
+        {
+          "file": "types.ts",
+          "line": 94,
+          "column": 3
+        },
+        {
+          "file": "types.ts",
+          "line": 126,
+          "column": 3
+        },
+        {
+          "file": "types.ts",
+          "line": 126,
+          "column": 12
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "connection-pooling"
+        ]
+      }
+    },
+    {
+      "id": "c7cb7d102447a929",
+      "name": "Query Access Detector",
+      "description": "Detects data access points in code (ORM queries, raw SQL)",
+      "subcategory": "query-access",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 42,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 43,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 44,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 45,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 46,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 47,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 48,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 49,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 50,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 89,
+          "column": 25
+        },
+        {
+          "file": "App.tsx",
+          "line": 157,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 189,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 208,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 225,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 244,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 257,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 275,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 288,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 301,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 313,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 324,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 334,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 340,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 351,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 361,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 372,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 385,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 395,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 410,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 426,
+          "column": 23
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 30,
+          "column": 12
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 104,
+          "column": 24
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 131,
+          "column": 31
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 134,
+          "column": 57
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 373,
+          "column": 87
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 65,
+          "column": 9
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 72,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 76,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 92,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 103,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 122,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 133,
+          "column": 31
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 151,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 152,
+          "column": 13
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 80,
+          "column": 43
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 81,
+          "column": 21
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 82,
+          "column": 47
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 182,
+          "column": 47
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 51,
+          "column": 27
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 75,
+          "column": 71
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 104,
+          "column": 35
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 412,
+          "column": 60
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 51,
+          "column": 37
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 52,
+          "column": 75
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 26,
+          "column": 9
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 31,
+          "column": 31
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 45,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 55,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 86,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 87,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 29,
+          "column": 9
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 34,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 48,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 67,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 76,
+          "column": 17
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 70,
+          "column": 54
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 71,
+          "column": 43
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 72,
+          "column": 35
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 45,
+          "column": 26
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 46,
+          "column": 37
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 87,
+          "column": 41
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 132,
+          "column": 58
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 142,
+          "column": 39
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 740,
+          "column": 64
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 770,
+          "column": 65
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 46,
+          "column": 21
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 47,
+          "column": 21
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 72,
+          "column": 31
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 95,
+          "column": 31
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 299,
+          "column": 64
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 306,
+          "column": 64
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 313,
+          "column": 64
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 77,
+          "column": 26
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 78,
+          "column": 11
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 82,
+          "column": 26
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 118,
+          "column": 55
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 175,
+          "column": 64
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 424,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 16,
+          "column": 40
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 38,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 86,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 171,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 242,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 367,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 416,
+          "column": 41
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 489,
+          "column": 41
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 557,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 606,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 101
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 660,
+          "column": 48
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-access"
+        ]
+      }
+    },
+    {
+      "id": "941f35a45517f651",
+      "name": "Query Access Detector",
+      "description": "Detects data access points in code (ORM queries, raw SQL)",
+      "subcategory": "query-access",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 70,
+          "column": 28
+        },
+        {
+          "file": "App.tsx",
+          "line": 204,
+          "column": 56
+        },
+        {
+          "file": "App.tsx",
+          "line": 253,
+          "column": 56
+        },
+        {
+          "file": "App.tsx",
+          "line": 208,
+          "column": 81
+        },
+        {
+          "file": "App.tsx",
+          "line": 212,
+          "column": 56
+        },
+        {
+          "file": "App.tsx",
+          "line": 257,
+          "column": 80
+        },
+        {
+          "file": "App.tsx",
+          "line": 261,
+          "column": 56
+        },
+        {
+          "file": "App.tsx",
+          "line": 301,
+          "column": 81
+        },
+        {
+          "file": "App.tsx",
+          "line": 334,
+          "column": 68
+        },
+        {
+          "file": "App.tsx",
+          "line": 361,
+          "column": 66
+        },
+        {
+          "file": "App.tsx",
+          "line": 395,
+          "column": 73
+        },
+        {
+          "file": "App.tsx",
+          "line": 426,
+          "column": 74
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 18,
+          "column": 33
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 23,
+          "column": 33
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 25,
+          "column": 10
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 30,
+          "column": 33
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 31,
+          "column": 33
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 46
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 55
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 19,
+          "column": 26
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 33
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 27,
+          "column": 33
+        },
+        {
+          "file": "package-lock.json",
+          "line": 906,
+          "column": 18
+        },
+        {
+          "file": "package-lock.json",
+          "line": 917,
+          "column": 27
+        },
+        {
+          "file": "package-lock.json",
+          "line": 2601,
+          "column": 19
+        },
+        {
+          "file": "package-lock.json",
+          "line": 2673,
+          "column": 10
+        },
+        {
+          "file": "package-lock.json",
+          "line": 2728,
+          "column": 15
+        },
+        {
+          "file": "package-lock.json",
+          "line": 3305,
+          "column": 24
+        },
+        {
+          "file": "package-lock.json",
+          "line": 3312,
+          "column": 10
+        },
+        {
+          "file": "package-lock.json",
+          "line": 1789,
+          "column": 10
+        },
+        {
+          "file": "package-lock.json",
+          "line": 4890,
+          "column": 19
+        },
+        {
+          "file": "package-lock.json",
+          "line": 4915,
+          "column": 10
+        },
+        {
+          "file": "package-lock.json",
+          "line": 1743,
+          "column": 10
+        },
+        {
+          "file": "package-lock.json",
+          "line": 3688,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 81,
+          "column": 34
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 122,
+          "column": 62
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 151,
+          "column": 67
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 369,
+          "column": 138
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 457,
+          "column": 51
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 480,
+          "column": 70
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 489,
+          "column": 103
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 291,
+          "column": 64
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 317,
+          "column": 64
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 552,
+          "column": 165
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 441,
+          "column": 150
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 197,
+          "column": 103
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 35,
+          "column": 38
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 45,
+          "column": 66
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 38,
+          "column": 38
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 507,
+          "column": 52
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 274,
+          "column": 177
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 970,
+          "column": 37
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 13,
+          "column": 56
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 30,
+          "column": 80
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 724,
+          "column": 91
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 737,
+          "column": 93
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 95,
+          "column": 84
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 92,
+          "column": 101
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 99,
+          "column": 101
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 178,
+          "column": 46
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 422,
+          "column": 101
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 51,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 89,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 177,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 245,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 371,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 425,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 495,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 561,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 610,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 666,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 752,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 791,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 123,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 154,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 224,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 225,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 360,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 399,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 472,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 540,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 589,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 732,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 133,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 164,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 235,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 312,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 409,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 482,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 550,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 599,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 652,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 742,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 781,
+          "column": 50
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-access"
+        ]
+      }
+    },
+    {
+      "id": "d8413efcdd14618d",
+      "name": "Query Access Detector",
+      "description": "Detects data access points in code (ORM queries, raw SQL)",
+      "subcategory": "query-access",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 294,
+          "column": 25
+        },
+        {
+          "file": "App.tsx",
+          "line": 295,
+          "column": 58
+        },
+        {
+          "file": "App.tsx",
+          "line": 295,
+          "column": 71
+        },
+        {
+          "file": "App.tsx",
+          "line": 419,
+          "column": 60
+        },
+        {
+          "file": "App.tsx",
+          "line": 419,
+          "column": 80
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 68,
+          "column": 11
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 98,
+          "column": 27
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 99,
+          "column": 54
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 99,
+          "column": 67
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 152,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 29,
+          "column": 11
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 32,
+          "column": 11
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 131,
+          "column": 17
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 147,
+          "column": 11
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 174,
+          "column": 19
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 214,
+          "column": 19
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 16,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 118,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 130,
+          "column": 42
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 143,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 161,
+          "column": 38
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 210,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 232,
+          "column": 39
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 291,
+          "column": 21
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 309,
+          "column": 39
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 326,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 330,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 393,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 406,
+          "column": 38
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 458,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 479,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 534,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 547,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 583,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 596,
+          "column": 40
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 631,
+          "column": 21
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 114
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 648,
+          "column": 43
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 706,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 710,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 739,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 778,
+          "column": 40
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 826,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 490,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 512,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 173,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 283,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 353,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 418,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 443,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 467,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 662,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 690,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 726,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 324,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 704,
+          "column": 15
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 14,
+          "column": 7
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 15,
+          "column": 7
+        },
+        {
+          "file": "types.ts",
+          "line": 75,
+          "column": 3
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-access"
+        ]
+      }
+    },
+    {
+      "id": "493dfa2fd58b58b8",
+      "name": "Query Access Detector",
+      "description": "Detects data access points in code (ORM queries, raw SQL)",
+      "subcategory": "query-access",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.6835294117647059,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 416,
+          "column": 35
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 18,
+          "column": 14
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 354,
+          "column": 34
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 360,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 229,
+          "column": 26
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 262,
+          "column": 27
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 50,
+          "column": 10
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 452,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 479,
+          "column": 60
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 498,
+          "column": 60
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 399,
+          "column": 18
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 438,
+          "column": 19
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 293,
+          "column": 28
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 330,
+          "column": 29
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 160,
+          "column": 34
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 170,
+          "column": 35
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 153,
+          "column": 34
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 162,
+          "column": 35
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 88,
+          "column": 18
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 129,
+          "column": 19
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 22,
+          "column": 12
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 193,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 196,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 197,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 200,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 140,
+          "column": 18
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 165,
+          "column": 19
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 48,
+          "column": 10
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 273,
+          "column": 14
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 282,
+          "column": 15
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 501,
+          "column": 8
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 513,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 553,
+          "column": 87
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 564,
+          "column": 102
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 565,
+          "column": 100
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 566,
+          "column": 91
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 573,
+          "column": 54
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 590,
+          "column": 110
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 592,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 598,
+          "column": 60
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 617,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 617,
+          "column": 49
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 619,
+          "column": 28
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 640,
+          "column": 76
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 645,
+          "column": 76
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 650,
+          "column": 74
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 666,
+          "column": 52
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 708,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 723,
+          "column": 23
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 733,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 750,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 887,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 897,
+          "column": 21
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 914,
+          "column": 24
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 924,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 133,
+          "column": 13
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 133,
+          "column": 51
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 133,
+          "column": 82
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 135,
+          "column": 18
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 401,
+          "column": 12
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 496,
+          "column": 13
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 454,
+          "column": 32
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 494,
+          "column": 33
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 259,
+          "column": 38
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 268,
+          "column": 39
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 273,
+          "column": 42
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 282,
+          "column": 43
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 274,
+          "column": 12
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 321,
+          "column": 13
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 349,
+          "column": 20
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 364,
+          "column": 21
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 412,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 416,
+          "column": 19
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 163,
+          "column": 12
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 207,
+          "column": 13
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 288,
+          "column": 24
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 313,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 121,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 222,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 357,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 396,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 469,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 586,
+          "column": 18
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 729,
+          "column": 18
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-access"
+        ]
+      }
+    },
+    {
+      "id": "c6fb27cf7cacf6ce",
+      "name": "Query Access Detector",
+      "description": "Detects data access points in code (ORM queries, raw SQL)",
+      "subcategory": "query-access",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8835294117647059,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 418,
+          "column": 23
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 18,
+          "column": 13
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 461,
+          "column": 88
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 495,
+          "column": 179
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 496,
+          "column": 184
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 511,
+          "column": 91
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 662,
+          "column": 48
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 794,
+          "column": 203
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "query-access"
+        ]
+      }
+    },
+    {
+      "id": "00d0014514ae9698",
+      "name": "Sensitive Field Detector",
+      "description": "Auto-detects potentially sensitive fields/columns in data models",
+      "subcategory": "sensitive-field",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8745454545454545,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 86,
+          "column": 11
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 56,
+          "column": 9
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 164,
+          "column": 17
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 173,
+          "column": 17
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 141,
+          "column": 11
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 33,
+          "column": 5
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 70,
+          "column": 9
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 644,
+          "column": 67
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 100,
+          "column": 78
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 148,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 24,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 508,
+          "column": 17
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 9,
+          "column": 11
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 16,
+          "column": 9
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 22,
+          "column": 9
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 29,
+          "column": 18
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 29,
+          "column": 30
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "sensitive-field"
+        ]
+      }
+    },
+    {
+      "id": "9321ef350c078024",
+      "name": "Sensitive Field Detector",
+      "description": "Auto-detects potentially sensitive fields/columns in data models",
+      "subcategory": "sensitive-field",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8533333333333333,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 92,
+          "column": 39
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 148,
+          "column": 53
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "sensitive-field"
+        ]
+      }
+    },
+    {
+      "id": "60d281a64340504c",
+      "name": "Sensitive Field Detector",
+      "description": "Auto-detects potentially sensitive fields/columns in data models",
+      "subcategory": "sensitive-field",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 131,
+          "column": 28
+        },
+        {
+          "file": "package-lock.json",
+          "line": 47,
+          "column": 13
+        },
+        {
+          "file": "package-lock.json",
+          "line": 3073,
+          "column": 22
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 348,
+          "column": 50
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 546,
+          "column": 113
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 8,
+          "column": 14
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "data-access",
+          "sensitive-field"
+        ]
+      }
+    },
+    {
+      "id": "3dc95f3d5d2f5a18",
+      "name": "Validation Patterns Detector",
+      "description": "Learns validation patterns from your codebase",
+      "subcategory": "validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "constants.ts",
+          "line": 12,
+          "column": 14
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 373,
+          "column": 53
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 375,
+          "column": 63
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 375,
+          "column": 82
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 740,
+          "column": 35
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 424,
+          "column": 25
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "data-access",
+          "validation"
+        ]
+      }
+    },
+    {
+      "id": "ece54e615100facf",
+      "name": "Query Patterns Detector",
+      "description": "Learns query patterns from your codebase",
+      "subcategory": "query-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8464705882352941,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 18,
+          "column": 20
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 23,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 17,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 30,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 31,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 39
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 27,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 489,
+          "column": 82
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 299,
+          "column": 22
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 314,
+          "column": 46
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 52,
+          "column": 23
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 87,
+          "column": 46
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 88,
+          "column": 42
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 190,
+          "column": 115
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 198,
+          "column": 80
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 68,
+          "column": 30
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 437,
+          "column": 34
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 440,
+          "column": 34
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 564,
+          "column": 83
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 565,
+          "column": 81
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 566,
+          "column": 72
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 590,
+          "column": 89
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 598,
+          "column": 41
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 743,
+          "column": 52
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 167,
+          "column": 25
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 167,
+          "column": 32
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 549,
+          "column": 48
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 120,
+          "column": 37
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 123,
+          "column": 25
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 221,
+          "column": 119
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 225,
+          "column": 30
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 21,
+          "column": 33
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 24,
+          "column": 27
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 23,
+          "column": 9
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 8,
+          "column": 16
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 117,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 117,
+          "column": 49
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 142,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 209,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 209,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 290,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 329,
+          "column": 37
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 392,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 392,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 457,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 457,
+          "column": 43
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 533,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 582,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 582,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 630,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 709,
+          "column": 43
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 825,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 127,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 130,
+          "column": 33
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 158,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 161,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 229,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 232,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 306,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 309,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 403,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 406,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 476,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 479,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 544,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 547,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 593,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 596,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 645,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 648,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 736,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 739,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 775,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 778,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 8,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 34,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 84,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 169,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 240,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 365,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 414,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 487,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 555,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 604,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 658,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 747,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 786,
+          "column": 8
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "data-access",
+          "query-patterns"
+        ]
+      }
+    },
+    {
+      "id": "5f2c333d3125894d",
+      "name": "N+1 Query Detector",
+      "description": "Learns N+1 query patterns from your codebase",
+      "subcategory": "n-plus-one",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 18,
+          "column": 20
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 23,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 17,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 30,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 31,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 39
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 27,
+          "column": 20
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 21,
+          "column": 33
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 24,
+          "column": 27
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 8,
+          "column": 16
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "data-access",
+          "n-plus-one"
+        ]
+      }
+    },
+    {
+      "id": "e3ce94cd95f0f0cb",
+      "name": "Connection Pooling Detector",
+      "description": "Learns connection pooling patterns from your codebase",
+      "subcategory": "connection-pooling",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8533333333333333,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 9,
+          "column": 7
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 9,
+          "column": 18
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 8,
+          "column": 18
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 8,
+          "column": 18
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "data-access",
+          "connection-pooling"
+        ]
+      }
+    },
+    {
+      "id": "92a34bd49d19d3c3",
+      "name": "Query Access Detector",
+      "description": "Detects data access points in code (ORM queries, raw SQL)",
+      "subcategory": "query-access",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 18,
+          "column": 20
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 23,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 17,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 30,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 31,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 39
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 27,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 489,
+          "column": 82
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 314,
+          "column": 46
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 52,
+          "column": 23
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 87,
+          "column": 46
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 88,
+          "column": 42
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 190,
+          "column": 115
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 198,
+          "column": 80
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 68,
+          "column": 30
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 437,
+          "column": 34
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 440,
+          "column": 34
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 564,
+          "column": 83
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 565,
+          "column": 81
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 566,
+          "column": 72
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 590,
+          "column": 89
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 598,
+          "column": 41
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 743,
+          "column": 52
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 167,
+          "column": 32
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 549,
+          "column": 48
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 120,
+          "column": 37
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 123,
+          "column": 25
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 221,
+          "column": 119
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 225,
+          "column": 30
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 21,
+          "column": 33
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 24,
+          "column": 27
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 8,
+          "column": 16
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 38,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 86,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 171,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 242,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 367,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 416,
+          "column": 41
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 489,
+          "column": 41
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 557,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 606,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 660,
+          "column": 48
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 749,
+          "column": 44
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 788,
+          "column": 44
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 117,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 117,
+          "column": 49
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 142,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 209,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 209,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 290,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 329,
+          "column": 37
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 392,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 392,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 457,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 457,
+          "column": 43
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 533,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 582,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 582,
+          "column": 47
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 630,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 709,
+          "column": 43
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 825,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 127,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 130,
+          "column": 33
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 158,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 161,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 229,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 232,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 306,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 309,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 403,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 406,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 476,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 479,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 544,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 547,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 593,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 596,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 645,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 648,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 736,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 739,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 775,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 778,
+          "column": 31
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "data-access",
+          "query-access"
+        ]
+      }
+    },
+    {
+      "id": "b49495933a09168f",
+      "name": "ORM Model Detector",
+      "description": "Detects ORM model/entity definitions to extract table mappings",
+      "subcategory": "orm-model",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 18,
+          "column": 14
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 229,
+          "column": 26
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 262,
+          "column": 27
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 399,
+          "column": 18
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 438,
+          "column": 19
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 293,
+          "column": 28
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 330,
+          "column": 29
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 88,
+          "column": 18
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 129,
+          "column": 19
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 140,
+          "column": 18
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 165,
+          "column": 19
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 401,
+          "column": 12
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 496,
+          "column": 13
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 454,
+          "column": 32
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 494,
+          "column": 33
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 274,
+          "column": 12
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 321,
+          "column": 13
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 163,
+          "column": 12
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 207,
+          "column": 13
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 288,
+          "column": 24
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 313,
+          "column": 25
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 14,
+          "column": 33
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "orm-model"
+        ]
+      }
+    },
+    {
+      "id": "4e957a07f345f9c6",
+      "name": "ORM Model Detector",
+      "description": "Detects ORM model/entity definitions to extract table mappings",
+      "subcategory": "orm-model",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8825,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 15
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 79
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 92
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "orm-model"
+        ]
+      }
+    },
+    {
+      "id": "ff85c73df83a36c1",
+      "name": "ORM Model Detector",
+      "description": "Detects ORM model/entity definitions to extract table mappings",
+      "subcategory": "orm-model",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8825,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_temp.js",
+          "line": 18,
+          "column": 13
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 34,
+          "column": 46
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "orm-model"
+        ]
+      }
+    },
+    {
+      "id": "2cbcfee6b0a4acad",
+      "name": "Query Access Detector",
+      "description": "Detects data access points in code (ORM queries, raw SQL)",
+      "subcategory": "query-access",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.7790909090909091,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 86
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 15
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 79
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 92
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "query-access"
+        ]
+      }
+    },
+    {
+      "id": "69fade61fc4fcf79",
+      "name": "Transaction Patterns Detector",
+      "description": "Learns transaction patterns from your codebase",
+      "subcategory": "transaction",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 10,
+          "column": 5
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 347,
+          "column": 38
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "transaction"
+        ]
+      }
+    },
+    {
+      "id": "67a100dfed9ff25e",
+      "name": "Validation Patterns Detector",
+      "description": "Learns validation patterns from your codebase",
+      "subcategory": "validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 13,
+          "column": 5
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 378,
+          "column": 78
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 13,
+          "column": 3
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 424,
+          "column": 40
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 15,
+          "column": 3
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 949,
+          "column": 44
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 311,
+          "column": 28
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 427,
+          "column": 36
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 782,
+          "column": 43
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 16,
+          "column": 3
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "validation"
+        ]
+      }
+    },
+    {
+      "id": "6183b604855e4d90",
+      "name": "N+1 Query Detector",
+      "description": "Learns N+1 query patterns from your codebase",
+      "subcategory": "n-plus-one",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 68,
+          "column": 11
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 29,
+          "column": 11
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 32,
+          "column": 11
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 173,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 283,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 353,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 418,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 443,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 467,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 662,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 690,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 726,
+          "column": 17
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "n-plus-one"
+        ]
+      }
+    },
+    {
+      "id": "94b9233fa3f07f61",
+      "name": "Sensitive Field Detector",
+      "description": "Auto-detects potentially sensitive fields/columns in data models",
+      "subcategory": "sensitive-field",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 349,
+          "column": 57
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 349,
+          "column": 109
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 46,
+          "column": 8
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 55,
+          "column": 9
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 55,
+          "column": 26
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 245,
+          "column": 86
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 346,
+          "column": 79
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 643,
+          "column": 39
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 793,
+          "column": 59
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 794,
+          "column": 179
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 94,
+          "column": 9
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 94,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 259,
+          "column": 69
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 259,
+          "column": 165
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 380,
+          "column": 37
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 380,
+          "column": 90
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 46,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 72,
+          "column": 33
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 20,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 20,
+          "column": 61
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 28
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 57
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 502,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 502,
+          "column": 45
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 52
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 10,
+          "column": 11
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 10,
+          "column": 41
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 6,
+          "column": 50
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 22
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "sensitive-field"
+        ]
+      }
+    },
+    {
+      "id": "589112c2f8c370df",
+      "name": "Validation Patterns Detector",
+      "description": "Learns validation patterns from your codebase",
+      "subcategory": "validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 34,
+          "column": 10
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 64
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 146
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 184
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 2,
+          "column": 34
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 30,
+          "column": 10
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "validation"
+        ]
+      }
+    },
+    {
+      "id": "18a1b6d5ba302c6b",
+      "name": "Validation Patterns Detector",
+      "description": "Learns validation patterns from your codebase",
+      "subcategory": "validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 148,
+          "column": 10
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 164,
+          "column": 34
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 21,
+          "column": 33
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 24,
+          "column": 27
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "validation"
+        ]
+      }
+    },
+    {
+      "id": "cfafadf21f638bee",
+      "name": "Connection Pooling Detector",
+      "description": "Learns connection pooling patterns from your codebase",
+      "subcategory": "connection-pooling",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 36,
+          "column": 11
+        },
+        {
+          "file": "types.ts",
+          "line": 23,
+          "column": 18
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "connection-pooling"
+        ]
+      }
+    },
+    {
+      "id": "c509899ab9774aab",
+      "name": "Connection Pooling Detector",
+      "description": "Learns connection pooling patterns from your codebase",
+      "subcategory": "connection-pooling",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8455555555555556,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 94,
+          "column": 9
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 158,
+          "column": 9
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 246,
+          "column": 100
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 337,
+          "column": 125
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 174,
+          "column": 19
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "connection-pooling"
+        ]
+      }
+    },
+    {
+      "id": "6c73b78bf01e3808",
+      "name": "Sensitive Field Detector",
+      "description": "Auto-detects potentially sensitive fields/columns in data models",
+      "subcategory": "sensitive-field",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 9,
+          "column": 3
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 62,
+          "column": 10
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 143,
+          "column": 48
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 170,
+          "column": 7
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 175,
+          "column": 29
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 255,
+          "column": 20
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 24,
+          "column": 3
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 57,
+          "column": 52
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 64,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 140,
+          "column": 52
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 149,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 183,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 189,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 207,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 214,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 377,
+          "column": 52
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 379,
+          "column": 56
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 391,
+          "column": 52
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 394,
+          "column": 56
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 14,
+          "column": 20
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 501,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 502,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 524,
+          "column": 23
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 508,
+          "column": 27
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 10,
+          "column": 46
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 16,
+          "column": 19
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 22,
+          "column": 19
+        },
+        {
+          "file": "types.ts",
+          "line": 67,
+          "column": 3
+        },
+        {
+          "file": "types.ts",
+          "line": 40,
+          "column": 3
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "sensitive-field"
+        ]
+      }
+    },
+    {
+      "id": "eb2e26baff6d932a",
+      "name": "Repository Pattern Detector",
+      "description": "Learns repository patterns from your codebase",
+      "subcategory": "repository-pattern",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8727777777777778,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 122,
+          "column": 68
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 122,
+          "column": 89
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 533,
+          "column": 120
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "data-access",
+          "repository-pattern"
+        ]
+      }
+    },
+    {
+      "id": "5d8e54bcc0468337",
+      "name": "DTO Patterns Detector",
+      "description": "Learns Data Transfer Object patterns from your codebase",
+      "subcategory": "dto-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.9116666666666666,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 659,
+          "column": 113
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 527,
+          "column": 19
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 23
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 529,
+          "column": 19
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 531,
+          "column": 39
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "data-access",
+          "dto-patterns"
+        ]
+      }
+    },
+    {
+      "id": "4b6b6ea0d21f0be5",
+      "name": "Validation Patterns Detector",
+      "description": "Learns validation patterns from your codebase",
+      "subcategory": "validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.75125,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 743,
+          "column": 50
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 426,
+          "column": 40
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "data-access",
+          "validation"
+        ]
+      }
+    },
+    {
+      "id": "d2d6c3d9e7ea8708",
+      "name": "Repository Pattern Detector",
+      "description": "Learns repository patterns from your codebase",
+      "subcategory": "repository-pattern",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 25,
+          "column": 11
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "data-access",
+          "repository-pattern"
+        ]
+      }
+    },
+    {
+      "id": "e03ce0e0968acc95",
+      "name": "Transaction Patterns Detector",
+      "description": "Learns transaction patterns from your codebase",
+      "subcategory": "transaction",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 257,
+          "column": 38
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 324,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 619,
+          "column": 38
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 704,
+          "column": 39
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 812,
+          "column": 38
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "data-access",
+          "transaction"
+        ]
+      }
+    },
+    {
+      "id": "7fdfe91b4492b518",
+      "name": "Connection Pooling Detector",
+      "description": "Learns connection pooling patterns from your codebase",
+      "subcategory": "connection-pooling",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.7658333333333334,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 38,
+          "column": 15
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 38,
+          "column": 38
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 59,
+          "column": 40
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 142,
+          "column": 22
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 161,
+          "column": 22
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "data-access",
+          "connection-pooling"
+        ]
+      }
+    },
+    {
+      "id": "5a9b42fc1fd03335",
+      "name": "DTO Patterns Detector",
+      "description": "Learns Data Transfer Object patterns from your codebase",
+      "subcategory": "dto-patterns",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "services\\geminiService.ts",
+          "line": 29,
+          "column": 19
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 29,
+          "column": 59
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.225Z",
+        "lastSeen": "2026-01-23T14:47:53.225Z",
+        "tags": [
+          "data-access",
+          "dto-patterns"
+        ]
+      }
+    },
+    {
+      "id": "a18b3c402f5e68d6",
+      "name": "ORM Model Detector",
+      "description": "Detects ORM model/entity definitions to extract table mappings",
+      "subcategory": "orm-model",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.7366666666666666,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "services\\geminiService.ts",
+          "line": 15,
+          "column": 9
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.225Z",
+        "lastSeen": "2026-01-23T14:47:53.225Z",
+        "tags": [
+          "data-access",
+          "orm-model"
+        ]
+      }
+    }
+  ]
+}

@@ -743,10 +743,51 @@ router.delete("/purchase-orders/:id", async (req, res) => {
     }
 });
 
-// --- NEW MODULES: DOCUMENTS ---
+// --- NEW MODULES: DOCUMENTS & REQUIREMENTS ---
+
+router.get("/clients/:clientId/requirements", async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const requirements = await prisma.documentRequirement.findMany({
+            where: { clientId },
+            include: { documents: true },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(requirements);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch requirements" });
+    }
+});
+
+router.post("/clients/:clientId/requirements", async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const { name, description } = req.body;
+        const newReq = await prisma.documentRequirement.create({
+            data: { name, description, clientId }
+        });
+        res.json(newReq);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to create requirement" });
+    }
+});
+
+router.delete("/requirements/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.documentRequirement.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete requirement" });
+    }
+});
+
 router.get("/documents", async (req, res) => {
     try {
-        const docs = await prisma.document.findMany({ orderBy: { createdAt: 'desc' } });
+        const docs = await prisma.document.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: { requirement: true }
+        });
         res.json(docs);
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch documents" });
@@ -755,14 +796,17 @@ router.get("/documents", async (req, res) => {
 
 router.post("/documents", async (req, res) => {
     try {
-        // Metadata only for now. File upload logic requires multer or S3 (out of scope for now, just storing ref).
-        const { type, url, name } = req.body;
+        // Metadata only for now. Appending requirementId linkage.
+        const { type, url, name, clientId, projectId, requirementId } = req.body;
 
         const newDoc = await prisma.document.create({
             data: {
                 type, // 'INVOICE', 'CONTRACT', 'RECEIPT', 'OTHER'
-                url: url || '', // Placeholder URL
-                name
+                url: url || '',
+                name,
+                clientId: clientId || undefined,
+                projectId: projectId || undefined,
+                requirementId: requirementId || undefined
             }
         });
         res.json(newDoc);

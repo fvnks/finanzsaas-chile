@@ -1,0 +1,1321 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-23T14:47:53.348Z",
+  "checksum": "b8a59e5ff411c641",
+  "category": "config",
+  "patterns": [
+    {
+      "id": "04e5a1387c6d7616",
+      "name": "Environment Config Detector",
+      "description": "Learns environment configuration patterns from your codebase",
+      "subcategory": "env-config",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 18,
+          "column": 32
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 18,
+          "column": 33
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 3,
+          "column": 33
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 3,
+          "column": 33
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 3,
+          "column": 33
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "config",
+          "env-config"
+        ]
+      }
+    },
+    {
+      "id": "e20e62100480ab0d",
+      "name": "Required/Optional Detector",
+      "description": "Learns required/optional configuration patterns from your codebase",
+      "subcategory": "required-optional",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 441,
+          "column": 8
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 179,
+          "column": 8
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 24,
+          "column": 34
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 277,
+          "column": 41
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 417,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 525,
+          "column": 19
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 536,
+          "column": 24
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 542,
+          "column": 26
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 546,
+          "column": 26
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 583,
+          "column": 8
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 368,
+          "column": 21
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 380,
+          "column": 21
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 394,
+          "column": 23
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 483,
+          "column": 8
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 151,
+          "column": 37
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 161,
+          "column": 37
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 176,
+          "column": 37
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 229,
+          "column": 8
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 192,
+          "column": 8
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 145,
+          "column": 37
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 174,
+          "column": 95
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 175,
+          "column": 101
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 176,
+          "column": 107
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 177,
+          "column": 115
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 193,
+          "column": 75
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 201,
+          "column": 111
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 759,
+          "column": 23
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 770,
+          "column": 23
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 780,
+          "column": 23
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 888,
+          "column": 21
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 915,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 1018,
+          "column": 8
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 610,
+          "column": 25
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 623,
+          "column": 27
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 640,
+          "column": 23
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 837,
+          "column": 8
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 231,
+          "column": 41
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 241,
+          "column": 41
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 251,
+          "column": 41
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 328,
+          "column": 8
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 453,
+          "column": 8
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 28,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 842,
+          "column": 8
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 5,
+          "column": 8
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "config",
+          "required-optional"
+        ]
+      }
+    },
+    {
+      "id": "e1fa168d18e817d5",
+      "name": "Default Values Detector",
+      "description": "Learns default value patterns from your codebase",
+      "subcategory": "default-values",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 441,
+          "column": 8
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 179,
+          "column": 8
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 24,
+          "column": 34
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 417,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 583,
+          "column": 8
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 483,
+          "column": 8
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 229,
+          "column": 8
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 192,
+          "column": 8
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 1018,
+          "column": 8
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 837,
+          "column": 8
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 328,
+          "column": 8
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 453,
+          "column": 8
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 28,
+          "column": 8
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 842,
+          "column": 8
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 5,
+          "column": 8
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.221Z",
+        "lastSeen": "2026-01-23T14:47:53.221Z",
+        "tags": [
+          "config",
+          "default-values"
+        ]
+      }
+    },
+    {
+      "id": "43aab5f165d854d6",
+      "name": "Feature Flags Detector",
+      "description": "Learns feature flag patterns from your codebase",
+      "subcategory": "feature-flags",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 28,
+          "column": 9
+        },
+        {
+          "file": "package-lock.json",
+          "line": 4744,
+          "column": 87
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 289,
+          "column": 15
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 315,
+          "column": 15
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 552,
+          "column": 39
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 101,
+          "column": 9
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 440,
+          "column": 19
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 968,
+          "column": 19
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 84,
+          "column": 9
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 793,
+          "column": 21
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "config",
+          "feature-flags"
+        ]
+      }
+    },
+    {
+      "id": "f87952cd66afa8c5",
+      "name": "Feature Flags Detector",
+      "description": "Learns feature flag patterns from your codebase",
+      "subcategory": "feature-flags",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8533333333333333,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 125,
+          "column": 30
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 417,
+          "column": 40
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 775,
+          "column": 42
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 299,
+          "column": 90
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "config",
+          "feature-flags"
+        ]
+      }
+    },
+    {
+      "id": "03f801fb721c76cb",
+      "name": "Feature Flags Detector",
+      "description": "Learns feature flag patterns from your codebase",
+      "subcategory": "feature-flags",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "constants.ts",
+          "line": 14,
+          "column": 19
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 24,
+          "column": 40
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 43,
+          "column": 44
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 94,
+          "column": 36
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 205,
+          "column": 38
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 223,
+          "column": 22
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 700,
+          "column": 100
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 709,
+          "column": 96
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 34,
+          "column": 40
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 111,
+          "column": 58
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 126,
+          "column": 48
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 34,
+          "column": 75
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "config",
+          "feature-flags"
+        ]
+      }
+    },
+    {
+      "id": "4d4d392a104cd53b",
+      "name": "Config Validation Detector",
+      "description": "Learns configuration validation patterns from your codebase",
+      "subcategory": "config-validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "constants.ts",
+          "line": 12,
+          "column": 14
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 373,
+          "column": 53
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 375,
+          "column": 63
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 375,
+          "column": 82
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 740,
+          "column": 35
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 424,
+          "column": 25
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "config",
+          "config-validation"
+        ]
+      }
+    },
+    {
+      "id": "8c31dbee8dbfe1c4",
+      "name": "Environment Config Detector",
+      "description": "Learns environment configuration patterns from your codebase",
+      "subcategory": "env-config",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8999999999999999,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 31
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 7,
+          "column": 8
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 31
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 6,
+          "column": 8
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 31
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 6,
+          "column": 8
+        },
+        {
+          "file": "README.md",
+          "line": 47,
+          "column": 26
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 20,
+          "column": 13
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 3,
+          "column": 22
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 6,
+          "column": 60
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 11,
+          "column": 13
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 6,
+          "column": 46
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 18
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 47
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 15,
+          "column": 18
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 15,
+          "column": 54
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "config",
+          "env-config"
+        ]
+      }
+    },
+    {
+      "id": "90c1b7b5e02bb3b4",
+      "name": "Environment Config Detector",
+      "description": "Learns environment configuration patterns from your codebase",
+      "subcategory": "env-config",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.7,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 23
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 23
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 23
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 198,
+          "column": 97
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 3,
+          "column": 14
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 6,
+          "column": 38
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "config",
+          "env-config"
+        ]
+      }
+    },
+    {
+      "id": "c00b87e78b085700",
+      "name": "Environment Detection Detector",
+      "description": "Learns environment detection patterns from your codebase",
+      "subcategory": "environment-detection",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 31
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 31
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 31
+        },
+        {
+          "file": "README.md",
+          "line": 47,
+          "column": 26
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 20,
+          "column": 13
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 20,
+          "column": 17
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 3,
+          "column": 22
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 6,
+          "column": 60
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 6,
+          "column": 64
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 11,
+          "column": 13
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 11,
+          "column": 17
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 6,
+          "column": 46
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 18
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 47
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 15,
+          "column": 18
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 15,
+          "column": 54
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "tags": [
+          "config",
+          "environment-detection"
+        ]
+      }
+    },
+    {
+      "id": "c0d3751d5efda374",
+      "name": "Required/Optional Detector",
+      "description": "Learns required/optional configuration patterns from your codebase",
+      "subcategory": "required-optional",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 93
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "config",
+          "required-optional"
+        ]
+      }
+    },
+    {
+      "id": "11924d02509b7d83",
+      "name": "Default Values Detector",
+      "description": "Learns default value patterns from your codebase",
+      "subcategory": "default-values",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 93
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "config",
+          "default-values"
+        ]
+      }
+    },
+    {
+      "id": "768517e3a74e7213",
+      "name": "Config Validation Detector",
+      "description": "Learns configuration validation patterns from your codebase",
+      "subcategory": "config-validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.77,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 13,
+          "column": 5
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 378,
+          "column": 78
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 13,
+          "column": 3
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 424,
+          "column": 40
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 15,
+          "column": 3
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 949,
+          "column": 44
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 311,
+          "column": 28
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 427,
+          "column": 36
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 782,
+          "column": 43
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 16,
+          "column": 3
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "config",
+          "config-validation"
+        ]
+      }
+    },
+    {
+      "id": "6ed301be887c3eca",
+      "name": "Config Validation Detector",
+      "description": "Learns configuration validation patterns from your codebase",
+      "subcategory": "config-validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 34,
+          "column": 10
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 64
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 146
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 184
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 2,
+          "column": 34
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 30,
+          "column": 10
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "config",
+          "config-validation"
+        ]
+      }
+    },
+    {
+      "id": "59358e2b69e02b0d",
+      "name": "Config Validation Detector",
+      "description": "Learns configuration validation patterns from your codebase",
+      "subcategory": "config-validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.7949999999999999,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 148,
+          "column": 10
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 164,
+          "column": 34
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "tags": [
+          "config",
+          "config-validation"
+        ]
+      }
+    },
+    {
+      "id": "c838817e2c2b9e12",
+      "name": "Required/Optional Detector",
+      "description": "Learns required/optional configuration patterns from your codebase",
+      "subcategory": "required-optional",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.9199999999999999,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 737,
+          "column": 25
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "config",
+          "required-optional"
+        ]
+      }
+    },
+    {
+      "id": "c1f82439ac677949",
+      "name": "Config Validation Detector",
+      "description": "Learns configuration validation patterns from your codebase",
+      "subcategory": "config-validation",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.75125,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 743,
+          "column": 50
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 426,
+          "column": 40
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "config",
+          "config-validation"
+        ]
+      }
+    },
+    {
+      "id": "c3faf37d8b0d2923",
+      "name": "Environment Config Detector",
+      "description": "Learns environment configuration patterns from your codebase",
+      "subcategory": "env-config",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8533333333333333,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "README.md",
+          "line": 47,
+          "column": 18
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 20,
+          "column": 5
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 11,
+          "column": 5
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "config",
+          "env-config"
+        ]
+      }
+    },
+    {
+      "id": "789ad63971ca7947",
+      "name": "Environment Detection Detector",
+      "description": "Learns environment detection patterns from your codebase",
+      "subcategory": "environment-detection",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.83,
+        "level": "medium"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\app.ts",
+          "line": 20,
+          "column": 31
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 11,
+          "column": 31
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "config",
+          "environment-detection"
+        ]
+      }
+    },
+    {
+      "id": "b19e2e74fc03f039",
+      "name": "Environment Config Detector",
+      "description": "Learns environment configuration patterns from your codebase",
+      "subcategory": "env-config",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8999999999999999,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "services\\geminiService.ts",
+          "line": 19,
+          "column": 9
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 6,
+          "column": 11
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.225Z",
+        "lastSeen": "2026-01-23T14:47:53.225Z",
+        "tags": [
+          "config",
+          "env-config"
+        ]
+      }
+    },
+    {
+      "id": "363c73caeaf1f27e",
+      "name": "Environment Detection Detector",
+      "description": "Learns environment detection patterns from your codebase",
+      "subcategory": "environment-detection",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.8999999999999999,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "vite.config.ts",
+          "line": 6,
+          "column": 11
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.225Z",
+        "lastSeen": "2026-01-23T14:47:53.225Z",
+        "tags": [
+          "config",
+          "environment-detection"
+        ]
+      }
+    }
+  ]
+}

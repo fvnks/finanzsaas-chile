@@ -101,10 +101,6 @@ export interface Invoice {
   relatedInvoiceId?: string;
 }
 
-// ... existing types
-
-
-// ... existing types
 
 export interface DailyReport {
   id: string;
@@ -121,6 +117,28 @@ export interface JobTitle {
   description?: string;
 }
 
+export interface Document {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  projectId?: string;
+  clientId?: string;
+  requirementId?: string;
+  createdAt: string;
+}
+
+export interface DocumentRequirement {
+  id: string;
+  name: string;
+  description?: string;
+  clientId: string;
+  documents?: Document[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+
 export type AppState = {
   user: User | null;
   clients: Client[];
@@ -131,4 +149,6 @@ export type AppState = {
   crews: Crew[];
   jobTitles: JobTitle[];
   dailyReports: DailyReport[];
+  documents: Document[];
+  requirements: DocumentRequirement[];
 }

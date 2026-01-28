@@ -1,0 +1,822 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-23T14:47:53.338Z",
+  "checksum": "e36d0a634baad890",
+  "category": "api",
+  "patterns": [
+    {
+      "id": "00e3c53173a8359d",
+      "name": "HTTP Methods Detector",
+      "description": "Detects HTTP method usage patterns and flags RESTful convention violations",
+      "subcategory": "http-methods",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "warning",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 89,
+          "column": 25
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 92,
+          "column": 35
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 45,
+          "column": 19
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 48,
+          "column": 31
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 95,
+          "column": 31
+        }
+      ],
+      "outliers": [
+        {
+          "file": "App.tsx",
+          "line": 89,
+          "column": 25
+        },
+        {
+          "file": "App.tsx",
+          "line": 157,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 225,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 275,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 313,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 340,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 372,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 410,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 189,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 244,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 288,
+          "column": 35
+        },
+        {
+          "file": "App.tsx",
+          "line": 324,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 351,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 385,
+          "column": 23
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 103,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 133,
+          "column": 31
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 92,
+          "column": 35
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 55,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 48,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 67,
+          "column": 31
+        }
+      ],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.218Z",
+        "lastSeen": "2026-01-23T14:47:53.218Z",
+        "tags": [
+          "api",
+          "http-methods"
+        ]
+      }
+    },
+    {
+      "id": "f1fa1dccaa2d24ef",
+      "name": "HTTP Methods Detector",
+      "description": "Detects HTTP method usage patterns and flags RESTful convention violations",
+      "subcategory": "http-methods",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 89,
+          "column": 25
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 103,
+          "column": 35
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 55,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 48,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 13,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "tags": [
+          "api",
+          "http-methods"
+        ]
+      }
+    },
+    {
+      "id": "b8d22705f01d65ed",
+      "name": "HTTP Methods Detector",
+      "description": "Detects HTTP method usage patterns and flags RESTful convention violations",
+      "subcategory": "http-methods",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 189,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 92,
+          "column": 35
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 113,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "tags": [
+          "api",
+          "http-methods"
+        ]
+      }
+    },
+    {
+      "id": "6b1968bfc4c146cf",
+      "name": "HTTP Methods Detector",
+      "description": "Detects HTTP method usage patterns and flags RESTful convention violations",
+      "subcategory": "http-methods",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 208,
+          "column": 35
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 122,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 45,
+          "column": 19
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 95,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 127,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "tags": [
+          "api",
+          "http-methods"
+        ]
+      }
+    },
+    {
+      "id": "a0a0f73395956d0c",
+      "name": "Response Envelope Detector",
+      "description": "Detects response envelope patterns and flags inconsistencies",
+      "subcategory": "response-envelope",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "warning",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 175,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 9,
+          "column": 5
+        }
+      ],
+      "outliers": [
+        {
+          "file": "server\\routes.ts",
+          "line": 68,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 9,
+          "column": 5
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 131,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 152,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 162,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 233,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 310,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 407,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 480,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 537,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 548,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 597,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 649,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 740,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 779,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 9,
+          "column": 5
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 131,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 152,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 162,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 233,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 310,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 407,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 480,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 537,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 548,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 597,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 649,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 740,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 779,
+          "column": 9
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 59,
+          "column": 54
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 96,
+          "column": 62
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 185,
+          "column": 56
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 258,
+          "column": 56
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 378,
+          "column": 54
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 434,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 504,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 568,
+          "column": 55
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 620,
+          "column": 56
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 675,
+          "column": 57
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 761,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 798,
+          "column": 53
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 813,
+          "column": 64
+        }
+      ],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "tags": [
+          "api",
+          "response-envelope"
+        ]
+      }
+    },
+    {
+      "id": "9ff45f981b997a29",
+      "name": "Response Envelope Detector",
+      "description": "Detects response envelope patterns and flags inconsistencies",
+      "subcategory": "response-envelope",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 175,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 123,
+          "column": 7
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 55,
+          "column": 7
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 635,
+          "column": 13
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 7,
+          "column": 5
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "tags": [
+          "api",
+          "response-envelope"
+        ]
+      }
+    },
+    {
+      "id": "7b0215414937f8e9",
+      "name": "Response Envelope Detector",
+      "description": "Detects response envelope patterns and flags inconsistencies",
+      "subcategory": "response-envelope",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 123,
+          "column": 7
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 55,
+          "column": 7
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 7,
+          "column": 5
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "response-envelope"
+        ]
+      }
+    },
+    {
+      "id": "14988ddfe55d7779",
+      "name": "Route Structure Detector",
+      "description": "Detects route URL structure patterns and flags inconsistencies",
+      "subcategory": "route-structure",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 8,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "route-structure"
+        ]
+      }
+    },
+    {
+      "id": "c36e420707644581",
+      "name": "Route Structure Detector",
+      "description": "Detects route URL structure patterns and flags inconsistencies",
+      "subcategory": "route-structure",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 8,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "route-structure"
+        ]
+      }
+    },
+    {
+      "id": "fbde027341118867",
+      "name": "Route Structure Detector",
+      "description": "Detects route URL structure patterns and flags inconsistencies",
+      "subcategory": "route-structure",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 113,
+          "column": 12
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "route-structure"
+        ]
+      }
+    },
+    {
+      "id": "3cdd2aa5f124c7b9",
+      "name": "HTTP Methods Detector",
+      "description": "Detects HTTP method usage patterns and flags RESTful convention violations",
+      "subcategory": "http-methods",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 8,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "http-methods"
+        ]
+      }
+    },
+    {
+      "id": "8c7cf075294f94f6",
+      "name": "HTTP Methods Detector",
+      "description": "Detects HTTP method usage patterns and flags RESTful convention violations",
+      "subcategory": "http-methods",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 161,
+          "column": 22
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "http-methods"
+        ]
+      }
+    },
+    {
+      "id": "7f28fac5d37155fd",
+      "name": "HTTP Methods Detector",
+      "description": "Detects HTTP method usage patterns and flags RESTful convention violations",
+      "subcategory": "http-methods",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 8,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "http-methods"
+        ]
+      }
+    },
+    {
+      "id": "026fbe7f8aeb2b06",
+      "name": "Response Envelope Detector",
+      "description": "Detects response envelope patterns and flags inconsistencies",
+      "subcategory": "response-envelope",
+      "status": "discovered",
+      "confidence": {
+        "score": 0.95,
+        "level": "high"
+      },
+      "severity": "info",
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 9,
+          "column": 5
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "tags": [
+          "api",
+          "response-envelope"
+        ]
+      }
+    }
+  ]
+}

@@ -13,6 +13,7 @@ import { User, UserRole, Client, Invoice, Project, CostCenter, InvoiceType, Work
 import { ShieldAlert, LogIn, RefreshCcw } from 'lucide-react';
 import { PurchaseOrdersPage } from './pages/PurchaseOrdersPage';
 import { DocumentsPage } from './pages/DocumentsPage';
+import { DocControlPage } from './pages/DocControlPage';
 import { InventoryPage } from './pages/InventoryPage';
 
 import { API_URL } from './src/config.ts';
@@ -215,7 +216,10 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'purchaseOrders' && <PurchaseOrdersPage />}
+
         {activeTab === 'documents' && <DocumentsPage />}
+        {activeTab === 'docControl' && <DocControlPage clients={clients} />}
+        {activeTab === 'inventory' && <InventoryPage />}
         {activeTab === 'inventory' && <InventoryPage />}
 
         {activeTab === 'clients' && (

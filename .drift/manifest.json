@@ -1,0 +1,102 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-23T14:47:53.336Z",
+  "projectRoot": "C:\\Users\\Usuario-Local\\Documents\\finanzchile-saas",
+  "stats": {
+    "patterns": {
+      "total": 362,
+      "byCategory": {
+        "api": 14,
+        "auth": 21,
+        "security": 23,
+        "errors": 27,
+        "structural": 34,
+        "components": 35,
+        "styling": 25,
+        "logging": 21,
+        "testing": 20,
+        "data-access": 48,
+        "config": 21,
+        "types": 34,
+        "accessibility": 15,
+        "documentation": 13,
+        "performance": 11
+      },
+      "byStatus": {
+        "discovered": 362,
+        "approved": 0,
+        "ignored": 0
+      },
+      "byConfidence": {
+        "high": 228,
+        "medium": 126,
+        "low": 8,
+        "uncertain": 0
+      },
+      "totalLocations": 9234,
+      "totalOutliers": 63
+    },
+    "security": {
+      "totalTables": 0,
+      "totalAccessPoints": 0,
+      "sensitiveFields": 0,
+      "violations": 0,
+      "riskLevel": "low"
+    },
+    "callGraph": {
+      "totalFunctions": 0,
+      "totalCalls": 0,
+      "entryPoints": 0,
+      "dataAccessors": 0,
+      "avgDepth": 0
+    },
+    "contracts": {
+      "verified": 0,
+      "mismatch": 0,
+      "discovered": 0,
+      "ignored": 0
+    },
+    "dna": {
+      "healthScore": 0,
+      "geneticDiversity": 0,
+      "mutations": 0,
+      "dominantGenes": []
+    }
+  },
+  "fileHashes": {},
+  "lastScan": {
+    "timestamp": "2026-01-23T14:47:53.321Z",
+    "duration": 1644,
+    "filesScanned": 34,
+    "patternsFound": 362,
+    "errors": 0
+  },
+  "views": {
+    "status": {
+      "generatedAt": "2026-01-23T14:47:53.335Z",
+      "stale": true,
+      "invalidatedBy": [
+        "pattern stats updated"
+      ]
+    },
+    "patternIndex": {
+      "generatedAt": "2026-01-23T14:47:53.335Z",
+      "stale": true,
+      "invalidatedBy": [
+        "pattern stats updated"
+      ]
+    },
+    "securitySummary": {
+      "generatedAt": "2026-01-23T14:47:53.320Z",
+      "stale": true
+    },
+    "trends": {
+      "generatedAt": "2026-01-23T14:47:53.320Z",
+      "stale": true
+    },
+    "examples": {
+      "generatedAt": "2026-01-23T14:47:53.320Z",
+      "stale": true
+    }
+  }
+}

@@ -1,0 +1,2093 @@
+{
+  "version": "1.0.0",
+  "category": "performance",
+  "patterns": [
+    {
+      "id": "86b119d462efc371",
+      "subcategory": "code-splitting",
+      "name": "Code Splitting Detector",
+      "description": "Learns code splitting patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/code-splitting",
+          "patternId": "performance/code-splitting/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 1,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 26,
+        "score": 0.77,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 6,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 7,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 8,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 9,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 11,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 12,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 13,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 14,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 16,
+          "column": 1
+        },
+        {
+          "file": "App.tsx",
+          "line": 18,
+          "column": 1
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 16,
+          "column": 1
+        },
+        {
+          "file": "index.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "index.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "index.tsx",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 16,
+          "column": 1
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 18,
+          "column": 1
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 33,
+          "column": 1
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 34,
+          "column": 1
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 24,
+          "column": 1
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 7,
+          "column": 1
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 16,
+          "column": 1
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 31,
+          "column": 1
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 32,
+          "column": 1
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 18,
+          "column": 1
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 22,
+          "column": 1
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 30,
+          "column": 1
+        },
+        {
+          "file": "README.md",
+          "line": 11,
+          "column": 22
+        },
+        {
+          "file": "README.md",
+          "line": 11,
+          "column": 108
+        },
+        {
+          "file": "README.md",
+          "line": 15,
+          "column": 7
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 7,
+          "column": 34
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 1,
+          "column": 1
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 3,
+          "column": 1
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "code-splitting"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "31ae4d808decea5f",
+      "subcategory": "lazy-loading",
+      "name": "Lazy Loading Detector",
+      "description": "Learns lazy loading patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/lazy-loading",
+          "patternId": "performance/lazy-loading/function_call"
+        }
+      },
+      "confidence": {
+        "frequency": 1,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 8,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 37,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 82,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 155,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 187,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 206,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 223,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 242,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 255,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 273,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 286,
+          "column": 21
+        },
+        {
+          "file": "App.tsx",
+          "line": 299,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 311,
+          "column": 26
+        },
+        {
+          "file": "App.tsx",
+          "line": 322,
+          "column": 29
+        },
+        {
+          "file": "App.tsx",
+          "line": 332,
+          "column": 29
+        },
+        {
+          "file": "App.tsx",
+          "line": 338,
+          "column": 24
+        },
+        {
+          "file": "App.tsx",
+          "line": 349,
+          "column": 27
+        },
+        {
+          "file": "App.tsx",
+          "line": 359,
+          "column": 27
+        },
+        {
+          "file": "App.tsx",
+          "line": 370,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 383,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 393,
+          "column": 23
+        },
+        {
+          "file": "App.tsx",
+          "line": 408,
+          "column": 20
+        },
+        {
+          "file": "App.tsx",
+          "line": 424,
+          "column": 23
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 68,
+          "column": 23
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 87,
+          "column": 30
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 119,
+          "column": 30
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 129,
+          "column": 30
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 148,
+          "column": 30
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 29,
+          "column": 26
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 29,
+          "column": 28
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 42,
+          "column": 26
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 52,
+          "column": 26
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 32,
+          "column": 28
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 45,
+          "column": 34
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 64,
+          "column": 34
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 43,
+          "column": 26
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 66,
+          "column": 26
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 92,
+          "column": 26
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 13,
+          "column": 23
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 34,
+          "column": 24
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 55,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 84,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 93,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 113,
+          "column": 33
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 127,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 137,
+          "column": 28
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 158,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 169,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 181,
+          "column": 26
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 204,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 229,
+          "column": 32
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 240,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 249,
+          "column": 26
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 257,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 306,
+          "column": 32
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 316,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 324,
+          "column": 58
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 365,
+          "column": 24
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 375,
+          "column": 25
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 388,
+          "column": 28
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 403,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 414,
+          "column": 22
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 429,
+          "column": 23
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 452,
+          "column": 26
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 476,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 487,
+          "column": 22
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 499,
+          "column": 23
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 521,
+          "column": 26
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 544,
+          "column": 29
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 555,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 565,
+          "column": 28
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 578,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 593,
+          "column": 34
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 604,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 614,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 619,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 645,
+          "column": 37
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 658,
+          "column": 32
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 670,
+          "column": 33
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 699,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 704,
+          "column": 51
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 736,
+          "column": 39
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 747,
+          "column": 26
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 756,
+          "column": 27
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 775,
+          "column": 33
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 786,
+          "column": 36
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 795,
+          "column": 37
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 807,
+          "column": 37
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 812,
+          "column": 50
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 4,
+          "column": 14
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "lazy-loading"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "a6cd7e74ae43735e",
+      "subcategory": "lazy-loading",
+      "name": "Lazy Loading Detector",
+      "description": "Learns lazy loading patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/lazy-loading",
+          "patternId": "performance/lazy-loading/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 0.2,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 9,
+        "score": 0.77,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 34,
+          "column": 10
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 13,
+          "column": 1
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 12,
+          "column": 1
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 12,
+          "column": 1
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 34,
+          "column": 12
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 16,
+          "column": 12
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 16,
+          "column": 12
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 27,
+          "column": 12
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 173,
+          "column": 14
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 9,
+          "column": 10
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "lazy-loading"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "3000a026383d36a4",
+      "subcategory": "bundle-size",
+      "name": "Bundle Size Detector",
+      "description": "Learns bundle size optimization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/bundle-size",
+          "patternId": "performance/bundle-size/assignment"
+        }
+      },
+      "confidence": {
+        "frequency": 1,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 14,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 134,
+          "column": 22
+        },
+        {
+          "file": "App.tsx",
+          "line": 140,
+          "column": 71
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 131,
+          "column": 65
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 131,
+          "column": 94
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 144,
+          "column": 30
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 171,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 184,
+          "column": 25
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 196,
+          "column": 66
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 205,
+          "column": 32
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 223,
+          "column": 39
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 255,
+          "column": 166
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 256,
+          "column": 172
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 312,
+          "column": 53
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 328,
+          "column": 143
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 347,
+          "column": 111
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 210,
+          "column": 17
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 217,
+          "column": 87
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 238,
+          "column": 151
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 239,
+          "column": 152
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 251,
+          "column": 25
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 255,
+          "column": 26
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 263,
+          "column": 28
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 273,
+          "column": 26
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 295,
+          "column": 28
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 321,
+          "column": 29
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 334,
+          "column": 28
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 342,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 350,
+          "column": 95
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 383,
+          "column": 35
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 392,
+          "column": 37
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 420,
+          "column": 37
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 425,
+          "column": 34
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 458,
+          "column": 29
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 463,
+          "column": 34
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 467,
+          "column": 114
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 486,
+          "column": 53
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 504,
+          "column": 169
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 519,
+          "column": 128
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 567,
+          "column": 30
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 133,
+          "column": 17
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 140,
+          "column": 87
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 158,
+          "column": 27
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 161,
+          "column": 149
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 162,
+          "column": 146
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 204,
+          "column": 31
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 211,
+          "column": 50
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 227,
+          "column": 28
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 232,
+          "column": 34
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 237,
+          "column": 20
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 254,
+          "column": 114
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 285,
+          "column": 39
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 360,
+          "column": 20
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 392,
+          "column": 101
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 424,
+          "column": 46
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 424,
+          "column": 98
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 458,
+          "column": 32
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 67,
+          "column": 27
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 74,
+          "column": 97
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 95,
+          "column": 51
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 115,
+          "column": 44
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 127,
+          "column": 49
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 217,
+          "column": 43
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 90,
+          "column": 27
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 93,
+          "column": 34
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 105,
+          "column": 29
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 108,
+          "column": 35
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 120,
+          "column": 27
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 132,
+          "column": 22
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 82,
+          "column": 29
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 103,
+          "column": 51
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 118,
+          "column": 59
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 122,
+          "column": 53
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 102,
+          "column": 34
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 109,
+          "column": 31
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 119,
+          "column": 38
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 132,
+          "column": 56
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 254,
+          "column": 17
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 263,
+          "column": 89
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 291,
+          "column": 23
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 293,
+          "column": 42
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 293,
+          "column": 70
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 302,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 315,
+          "column": 97
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 327,
+          "column": 97
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 339,
+          "column": 99
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 352,
+          "column": 99
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 376,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 385,
+          "column": 26
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 394,
+          "column": 25
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 447,
+          "column": 36
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 458,
+          "column": 30
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 464,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 471,
+          "column": 33
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 478,
+          "column": 33
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 488,
+          "column": 31
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 515,
+          "column": 85
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 524,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 572,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 585,
+          "column": 31
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 661,
+          "column": 26
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "bundle-size"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "2eccbac780ce9f3a",
+      "subcategory": "code-splitting",
+      "name": "Code Splitting Detector",
+      "description": "Learns code splitting patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/code-splitting",
+          "patternId": "performance/code-splitting/property_access"
+        }
+      },
+      "confidence": {
+        "frequency": 0.24,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 6,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "constants.ts",
+          "line": 14,
+          "column": 19
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 24,
+          "column": 40
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 43,
+          "column": 44
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 94,
+          "column": 36
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 205,
+          "column": 38
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 223,
+          "column": 22
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 700,
+          "column": 100
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 709,
+          "column": 96
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 34,
+          "column": 40
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 111,
+          "column": 58
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 126,
+          "column": 48
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 34,
+          "column": 75
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "code-splitting"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "698c49aedeabde62",
+      "subcategory": "bundle-size",
+      "name": "Bundle Size Detector",
+      "description": "Learns bundle size optimization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/bundle-size",
+          "patternId": "performance/bundle-size/conditional"
+        }
+      },
+      "confidence": {
+        "frequency": 0.14,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 5,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 211,
+          "column": 36
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 267,
+          "column": 64
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 597,
+          "column": 42
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 226,
+          "column": 30
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 277,
+          "column": 106
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 286,
+          "column": 108
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 306,
+          "column": 46
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "bundle-size"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "bb9a3349af353368",
+      "subcategory": "memoization",
+      "name": "Memoization Detector",
+      "description": "Learns memoization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/memoization",
+          "patternId": "performance/memoization/import"
+        }
+      },
+      "confidence": {
+        "frequency": 0.06,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 6,
+        "score": 0.9199999999999999,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 2,
+          "column": 27
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 2,
+          "column": 27
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 1,
+          "column": 27
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 2,
+          "column": 27
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 2,
+          "column": 27
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 2,
+          "column": 27
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "memoization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "d6c20ea763790fed",
+      "subcategory": "memoization",
+      "name": "Memoization Detector",
+      "description": "Learns memoization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/memoization",
+          "patternId": "performance/memoization/function_call"
+        }
+      },
+      "confidence": {
+        "frequency": 0.14,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 6,
+        "score": 0.9199999999999999,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 78,
+          "column": 27
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 88,
+          "column": 28
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 164,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 167,
+          "column": 25
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 177,
+          "column": 35
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 186,
+          "column": 25
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 54,
+          "column": 17
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 49,
+          "column": 29
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 64,
+          "column": 28
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 84,
+          "column": 17
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 37,
+          "column": 22
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 76,
+          "column": 27
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 81,
+          "column": 25
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 116,
+          "column": 23
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "memoization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "e1f1fbd7df5638e9",
+      "subcategory": "bundle-size",
+      "name": "Bundle Size Detector",
+      "description": "Learns bundle size optimization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/bundle-size",
+          "patternId": "performance/bundle-size/class_definition"
+        }
+      },
+      "confidence": {
+        "frequency": 0.06,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 508,
+          "column": 29
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 690,
+          "column": 29
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 702,
+          "column": 29
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "bundle-size"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "5190cf5811ff7dda",
+      "subcategory": "code-splitting",
+      "name": "Code Splitting Detector",
+      "description": "Learns code splitting patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/code-splitting",
+          "patternId": "performance/code-splitting/function_call"
+        }
+      },
+      "confidence": {
+        "frequency": 0.02,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.8825,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "README.md",
+          "line": 7,
+          "column": 26
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "code-splitting"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "91798c3adc5d92e1",
+      "subcategory": "bundle-size",
+      "name": "Bundle Size Detector",
+      "description": "Learns bundle size optimization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "performance/bundle-size",
+          "patternId": "performance/bundle-size/function_call"
+        }
+      },
+      "confidence": {
+        "frequency": 0.02,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "README.md",
+          "line": 7,
+          "column": 26
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "performance",
+          "bundle-size"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    }
+  ],
+  "lastUpdated": "2026-01-23T14:47:53.245Z",
+  "checksum": "90bfee5b162698f7"
+}

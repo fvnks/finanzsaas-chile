@@ -32,7 +32,8 @@ model Client {
 
   projects  Project[]
   invoices  Invoice[]
-  documents Document[]
+  documents   Document[]
+  requirements DocumentRequirement[]
 }
 
 model Project {
@@ -213,6 +214,23 @@ model Document {
   client    Client?  @relation(fields: [clientId], references: [id])
 
   createdAt DateTime @default(now())
+
+  requirementId String?
+  requirement   DocumentRequirement? @relation(fields: [requirementId], references: [id])
+}
+
+model DocumentRequirement {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  documents   Document[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Material {
