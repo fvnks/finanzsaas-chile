@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, FileText, CheckCircle, AlertCircle, Upload, ChevronRight, ChevronDown, Plus, Trash2, XCircle, Clock, Copy } from 'lucide-react';
 import { API_URL } from '../src/config.ts';
-import { Client, DocumentRequirement, Document } from '../types.ts';
+import { Client, DocumentRequirement, Document, ClientMonthlyInfo } from '../types.ts';
 
 interface DocControlPageProps {
     clients: Client[];
