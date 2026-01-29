@@ -138,9 +138,33 @@ const App: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-8 p-4 bg-blue-900/20 rounded-xl border border-blue-500/30 flex items-start space-x-3">
-            <ShieldAlert className="text-blue-400 mt-1 flex-shrink-0" size={18} />
-            <p className="text-xs text-blue-200 leading-relaxed">Acceso restringido. Credenciales registradas para auditoría fiscal.</p>
+          <div className="mt-8 p-4 bg-blue-900/20 rounded-xl border border-blue-500/30 flex flex-col space-y-3">
+            <div className="flex items-start space-x-3">
+              <ShieldAlert className="text-blue-400 mt-1 flex-shrink-0" size={18} />
+              <p className="text-xs text-blue-200 leading-relaxed">Acceso restringido. Credenciales registradas para auditoría fiscal.</p>
+            </div>
+
+            <div className="pt-2 border-t border-blue-500/30">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    setError('Testing connection...');
+                    const start = Date.now();
+                    const res = await fetch(`${API_URL}/health`);
+                    const text = await res.text();
+                    const time = Date.now() - start;
+                    setError(`Success (${res.status}) in ${time}ms: ${text.slice(0, 100)}`);
+                  } catch (e: any) {
+                    setError(`Test Failed: ${e.message}. See Console for details.`);
+                    console.error('Connection Test Error:', e);
+                  }
+                }}
+                className="text-xs text-blue-300 hover:text-blue-100 underline"
+              >
+                Probar Conectividad con Servidor
+              </button>
+            </div>
           </div>
         </div>
       </div>
