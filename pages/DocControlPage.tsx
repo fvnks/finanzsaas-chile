@@ -261,7 +261,13 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                                             {isApproved ? <CheckCircle size={24} strokeWidth={2.5} /> : (hasDocs ? <Clock size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2} />)}
                                                         </div>
                                                         <div className="flex-1">
-                                                            <h3 className="font-semibold text-slate-800 text-lg">{req.name}</h3>
+                                                            <div className="flex justify-between items-center w-full">
+                                                                <h3 className="font-semibold text-slate-800 text-lg">{req.name}</h3>
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${hasDocs ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-100'
+                                                                    }`}>
+                                                                    {hasDocs ? 'Ok' : 'Sin enviar'}
+                                                                </span>
+                                                            </div>
                                                             {req.description && <p className="text-slate-500 text-sm mt-1">{req.description}</p>}
 
                                                             <div className="mt-3 space-y-2">
