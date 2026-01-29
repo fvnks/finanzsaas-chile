@@ -9,6 +9,16 @@ interface DocControlPageProps {
 
 export function DocControlPage({ clients }: DocControlPageProps) {
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+    const [requirements, setRequirements] = useState<DocumentRequirement[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    // Modal states
+    const [isReqModalOpen, setIsReqModalOpen] = useState(false);
+    const [newReqData, setNewReqData] = useState({ name: '', description: '' });
+
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [uploadData, setUploadData] = useState({ name: '', url: '', type: 'OTHER', requirementId: '' });
 
     const selectedClient = clients.find(c => c.id === selectedClientId);
 
