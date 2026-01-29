@@ -35,8 +35,6 @@ const corsOptions: cors.CorsOptions = {
 // Use CORS globally
 app.use(cors(corsOptions));
 
-// Explicitly handle OPTIONS preflight for all routes
-app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // API Routes
