@@ -149,20 +149,27 @@ const App: React.FC = () => {
                 type="button"
                 onClick={async () => {
                   try {
-                    setError('Testing connection...');
-                    const start = Date.now();
-                    const res = await fetch(`${API_URL}/health`);
-                    const text = await res.text();
-                    const time = Date.now() - start;
-                    setError(`Success (${res.status}) in ${time}ms: ${text.slice(0, 100)}`);
+                    setError('Testing...');
+
+                    // Test 1: Router Endpoint
+                    const res1 = await fetch(`${API_URL}/health`);
+                    const text1 = await res1.text();
+
+                    // Test 2: Direct App Endpoint (Bypasses Router)
+                    // API_URL is .../api, so we need to go up one level
+                    const baseUrl = API_URL.replace('/api', '');
+                    const res2 = await fetch(`${baseUrl}/healthz`);
+                    const text2 = await res2.text();
+
+                    setError(`API: ${res1.status} (${text1.slice(0, 20)}) | Direct: ${res2.status} (${text2.slice(0, 20)})`);
                   } catch (e: any) {
-                    setError(`Test Failed: ${e.message}. See Console for details.`);
+                    setError(`Test Failed: ${e.message}`);
                     console.error('Connection Test Error:', e);
                   }
                 }}
                 className="text-xs text-blue-300 hover:text-blue-100 underline"
               >
-                Probar Conectividad con Servidor
+                Probar Conectividad (Full)
               </button>
             </div>
           </div>
