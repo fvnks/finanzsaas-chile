@@ -1,5 +1,5 @@
 import express from "express";
-import cors from "cors";
+// import cors from "cors"; // Removed in favor of manual middleware
 import path from "path";
 import { fileURLToPath } from "url";
 import routes from "./routes";
@@ -9,31 +9,32 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3001',
-    'https://finanzsaas-chile-production.up.railway.app',
-    'https://finanzsaas-chile-production.up.railway.app/', // Handling potential trailing slash
-    'https://finanzchile-saas-production.up.railway.app',
-    'https://finanzchile-saas-production.up.railway.app/'
-];
+// Manual CORS Middleware
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
 
-const corsOptions: cors.CorsOptions = {
-    origin: (origin, callback) => {
-        // Reflect the request origin. This effectively allows all origins that send an Origin header,
-        // which is useful for debugging. 
-        // WARNING: This should be tightened before final production release if possible,
-        // though many public APIs use this pattern.
-        console.log('CORS Check - Incoming origin:', origin);
-        callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
+    // Allow any origin that is calling (Reflecting origin)
+    if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
 
-// Use CORS globally
-app.use(cors(corsOptions));
+    // Allow standard methods
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+
+    // Allow headers usually sent by browsers/clients
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+
+    // Allow credentials (cookies, auth headers)
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Handle Preflight directly
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+        return; // End checking
+    }
+
+    next();
+});
 
 app.use(express.json());
 
