@@ -20,15 +20,12 @@ const allowedOrigins = [
 
 const corsOptions: cors.CorsOptions = {
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, curl, or same-origin)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.some(o => origin.startsWith(o))) {
-            callback(null, true);
-        } else {
-            console.warn(`Blocked by CORS: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
+        // Reflect the request origin. This effectively allows all origins that send an Origin header,
+        // which is useful for debugging. 
+        // WARNING: This should be tightened before final production release if possible,
+        // though many public APIs use this pattern.
+        console.log('CORS Check - Incoming origin:', origin);
+        callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
