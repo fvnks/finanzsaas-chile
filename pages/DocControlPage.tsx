@@ -8,16 +8,7 @@ interface DocControlPageProps {
 }
 
 export function DocControlPage({ clients }: DocControlPageProps) {
-    const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-    const [requirements, setRequirements] = useState<DocumentRequirement[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    // Modal states
-    const [isReqModalOpen, setIsReqModalOpen] = useState(false);
-    const [newReqData, setNewReqData] = useState({ name: '', description: '' });
-
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [uploadData, setUploadData] = useState({ name: '', url: '', type: 'OTHER', requirementId: '' });
+    const [selectedDate, setSelectedDate] = useState(new Date());
 
     const selectedClient = clients.find(c => c.id === selectedClientId);
 
@@ -27,12 +18,14 @@ export function DocControlPage({ clients }: DocControlPageProps) {
         } else {
             setRequirements([]);
         }
-    }, [selectedClientId]);
+    }, [selectedClientId, selectedDate]);
 
     const fetchRequirements = async (clientId: string) => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/clients/${clientId}/requirements`);
+            const month = selectedDate.getMonth() + 1; // 1-12
+            const year = selectedDate.getFullYear();
+            const res = await fetch(`${API_URL}/clients/${clientId}/requirements?month=${month}&year=${year}`);
             if (res.ok) {
                 const data = await res.json();
                 setRequirements(data);
@@ -51,7 +44,11 @@ export function DocControlPage({ clients }: DocControlPageProps) {
             const res = await fetch(`${API_URL}/clients/${selectedClientId}/requirements`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newReqData)
+                body: JSON.stringify({
+                    ...newReqData,
+                    month: selectedDate.getMonth() + 1,
+                    year: selectedDate.getFullYear()
+                })
             });
             if (res.ok) {
                 const saved = await res.json();
@@ -94,6 +91,12 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                 setUploadData({ name: '', url: '', type: 'OTHER', requirementId: '' });
             }
         } catch (err) { console.error(err); }
+    };
+
+    const changeMonth = (offset: number) => {
+        const newDate = new Date(selectedDate);
+        newDate.setMonth(newDate.getMonth() + offset);
+        setSelectedDate(newDate);
     };
 
     return (
@@ -142,7 +145,17 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                 <div>
                                     <h2 className="text-xl font-bold text-slate-800">{selectedClient.razonSocial}</h2>
-                                    <p className="text-sm text-slate-500">Listado de requerimientos documentales</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-200 rounded">
+                                            <ChevronDown className="rotate-90 text-slate-500" size={16} />
+                                        </button>
+                                        <span className="font-medium text-slate-600 min-w-[120px] text-center">
+                                            {selectedDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}
+                                        </span>
+                                        <button onClick={() => changeMonth(1)} className="p-1 hover:bg-slate-200 rounded">
+                                            <ChevronDown className="-rotate-90 text-slate-500" size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => setIsReqModalOpen(true)}
@@ -159,7 +172,7 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                 ) : requirements.length === 0 ? (
                                     <div className="text-center py-10 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                         <FileText size={40} className="mx-auto mb-3 opacity-20" />
-                                        <p>No hay requerimientos configurados para esta empresa.</p>
+                                        <p>No hay requerimientos para este mes.</p>
                                     </div>
                                 ) : (
                                     requirements.map(req => {
@@ -168,8 +181,8 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                             <div key={req.id} className="border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow group">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div className="flex items-start gap-4">
-                                                        <div className={`p-2 rounded-full mt-1 ${hasDocs ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
-                                                            {hasDocs ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                                                        <div className={`p-2 rounded-full mt-1 ${hasDocs ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-400'}`}>
+                                                            {hasDocs ? <CheckCircle size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2} />}
                                                         </div>
                                                         <div>
                                                             <h3 className="font-semibold text-slate-800 text-lg">{req.name}</h3>
@@ -229,6 +242,7 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
                         <div className="p-6 border-b border-gray-100">
                             <h2 className="text-xl font-bold text-slate-800">Nuevo Requerimiento</h2>
+                            <p className="text-sm text-slate-500">{selectedDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}</p>
                         </div>
                         <form onSubmit={handleAddRequirement} className="p-6 space-y-4">
                             <div>

@@ -224,6 +224,9 @@ model DocumentRequirement {
   name        String
   description String?
   
+  month       Int?
+  year        Int?
+
   clientId    String
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   

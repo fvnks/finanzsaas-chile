@@ -748,8 +748,14 @@ router.delete("/purchase-orders/:id", async (req, res) => {
 router.get("/clients/:clientId/requirements", async (req, res) => {
     try {
         const { clientId } = req.params;
+        const { month, year } = req.query;
+
+        const where: any = { clientId };
+        if (month) where.month = Number(month);
+        if (year) where.year = Number(year);
+
         const requirements = await prisma.documentRequirement.findMany({
-            where: { clientId },
+            where,
             include: { documents: true },
             orderBy: { createdAt: 'desc' }
         });
@@ -763,14 +769,20 @@ router.get("/clients/:clientId/requirements", async (req, res) => {
 router.post("/clients/:clientId/requirements", async (req, res) => {
     try {
         const { clientId } = req.params;
-        const { name, description } = req.body;
+        const { name, description, month, year } = req.body;
 
         if (!name) {
             return res.status(400).json({ error: "El nombre del requerimiento es obligatorio" });
         }
 
         const newReq = await prisma.documentRequirement.create({
-            data: { name, description, clientId }
+            data: {
+                name,
+                description,
+                clientId,
+                month: month ? Number(month) : null,
+                year: year ? Number(year) : null
+            }
         });
         res.json(newReq);
     } catch (err: any) {
