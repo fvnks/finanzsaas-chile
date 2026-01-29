@@ -9,27 +9,20 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Request Logger
-app.use((req, res, next) => {
-    console.log(`[REQUEST] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
-    next();
-});
-
-// Direct Health Check (Bypass routes)
-app.get('/healthz', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Force header on this specific route
-    res.status(200).send('OK direct');
-});
-
 // Manual CORS Middleware
 app.use((req, res, next) => {
-    // WILDCARD DEBUGGING MODE
-    // If we still see "No Access-Control-Allow-Origin" with this, 
-    // then the server code is NOT running or something else is stripping headers.
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const allowedOrigin = 'https://finanzsaas-chile-production.up.railway.app';
+
+    // Check if the incoming origin matches our allowed origin
+    // OR if we are in development (localhost)
+    const origin = req.headers.origin;
+    if (origin && (origin === allowedOrigin || origin.includes('localhost'))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    // res.setHeader('Access-Control-Allow-Credentials', 'true'); // Cannot use with *
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
 
     // Handle Preflight directly
     if (req.method === 'OPTIONS') {
