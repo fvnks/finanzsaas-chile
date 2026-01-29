@@ -16,12 +16,27 @@ const allowedOrigins = [
     'https://finanzchile-saas-production.up.railway.app'
 ];
 
+// Handle preflight requests explicitly
+app.options('*', cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
+
 app.use(cors({
     origin: (origin, callback) => {
+        console.log('Incoming origin:', origin);
         // allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
+
         if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
             return callback(new Error(msg), false);
         }
         return callback(null, true);
