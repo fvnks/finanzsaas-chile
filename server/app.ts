@@ -9,6 +9,18 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Request Logger
+app.use((req, res, next) => {
+    console.log(`[REQUEST] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+    next();
+});
+
+// Direct Health Check (Bypass routes)
+app.get('/healthz', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Force header on this specific route
+    res.status(200).send('OK direct');
+});
+
 // Manual CORS Middleware
 app.use((req, res, next) => {
     // WILDCARD DEBUGGING MODE
