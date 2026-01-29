@@ -755,7 +755,8 @@ router.get("/clients/:clientId/requirements", async (req, res) => {
         });
         res.json(requirements);
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch requirements" });
+        console.error("Error in Docs/Reqs:", err);
+        res.status(500).json({ error: "Failed to fetch/create resource", details: err.message });
     }
 });
 
@@ -767,8 +768,9 @@ router.post("/clients/:clientId/requirements", async (req, res) => {
             data: { name, description, clientId }
         });
         res.json(newReq);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to create requirement" });
+    } catch (err: any) {
+        console.error("Error creating requirement:", err);
+        res.status(500).json({ error: "Failed to create requirement", details: err.message });
     }
 });
 
@@ -789,8 +791,9 @@ router.get("/documents", async (req, res) => {
             include: { requirement: true }
         });
         res.json(docs);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to fetch documents" });
+    } catch (err: any) {
+        console.error("Error fetching documents:", err);
+        res.status(500).json({ error: "Failed to fetch documents", details: err.message });
     }
 });
 
@@ -810,9 +813,9 @@ router.post("/documents", async (req, res) => {
             }
         });
         res.json(newDoc);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to create document" });
+    } catch (err: any) {
+        console.error("Error creating document:", err);
+        res.status(500).json({ error: "Failed to create document", details: err.message });
     }
 });
 

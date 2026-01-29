@@ -42,7 +42,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         { id: 'reports', label: 'Reportes Diarios', icon: FileText },
         { id: 'documents', label: 'Documentos', icon: FileText },
         { id: 'docControl', label: 'Control Documental', icon: FileText },
-        { id: 'docControl', label: 'Control Documental', icon: FileText },
       ]
     },
     {
