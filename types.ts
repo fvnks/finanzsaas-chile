@@ -125,6 +125,7 @@ export interface Document {
   projectId?: string;
   clientId?: string;
   requirementId?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: string;
 }
 

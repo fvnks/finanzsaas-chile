@@ -840,6 +840,22 @@ router.post("/documents", async (req, res) => {
     }
 });
 
+router.put("/documents/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body; // PENDING, APPROVED, REJECTED
+
+        const updated = await prisma.document.update({
+            where: { id },
+            data: { status }
+        });
+        res.json(updated);
+    } catch (err: any) {
+        console.error("Error updating document:", err);
+        res.status(500).json({ error: "Failed to update document", details: err.message });
+    }
+});
+
 router.delete("/documents/:id", async (req, res) => {
     try {
         const { id } = req.params;

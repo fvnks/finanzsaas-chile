@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, FileText, CheckCircle, AlertCircle, Upload, ChevronRight, ChevronDown, Plus, Trash2 } from 'lucide-react';
+import { Building2, FileText, CheckCircle, AlertCircle, Upload, ChevronRight, ChevronDown, Plus, Trash2, XCircle, Clock } from 'lucide-react';
 import { API_URL } from '../src/config.ts';
 import { Client, DocumentRequirement, Document } from '../types.ts';
 
@@ -103,6 +103,20 @@ export function DocControlPage({ clients }: DocControlPageProps) {
         } catch (err) { console.error(err); }
     };
 
+    const handleUpdateDocStatus = async (docId: string, newStatus: 'APPROVED' | 'REJECTED') => {
+        try {
+            const res = await fetch(`${API_URL}/documents/${docId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                if (selectedClientId) fetchRequirements(selectedClientId);
+            }
+        } catch (err) { console.error(err); }
+    };
+
     const changeMonth = (offset: number) => {
         const newDate = new Date(selectedDate);
         newDate.setMonth(newDate.getMonth() + offset);
@@ -187,27 +201,56 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                 ) : (
                                     requirements.map(req => {
                                         const hasDocs = req.documents && req.documents.length > 0;
+                                        const isApproved = req.documents?.some(d => d.status === 'APPROVED');
+                                        const isRejected = req.documents?.some(d => d.status === 'REJECTED');
+                                        const containerColor = isApproved ? 'bg-green-100 text-green-600' : (hasDocs ? 'bg-yellow-100 text-yellow-600' : 'bg-red-50 text-red-400');
+
                                         return (
                                             <div key={req.id} className="border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow group">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div className="flex items-start gap-4">
-                                                        <div className={`p-2 rounded-full mt-1 ${hasDocs ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-400'}`}>
-                                                            {hasDocs ? <CheckCircle size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2} />}
+                                                        <div className={`p-2 rounded-full mt-1 ${containerColor}`}>
+                                                            {isApproved ? <CheckCircle size={24} strokeWidth={2.5} /> : (hasDocs ? <Clock size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2} />)}
                                                         </div>
-                                                        <div>
+                                                        <div className="flex-1">
                                                             <h3 className="font-semibold text-slate-800 text-lg">{req.name}</h3>
                                                             {req.description && <p className="text-slate-500 text-sm mt-1">{req.description}</p>}
 
                                                             <div className="mt-3 space-y-2">
-                                                                {req.documents?.map(doc => (
-                                                                    <div key={doc.id} className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md w-fit">
-                                                                        <FileText size={14} />
-                                                                        <a href={doc.url} target="_blank" rel="noreferrer" className="hover:underline font-medium">
-                                                                            {doc.name || 'Documento adjunto'}
-                                                                        </a>
-                                                                        <span className="text-xs text-blue-400 ml-2">({new Date(doc.createdAt).toLocaleDateString()})</span>
-                                                                    </div>
-                                                                ))}
+                                                                {req.documents?.map(doc => {
+                                                                    let statusColor = 'bg-slate-100 text-slate-600';
+                                                                    if (doc.status === 'APPROVED') statusColor = 'bg-green-50 text-green-700 border border-green-200';
+                                                                    if (doc.status === 'REJECTED') statusColor = 'bg-red-50 text-red-700 border border-red-200';
+                                                                    if (doc.status === 'PENDING') statusColor = 'bg-yellow-50 text-yellow-700 border border-yellow-200';
+
+                                                                    return (
+                                                                        <div key={doc.id} className={`flex items-center justify-between gap-2 text-sm p-2 rounded-md ${statusColor}`}>
+                                                                            <div className="flex items-center gap-2 overflow-hidden">
+                                                                                <FileText size={16} className="shrink-0" />
+                                                                                <a href={doc.url} target="_blank" rel="noreferrer" className="hover:underline font-medium truncate">
+                                                                                    {doc.name || 'Documento adjunto'}
+                                                                                </a>
+                                                                                {doc.status === 'APPROVED' && <CheckCircle size={14} className="shrink-0 text-green-600" />}
+                                                                                {doc.status === 'REJECTED' && <XCircle size={14} className="shrink-0 text-red-600" />}
+                                                                            </div>
+                                                                            <div className="flex items-center gap-1 shrink-0">
+                                                                                {doc.status !== 'APPROVED' && (
+                                                                                    <button onClick={() => handleUpdateDocStatus(doc.id, 'APPROVED')} className="p-1 hover:bg-green-200 text-green-700 rounded" title="Aprobar">
+                                                                                        <CheckCircle size={16} />
+                                                                                    </button>
+                                                                                )}
+                                                                                {doc.status !== 'REJECTED' && (
+                                                                                    <button onClick={() => handleUpdateDocStatus(doc.id, 'REJECTED')} className="p-1 hover:bg-red-200 text-red-700 rounded" title="Rechazar">
+                                                                                        <XCircle size={16} />
+                                                                                    </button>
+                                                                                )}
+                                                                                <span className="text-xs opacity-70 ml-1">
+                                                                                    {new Date(doc.createdAt).toLocaleDateString()}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
                                                         </div>
                                                     </div>
