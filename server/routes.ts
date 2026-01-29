@@ -764,12 +764,21 @@ router.post("/clients/:clientId/requirements", async (req, res) => {
     try {
         const { clientId } = req.params;
         const { name, description } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ error: "El nombre del requerimiento es obligatorio" });
+        }
+
         const newReq = await prisma.documentRequirement.create({
             data: { name, description, clientId }
         });
         res.json(newReq);
     } catch (err: any) {
         console.error("Error creating requirement:", err);
+        // Prisma error codes
+        if (err.code === 'P2003') {
+            return res.status(404).json({ error: "Cliente no encontrado" });
+        }
         res.status(500).json({ error: "Failed to create requirement", details: err.message });
     }
 });
