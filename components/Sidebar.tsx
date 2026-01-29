@@ -23,7 +23,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout }) => {
-  const [expandedGroups, setExpandedGroups] = React.useState<string[]>(['obras', 'finanzas', 'inventario', 'directorio', 'admin']);
+  const [expandedGroups, setExpandedGroups] = React.useState<string[]>(['obras', 'finanzas', 'directorio', 'admin']);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev =>
@@ -40,7 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }, // Dashboard fits best here or top level? Let's put top level or inside Obras. Usually Dashboard is global.
         { id: 'projects', label: 'Proyectos', icon: Briefcase },
         { id: 'reports', label: 'Reportes Diarios', icon: FileText },
-        { id: 'documents', label: 'Documentos', icon: FileText },
+
         { id: 'docControl', label: 'Control Documental', icon: FileText },
       ]
     },
@@ -49,18 +49,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
       label: 'Finanzas y Compras',
       items: [
         { id: 'invoices', label: 'Facturas', icon: FileText }, // Could differentiate icon
-        { id: 'purchaseOrders', label: 'Órdenes Compra', icon: FileText },
+
         { id: 'costCenters', label: 'Centros de Costo', icon: Target },
         { id: 'financialReports', label: 'Reportes Financieros', icon: PieChart },
       ]
     },
-    {
-      id: 'inventario',
-      label: 'Inventario y Bodega',
-      items: [
-        { id: 'inventory', label: 'Inventario', icon: FileText },
-      ]
-    },
+
     {
       id: 'directorio',
       label: 'Directorio',

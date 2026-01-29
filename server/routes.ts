@@ -805,6 +805,47 @@ router.delete("/requirements/:id", async (req, res) => {
     }
 });
 
+
+
+router.post("/clients/:clientId/requirements/copy", async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const { fromMonth, fromYear, toMonth, toYear } = req.body;
+
+        // 1. Fetch source requirements
+        const sourceReqs = await prisma.documentRequirement.findMany({
+            where: {
+                clientId,
+                month: Number(fromMonth),
+                year: Number(fromYear)
+            }
+        });
+
+        if (sourceReqs.length === 0) {
+            return res.status(404).json({ error: "No se encontraron requerimientos en el mes de origen." });
+        }
+
+        // 2. Create new requirements for target month
+        // We use a transaction to ensure all or nothing
+        const createdReqs = await prisma.$transaction(
+            sourceReqs.map(req => prisma.documentRequirement.create({
+                data: {
+                    name: req.name,
+                    description: req.description,
+                    clientId,
+                    month: Number(toMonth),
+                    year: Number(toYear)
+                }
+            }))
+        );
+
+        res.json({ success: true, count: createdReqs.length });
+    } catch (err: any) {
+        console.error("Error copying requirements:", err);
+        res.status(500).json({ error: "Failed to copy requirements", details: err.message });
+    }
+});
+
 router.get("/documents", async (req, res) => {
     try {
         const docs = await prisma.document.findMany({

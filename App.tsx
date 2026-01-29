@@ -247,12 +247,9 @@ const App: React.FC = () => {
           />
         )}
 
-        {activeTab === 'purchaseOrders' && <PurchaseOrdersPage />}
 
-        {activeTab === 'documents' && <DocumentsPage />}
         {activeTab === 'docControl' && <DocControlPage clients={clients} />}
-        {activeTab === 'inventory' && <InventoryPage />}
-        {activeTab === 'inventory' && <InventoryPage />}
+
 
         {activeTab === 'clients' && (
           <ClientsPage clients={clients} invoices={invoices} costCenters={costCenters} projects={projects}

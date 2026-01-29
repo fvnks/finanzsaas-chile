@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, FileText, CheckCircle, AlertCircle, Upload, ChevronRight, ChevronDown, Plus, Trash2, XCircle, Clock } from 'lucide-react';
+import { Building2, FileText, CheckCircle, AlertCircle, Upload, ChevronRight, ChevronDown, Plus, Trash2, XCircle, Clock, Copy } from 'lucide-react';
 import { API_URL } from '../src/config.ts';
 import { Client, DocumentRequirement, Document } from '../types.ts';
 
@@ -19,6 +19,14 @@ export function DocControlPage({ clients }: DocControlPageProps) {
 
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadData, setUploadData] = useState({ name: '', url: '', type: 'OTHER', requirementId: '' });
+
+    // Import Modal
+    const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+    const [copySourceDate, setCopySourceDate] = useState(() => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - 1);
+        return d;
+    });
 
     const selectedClient = clients.find(c => c.id === selectedClientId);
 
@@ -74,6 +82,38 @@ export function DocControlPage({ clients }: DocControlPageProps) {
         try {
             await fetch(`${API_URL}/requirements/${id}`, { method: 'DELETE' });
             setRequirements(requirements.filter(r => r.id !== id));
+        } catch (err) { console.error(err); }
+    };
+
+    const handleCopyRequirements = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedClientId) return;
+
+        try {
+            const res = await fetch(`${API_URL}/clients/${selectedClientId}/requirements/copy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fromMonth: copySourceDate.getMonth() + 1,
+                    fromYear: copySourceDate.getFullYear(),
+                    toMonth: selectedDate.getMonth() + 1,
+                    toYear: selectedDate.getFullYear()
+                })
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                if (result.count > 0) {
+                    // Refresh list
+                    fetchRequirements(selectedClientId);
+                    setIsCopyModalOpen(false);
+                } else {
+                    alert('No se encontraron requerimientos en el mes seleccionado para copiar.');
+                }
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Error al copiar requerimientos');
+            }
         } catch (err) { console.error(err); }
     };
 
@@ -187,6 +227,14 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                 >
                                     <Plus size={16} />
                                     Nuevo Requerimiento
+                                </button>
+                                <button
+                                    onClick={() => setIsCopyModalOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors text-sm font-medium ml-2"
+                                    title="Copiar de otro mes"
+                                >
+                                    <Copy size={16} />
+                                    Importar
                                 </button>
                             </div>
 
