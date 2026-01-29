@@ -11,13 +11,13 @@ const app = express();
 
 // Manual CORS Middleware
 app.use((req, res, next) => {
-    // Hardcoded origin to ensure it matches exactly what the user needs
-    const allowedOrigin = 'https://finanzsaas-chile-production.up.railway.app';
-
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    // WILDCARD DEBUGGING MODE
+    // If we still see "No Access-Control-Allow-Origin" with this, 
+    // then the server code is NOT running or something else is stripping headers.
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    // res.setHeader('Access-Control-Allow-Credentials', 'true'); // Cannot use with *
 
     // Handle Preflight directly
     if (req.method === 'OPTIONS') {
