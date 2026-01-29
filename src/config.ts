@@ -1,3 +1,3 @@
 export const API_URL = import.meta.env.PROD
-    ? 'https://finanzchile-saas-production.up.railway.app/api'
+    ? '/api' // Use relative path in production since backend serves frontend
     : 'http://localhost:3001/api';
