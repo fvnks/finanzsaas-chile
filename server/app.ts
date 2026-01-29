@@ -11,26 +11,18 @@ const app = express();
 
 // Manual CORS Middleware
 app.use((req, res, next) => {
-    const origin = req.headers.origin;
+    // Hardcoded origin to ensure it matches exactly what the user needs
+    const allowedOrigin = 'https://finanzsaas-chile-production.up.railway.app';
 
-    // Allow any origin that is calling (Reflecting origin)
-    if (origin) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-
-    // Allow standard methods
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-
-    // Allow headers usually sent by browsers/clients
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-
-    // Allow credentials (cookies, auth headers)
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
     // Handle Preflight directly
     if (req.method === 'OPTIONS') {
         res.sendStatus(200);
-        return; // End checking
+        return;
     }
 
     next();
