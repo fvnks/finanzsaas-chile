@@ -1,0 +1,17 @@
+
+model ClientMonthlyInfo {
+  id        String   @id @default(uuid())
+  
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  month     Int
+  year      Int
+  
+  edpDate   DateTime? // Fecha hoja de ruta EDP
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clientId, month, year])
+}

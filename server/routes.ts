@@ -795,6 +795,25 @@ router.post("/clients/:clientId/requirements", async (req, res) => {
     }
 });
 
+router.put("/requirements/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, dueDate } = req.body;
+
+        const updated = await prisma.documentRequirement.update({
+            where: { id },
+            data: {
+                status,
+                dueDate: dueDate ? new Date(dueDate) : undefined
+            }
+        });
+        res.json(updated);
+    } catch (err: any) {
+        console.error("Error updating requirement:", err);
+        res.status(500).json({ error: "Failed to update requirement", details: err.message });
+    }
+});
+
 router.delete("/requirements/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -843,6 +862,57 @@ router.post("/clients/:clientId/requirements/copy", async (req, res) => {
     } catch (err: any) {
         console.error("Error copying requirements:", err);
         res.status(500).json({ error: "Failed to copy requirements", details: err.message });
+    }
+});
+
+router.get("/clients/:clientId/monthly-info", async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const { month, year } = req.query;
+
+        const info = await prisma.clientMonthlyInfo.findUnique({
+            where: {
+                clientId_month_year: {
+                    clientId,
+                    month: Number(month),
+                    year: Number(year)
+                }
+            }
+        });
+        res.json(info || {}); // Return empty obj if not found, easier for frontend
+    } catch (err: any) {
+        console.error("Error fetching monthly info:", err);
+        res.status(500).json({ error: "Failed to fetch monthly info" });
+    }
+});
+
+router.post("/clients/:clientId/monthly-info", async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const { month, year, edpDate } = req.body;
+
+        const info = await prisma.clientMonthlyInfo.upsert({
+            where: {
+                clientId_month_year: {
+                    clientId,
+                    month: Number(month),
+                    year: Number(year)
+                }
+            },
+            update: {
+                edpDate: edpDate ? new Date(edpDate) : null
+            },
+            create: {
+                clientId,
+                month: Number(month),
+                year: Number(year),
+                edpDate: edpDate ? new Date(edpDate) : null
+            }
+        });
+        res.json(info);
+    } catch (err: any) {
+        console.error("Error updating monthly info:", err);
+        res.status(500).json({ error: "Failed to update monthly info" });
     }
 });
 

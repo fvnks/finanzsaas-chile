@@ -229,6 +229,9 @@ model DocumentRequirement {
   month       Int?
   year        Int?
 
+  status      String   @default("PENDING") // PENDING, OK
+  dueDate     DateTime?
+
   clientId    String
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   
@@ -268,4 +271,21 @@ model InventoryMovement {
   project     Project? @relation(fields: [projectId], references: [id])
   
   createdAt   DateTime @default(now())
+}
+
+model ClientMonthlyInfo {
+  id        String   @id @default(uuid())
+  
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  month     Int
+  year      Int
+  
+  edpDate   DateTime? // Fecha hoja de ruta EDP
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clientId, month, year])
 }

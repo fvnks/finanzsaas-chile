@@ -15,7 +15,10 @@ export function DocControlPage({ clients }: DocControlPageProps) {
 
     // Modal states
     const [isReqModalOpen, setIsReqModalOpen] = useState(false);
-    const [newReqData, setNewReqData] = useState({ name: '', description: '' });
+    const [newReqData, setNewReqData] = useState({ name: '', description: '', dueDate: '' });
+
+    // Monthly Info
+    const [monthlyInfo, setMonthlyInfo] = useState<ClientMonthlyInfo | null>(null);
 
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadData, setUploadData] = useState({ name: '', url: '', type: 'OTHER', requirementId: '' });
@@ -33,8 +36,10 @@ export function DocControlPage({ clients }: DocControlPageProps) {
     useEffect(() => {
         if (selectedClientId) {
             fetchRequirements(selectedClientId);
+            fetchMonthlyInfo(selectedClientId);
         } else {
             setRequirements([]);
+            setMonthlyInfo(null);
         }
     }, [selectedClientId, selectedDate]);
 
@@ -55,6 +60,44 @@ export function DocControlPage({ clients }: DocControlPageProps) {
         }
     };
 
+    const fetchMonthlyInfo = async (clientId: string) => {
+        try {
+            const month = selectedDate.getMonth() + 1; // 1-12
+            const year = selectedDate.getFullYear();
+            const res = await fetch(`${API_URL}/clients/${clientId}/monthly-info?month=${month}&year=${year}`);
+            if (res.ok) {
+                const data = await res.json();
+                setMonthlyInfo(data.id ? data : null);
+            } else {
+                setMonthlyInfo(null);
+            }
+        } catch (err) {
+            console.error(err);
+            setMonthlyInfo(null);
+        }
+    };
+
+    const handleUpdateMonthlyInfo = async (edpDateStr: string) => {
+        if (!selectedClientId) return;
+        try {
+            const month = selectedDate.getMonth() + 1;
+            const year = selectedDate.getFullYear();
+            const res = await fetch(`${API_URL}/clients/${selectedClientId}/monthly-info`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    month,
+                    year,
+                    edpDate: edpDateStr
+                })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setMonthlyInfo(updated);
+            }
+        } catch (err) { console.error(err); }
+    };
+
     const handleAddRequirement = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedClientId) return;
@@ -72,7 +115,21 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                 const saved = await res.json();
                 setRequirements([saved, ...requirements]);
                 setIsReqModalOpen(false);
-                setNewReqData({ name: '', description: '' });
+                setNewReqData({ name: '', description: '', dueDate: '' });
+            }
+        } catch (err) { console.error(err); }
+    };
+
+    const handleUpdateRequirementStatus = async (reqId: string, updates: any) => {
+        try {
+            const res = await fetch(`${API_URL}/requirements/${reqId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setRequirements(requirements.map(r => r.id === reqId ? { ...r, ...updated } : r));
             }
         } catch (err) { console.error(err); }
     };
@@ -209,16 +266,29 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                 <div>
                                     <h2 className="text-xl font-bold text-slate-800">{selectedClient.razonSocial}</h2>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-200 rounded">
-                                            <ChevronDown className="rotate-90 text-slate-500" size={16} />
-                                        </button>
-                                        <span className="font-medium text-slate-600 min-w-[120px] text-center">
-                                            {selectedDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}
-                                        </span>
-                                        <button onClick={() => changeMonth(1)} className="p-1 hover:bg-slate-200 rounded">
-                                            <ChevronDown className="-rotate-90 text-slate-500" size={16} />
-                                        </button>
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-200 rounded">
+                                                <ChevronDown className="rotate-90 text-slate-500" size={16} />
+                                            </button>
+                                            <span className="font-medium text-slate-600 min-w-[120px] text-center">
+                                                {selectedDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}
+                                            </span>
+                                            <button onClick={() => changeMonth(1)} className="p-1 hover:bg-slate-200 rounded">
+                                                <ChevronDown className="-rotate-90 text-slate-500" size={16} />
+                                            </button>
+                                        </div>
+
+                                        {/* Period EDP Date */}
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-lg">
+                                            <span className="text-xs font-semibold text-slate-500">Hoja Ruta EDP:</span>
+                                            <input
+                                                type="date"
+                                                className="border-none p-0 text-sm focus:ring-0 text-slate-700 bg-transparent"
+                                                value={monthlyInfo?.edpDate ? new Date(monthlyInfo.edpDate).toISOString().split('T')[0] : ''}
+                                                onChange={(e) => handleUpdateMonthlyInfo(e.target.value)}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <button
@@ -249,24 +319,44 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                 ) : (
                                     requirements.map(req => {
                                         const hasDocs = req.documents && req.documents.length > 0;
+                                        const manualOk = req.status === 'OK';
+                                        const isOk = hasDocs || manualOk;
+
                                         const isApproved = req.documents?.some(d => d.status === 'APPROVED');
-                                        const isRejected = req.documents?.some(d => d.status === 'REJECTED');
-                                        const containerColor = isApproved ? 'bg-green-100 text-green-600' : (hasDocs ? 'bg-yellow-100 text-yellow-600' : 'bg-red-50 text-red-400');
+                                        const containerColor = isApproved ? 'bg-green-100 text-green-600' : (isOk ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-400');
 
                                         return (
                                             <div key={req.id} className="border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow group">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div className="flex items-start gap-4">
                                                         <div className={`p-2 rounded-full mt-1 ${containerColor}`}>
-                                                            {isApproved ? <CheckCircle size={24} strokeWidth={2.5} /> : (hasDocs ? <Clock size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2} />)}
+                                                            {isApproved ? <CheckCircle size={24} strokeWidth={2.5} /> : (isOk ? <CheckCircle size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2} />)}
                                                         </div>
                                                         <div className="flex-1">
-                                                            <div className="flex justify-between items-center w-full">
+                                                            <div className="flex justify-between items-center w-full gap-4">
                                                                 <h3 className="font-semibold text-slate-800 text-lg">{req.name}</h3>
-                                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${hasDocs ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-100'
-                                                                    }`}>
-                                                                    {hasDocs ? 'Ok' : 'Sin enviar'}
-                                                                </span>
+                                                                <div className="flex items-center gap-3">
+                                                                    {req.dueDate && (
+                                                                        <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                                                                            Vence: {new Date(req.dueDate).toLocaleDateString()}
+                                                                        </span>
+                                                                    )}
+
+                                                                    <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                                                                        <button
+                                                                            onClick={() => handleUpdateRequirementStatus(req.id, { status: 'PENDING' })}
+                                                                            className={`px-3 py-1 rounded text-xs font-bold transition-all ${!isOk ? 'bg-red-500 text-white shadow-sm' : 'text-slate-500 hover:text-red-500'}`}
+                                                                        >
+                                                                            Sin enviar
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleUpdateRequirementStatus(req.id, { status: 'OK' })}
+                                                                            className={`px-3 py-1 rounded text-xs font-bold transition-all ${isOk ? 'bg-green-500 text-white shadow-sm' : 'text-slate-500 hover:text-green-500'}`}
+                                                                        >
+                                                                            Ok / Recibido
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             {req.description && <p className="text-slate-500 text-sm mt-1">{req.description}</p>}
 
@@ -366,10 +456,21 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Descripción (Opcional)</label>
                                 <textarea
                                     className="w-full rounded-lg border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all"
-                                    rows={3}
+                                    rows={2}
                                     value={newReqData.description}
                                     onChange={e => setNewReqData({ ...newReqData, description: e.target.value })}
                                 />
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Fecha Vencimiento</label>
+                                    <input
+                                        type="date"
+                                        className="w-full rounded-lg border-slate-200 focus:ring-2 focus:ring-blue-500"
+                                        value={newReqData.dueDate}
+                                        onChange={e => setNewReqData({ ...newReqData, dueDate: e.target.value })}
+                                    />
+                                </div>
                             </div>
                             <div className="pt-4 flex justify-end gap-3">
                                 <button type="button" onClick={() => setIsReqModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium">Cancelar</button>

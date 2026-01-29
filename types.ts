@@ -135,6 +135,18 @@ export interface DocumentRequirement {
   description?: string;
   clientId: string;
   documents?: Document[];
+  status?: string; // 'PENDING' | 'OK'
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientMonthlyInfo {
+  id: string;
+  clientId: string;
+  month: number;
+  year: number;
+  edpDate?: string;
   createdAt: string;
   updatedAt: string;
 }
