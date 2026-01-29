@@ -100,8 +100,9 @@ const App: React.FC = () => {
       } else {
         setError(data.error || 'Login failed');
       }
-    } catch (err) {
-      setError('Connection error');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(`Connection error: ${err.message || 'Unknown error'}`);
     }
   };
 
