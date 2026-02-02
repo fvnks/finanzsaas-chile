@@ -11,7 +11,14 @@ interface Document {
     referenceId?: string;
 }
 
-export function DocumentsPage() {
+import { checkPermission } from '../src/utils/permissions';
+import { User } from '../types';
+
+interface DocumentsPageProps {
+    currentUser: any;
+}
+
+export function DocumentsPage({ currentUser }: DocumentsPageProps) {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,13 +82,15 @@ export function DocumentsPage() {
                     <h1 className="text-3xl font-bold text-slate-800">Gestión Documental</h1>
                     <p className="text-slate-500 mt-1">Repositorio centralizado de documentos</p>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                    <Upload size={20} />
-                    Subir Documento
-                </button>
+                {checkPermission(currentUser as User, 'documents', 'create') && (
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <Upload size={20} />
+                        Subir Documento
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -118,9 +127,11 @@ export function DocumentsPage() {
                                                 <LinkIcon size={18} />
                                             </a>
                                         )}
-                                        <button onClick={() => handleDelete(doc.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        {checkPermission(currentUser as User, 'documents', 'delete') && (
+                                            <button onClick={() => handleDelete(doc.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>

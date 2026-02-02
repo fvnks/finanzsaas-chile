@@ -20,7 +20,14 @@ interface Project {
     name: string;
 }
 
-export function PurchaseOrdersPage() {
+import { checkPermission } from '../src/utils/permissions';
+import { User } from '../types';
+
+interface PurchaseOrdersPageProps {
+    currentUser: any;
+}
+
+export function PurchaseOrdersPage({ currentUser }: PurchaseOrdersPageProps) {
     const [orders, setOrders] = useState<PurchaseOrder[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -161,13 +168,15 @@ export function PurchaseOrdersPage() {
                     <h1 className="text-3xl font-bold text-slate-800">Órdenes de Compra</h1>
                     <p className="text-slate-500 mt-1">Gestión de adquisiciones y proveedores</p>
                 </div>
-                <button
-                    onClick={() => openModal()}
-                    className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition-colors shadow-sm"
-                >
-                    <Plus size={20} />
-                    Nueva Orden
-                </button>
+                {checkPermission(currentUser as User, 'purchaseOrders', 'create') && (
+                    <button
+                        onClick={() => openModal()}
+                        className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition-colors shadow-sm"
+                    >
+                        <Plus size={20} />
+                        Nueva Orden
+                    </button>
+                )}
             </div>
 
             {loading ? (
@@ -204,7 +213,9 @@ export function PurchaseOrdersPage() {
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => openModal(order)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"><Eye size={18} /></button>
-                                    <button onClick={() => handleDelete(order.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"><X size={18} /></button>
+                                    {checkPermission(currentUser as User, 'purchaseOrders', 'delete') && (
+                                        <button onClick={() => handleDelete(order.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"><X size={18} /></button>
+                                    )}
                                 </div>
                             </div>
                         </div>

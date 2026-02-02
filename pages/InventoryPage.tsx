@@ -11,7 +11,14 @@ interface Material {
     stock?: number;
 }
 
-export function InventoryPage() {
+import { checkPermission } from '../src/utils/permissions';
+import { User } from '../types';
+
+interface InventoryPageProps {
+    currentUser: any;
+}
+
+export function InventoryPage({ currentUser }: InventoryPageProps) {
     const [materials, setMaterials] = useState<Material[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -95,20 +102,24 @@ export function InventoryPage() {
                     <p className="text-slate-500 mt-1">Control de stock de pañol y movimientos</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
-                        onClick={() => setIsMovementModalOpen(true)}
-                        className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors"
-                    >
-                        <History size={20} />
-                        Registrar Movimiento
-                    </button>
-                    <button
-                        onClick={() => setIsMaterialModalOpen(true)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm"
-                    >
-                        <Plus size={20} />
-                        Nuevo Material
-                    </button>
+                    {checkPermission(currentUser as User, 'inventory', 'create') && (
+                        <>
+                            <button
+                                onClick={() => setIsMovementModalOpen(true)}
+                                className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors"
+                            >
+                                <History size={20} />
+                                Registrar Movimiento
+                            </button>
+                            <button
+                                onClick={() => setIsMaterialModalOpen(true)}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm"
+                            >
+                                <Plus size={20} />
+                                Nuevo Material
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
