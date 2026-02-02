@@ -3,6 +3,7 @@ import { Plan, Project, User, PlanMark } from '../types';
 import { Plus, Trash2, Map, Calendar } from 'lucide-react';
 import { API_URL } from '../src/config';
 import { PlanDetailView } from './PlanDetailView';
+import { checkPermission } from '../src/utils/permissions';
 
 interface PlanosPageProps {
     projects: Project[];
@@ -139,13 +140,15 @@ export const PlanosPage: React.FC<PlanosPageProps> = ({ projects, currentUser })
                     <h1 className="text-3xl font-bold text-slate-800">Planos Interactivos</h1>
                     <p className="text-slate-500 mt-1">Gestión de cuelgues y reportes gráficos</p>
                 </div>
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-blue-600/20"
-                >
-                    <Plus size={20} />
-                    Nuevo Plano
-                </button>
+                {checkPermission(currentUser, 'planos', 'create') && (
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-blue-600/20"
+                    >
+                        <Plus size={20} />
+                        Nuevo Plano
+                    </button>
+                )}
             </div>
 
             {/* Stats Dashboard */}
@@ -208,12 +211,14 @@ export const PlanosPage: React.FC<PlanosPageProps> = ({ projects, currentUser })
                             <div className="p-5">
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="font-bold text-lg text-slate-800 line-clamp-1">{plan.name}</h3>
-                                    <button
-                                        onClick={(e) => handleDeletePlan(plan.id, e)}
-                                        className="text-slate-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    {checkPermission(currentUser, 'planos', 'delete') && (
+                                        <button
+                                            onClick={(e) => handleDeletePlan(plan.id, e)}
+                                            className="text-slate-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    )}
                                 </div>
                                 {project && (
                                     <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">

@@ -46,6 +46,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
         { id: 'costCenters', label: 'Centros de Costo' },
         { id: 'reports', label: 'Reportes Diarios' },
         { id: 'financialReports', label: 'Reportes Financieros' },
+        { id: 'planos', label: 'Planos y Cuelgues' },
     ];
 
     // User Form State
@@ -323,113 +324,181 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
                 </div>
             )}
 
-            {/* Basic User Modal */}
             {showUserModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
-                        <div className="px-8 py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden my-8">
+                        <div className="px-8 py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
                             <h3 className="text-xl font-black text-slate-900">{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
                             <button onClick={() => setShowUserModal(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-400"><X size={20} /></button>
                         </div>
-                        <form onSubmit={handleUserSubmit} className="p-8 space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Nombre</label>
-                                <input type="text" required className="w-full mt-1 p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Email</label>
-                                <input type="email" required className="w-full mt-1 p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex justify-between">
-                                    Contraseña
-                                    {editingUser && <span className="text-[10px] text-orange-500 normal-case">(Dejar en blanco para no cambiar)</span>}
-                                </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                                    <input type="password" className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
-                                        value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} placeholder={editingUser ? "••••••••" : ""} />
+
+                        <form onSubmit={handleUserSubmit} className="flex flex-col md:flex-row h-[calc(100vh-200px)] min-h-[500px]">
+                            {/* Left Col: Basic Info */}
+                            <div className="w-full md:w-1/3 p-8 space-y-5 border-r border-slate-100 overflow-y-auto">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Nombre</label>
+                                    <input type="text" required className="w-full mt-1 p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} />
                                 </div>
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Rol</label>
-                                <select className="w-full mt-1 p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })}>
-                                    <option value="USER">Usuario Estándar</option>
-                                    <option value="WORKER">Trabajador</option>
-                                    <option value="SUPERVISOR">Jefe de Área</option>
-                                    <option value="ADMIN">Administrador</option>
-                                </select>
-                            </div>
-
-                            {/* Section Permissions UI */}
-                            {userForm.role !== 'ADMIN' && (
-                                <div className="space-y-4">
-                                    {/* SECTIONS */}
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Permisos de Secciones</label>
-                                        <div className="grid grid-cols-2 gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200 h-32 overflow-y-auto">
-                                            {availableSections.map(section => (
-                                                <label key={section.id} className="flex items-center space-x-2 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                                        checked={userForm.allowedSections.includes(section.id)}
-                                                        onChange={e => {
-                                                            const checked = e.target.checked;
-                                                            setUserForm(prev => ({
-                                                                ...prev,
-                                                                allowedSections: checked
-                                                                    ? [...prev.allowedSections, section.id]
-                                                                    : prev.allowedSections.filter(id => id !== section.id)
-                                                            }));
-                                                        }}
-                                                    />
-                                                    <span className="text-sm font-medium text-slate-700">{section.label}</span>
-                                                </label>
-                                            ))}
-                                        </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Email</label>
+                                    <input type="email" required className="w-full mt-1 p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex justify-between">
+                                        Contraseña
+                                        {editingUser && <span className="text-[10px] text-orange-500 normal-case">(Opcional)</span>}
+                                    </label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                        <input type="password" className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
+                                            value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} placeholder={editingUser ? "••••••••" : ""} />
                                     </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Rol</label>
+                                    <select className="w-full mt-1 p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })}>
+                                        <option value="USER">Usuario Estándar</option>
+                                        <option value="WORKER">Trabajador</option>
+                                        <option value="SUPERVISOR">Jefe de Área</option>
+                                        <option value="ADMIN">Administrador</option>
+                                    </select>
+                                </div>
 
-                                    {/* PROJECT ASSIGNMENT */}
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Asignación de Proyectos</label>
-                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 h-48 overflow-y-auto space-y-2">
-                                            {projects.length === 0 && <p className="text-xs text-slate-400 italic">No hay proyectos disponibles.</p>}
+                                {/* Project Assignment - Condensed */}
+                                {userForm.role !== 'ADMIN' && (
+                                    <div className="pt-4 border-t border-slate-100">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Proyectos Asignados</label>
+                                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 max-h-48 overflow-y-auto space-y-1">
                                             {projects.map(project => (
-                                                <label key={project.id} className="flex items-center space-x-2 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors">
+                                                <label key={project.id} className="flex items-center space-x-2 p-1.5 hover:bg-white rounded-lg cursor-pointer transition-colors">
                                                     <input
                                                         type="checkbox"
                                                         className="rounded border-slate-300 text-green-600 focus:ring-green-500"
                                                         checked={userForm.assignedProjectIds?.includes(project.id)}
                                                         onChange={e => {
                                                             const checked = e.target.checked;
-                                                            setUserForm(prev => {
-                                                                const current = prev.assignedProjectIds || [];
-                                                                return {
-                                                                    ...prev,
-                                                                    assignedProjectIds: checked
-                                                                        ? [...current, project.id]
-                                                                        : current.filter(id => id !== project.id)
-                                                                };
-                                                            });
+                                                            setUserForm(prev => ({
+                                                                ...prev,
+                                                                assignedProjectIds: checked
+                                                                    ? [...(prev.assignedProjectIds || []), project.id]
+                                                                    : (prev.assignedProjectIds || []).filter(id => id !== project.id)
+                                                            }));
                                                         }}
                                                     />
-                                                    <span className="text-sm font-medium text-slate-700 truncate">{project.name}</span>
+                                                    <span className="text-xs font-medium text-slate-700 truncate">{project.name}</span>
                                                 </label>
                                             ))}
                                         </div>
-                                        <p className="text-[10px] text-slate-400 mt-1 italic">
-                                            El usuario solo podrá reportar cuelgues en los proyectos seleccionados.
-                                        </p>
                                     </div>
+                                )}
+
+                                <div className="pt-4">
+                                    <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95">
+                                        {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+                                    </button>
                                 </div>
-                            )}
-                            <button type="submit" className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl shadow-lg mt-4">
-                                {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-                            </button>
+                            </div>
+
+                            {/* Right Col: Permissions Matrix */}
+                            <div className="w-full md:w-2/3 bg-slate-50/50 p-8 overflow-y-auto">
+                                {userForm.role === 'ADMIN' ? (
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                                        <Shield size={64} className="mb-4 text-purple-200" />
+                                        <p className="font-medium text-center max-w-xs">Los administradores tienen acceso total a todas las secciones y acciones.</p>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <div>
+                                                <h4 className="font-black text-slate-800 text-lg">Permisos de Acceso</h4>
+                                                <p className="text-xs text-slate-500">Define qué puede hacer este usuario en cada sección.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                                            <table className="w-full text-left">
+                                                <thead className="bg-slate-100 border-b border-slate-200">
+                                                    <tr>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase">Sección</th>
+                                                        <th className="px-2 py-4 text-center text-[10px] font-black text-blue-500 uppercase w-16" title="Ver / Leer">Ver</th>
+                                                        <th className="px-2 py-4 text-center text-[10px] font-black text-green-500 uppercase w-16" title="Crear / Agregar">Crear</th>
+                                                        <th className="px-2 py-4 text-center text-[10px] font-black text-orange-500 uppercase w-16" title="Editar / Modificar">Edit</th>
+                                                        <th className="px-2 py-4 text-center text-[10px] font-black text-red-500 uppercase w-16" title="Eliminar / Borrar">Borrar</th>
+                                                        <th className="px-4 py-4 text-center w-24"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100">
+                                                    {availableSections.map(section => {
+                                                        const hasPermission = (action: string) => userForm.allowedSections.includes(`${section.id}:${action}`) || userForm.allowedSections.includes(`${section.id}:*`);
+
+                                                        const togglePermission = (action: string) => {
+                                                            const perm = `${section.id}:${action}`;
+                                                            setUserForm(prev => {
+                                                                const current = prev.allowedSections;
+                                                                if (current.includes(perm)) {
+                                                                    return { ...prev, allowedSections: current.filter(p => p !== perm) };
+                                                                } else {
+                                                                    // If we are granting create/update/delete, auto-grant read? Usually yes.
+                                                                    const newPerms = [...current, perm];
+                                                                    if (action !== 'read' && !current.includes(`${section.id}:read`)) {
+                                                                        newPerms.push(`${section.id}:read`);
+                                                                    }
+                                                                    return { ...prev, allowedSections: newPerms };
+                                                                }
+                                                            });
+                                                        };
+
+                                                        const toggleAll = () => {
+                                                            const all = ['read', 'create', 'update', 'delete'].map(a => `${section.id}:${a}`);
+                                                            const hasAll = all.every(p => userForm.allowedSections.includes(p));
+
+                                                            setUserForm(prev => ({
+                                                                ...prev,
+                                                                allowedSections: hasAll
+                                                                    ? prev.allowedSections.filter(p => !p.startsWith(`${section.id}:`))
+                                                                    : [...new Set([...prev.allowedSections, ...all])]
+                                                            }));
+                                                        };
+
+                                                        return (
+                                                            <tr key={section.id} className="hover:bg-slate-50 transition-colors">
+                                                                <td className="px-6 py-4 font-bold text-sm text-slate-700">{section.label}</td>
+                                                                {['read', 'create', 'update', 'delete'].map(action => (
+                                                                    <td key={action} className="px-2 py-4 text-center">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={hasPermission(action)}
+                                                                            onChange={() => togglePermission(action)}
+                                                                            className={`w-5 h-5 rounded border-2 border-slate-300 focus:ring-offset-0 cursor-pointer transition-colors
+                                                                                ${action === 'read' ? 'text-blue-500 focus:ring-blue-500' : ''}
+                                                                                ${action === 'create' ? 'text-green-500 focus:ring-green-500' : ''}
+                                                                                ${action === 'update' ? 'text-orange-500 focus:ring-orange-500' : ''}
+                                                                                ${action === 'delete' ? 'text-red-500 focus:ring-red-500' : ''}
+                                                                            `}
+                                                                        />
+                                                                    </td>
+                                                                ))}
+                                                                <td className="px-4 py-4 text-center">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={toggleAll}
+                                                                        className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 px-2 py-1 rounded transition-colors"
+                                                                    >
+                                                                        TODO
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </form>
                     </div>
                 </div>

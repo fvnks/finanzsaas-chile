@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plan, PlanMark, User, UserRole } from '../types';
 import { ArrowLeft, Plus, Trash2, MapPin, ZoomIn, ZoomOut, Save, X, ChevronRight, Layout } from 'lucide-react';
 import { API_URL } from '../src/config';
+import { checkPermission } from '../src/utils/permissions';
 
 interface PlanDetailViewProps {
     plan: Plan;
@@ -98,7 +99,12 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
     const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
         if (!imageRef.current || !currentUser) return;
 
-        // Determine user role or permission if strictly needed, currently allowed for all valid users
+        // Validar permiso de 'update' (Editar) para registrar marcas. 
+        // Se usa 'update' porque estamos 'editando/anotando' el plano existente.
+        // 'create' se reserva para subir nuevos planos.
+        if (!checkPermission(currentUser, 'planos', 'update')) {
+            return;
+        }
 
         const rect = imageRef.current.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -146,6 +152,16 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
 
     const handleDeleteMark = async (id: string) => {
         if (!confirm('¿Eliminar esta marca?')) return;
+
+        // Safety check: ensure user owns the mark (even if hidden in UI)
+        const markToDelete = marks.find(m => m.id === id);
+        if (!markToDelete) return; // Should not happen
+
+        if (!isAdminOrSupervisor && markToDelete.userId !== currentUser?.id) {
+            alert("No tienes permiso para eliminar marcas de otros usuarios.");
+            return;
+        }
+
         try {
             await fetch(`${API_URL}/plans/marks/${id}`, { method: 'DELETE' });
             setMarks(marks.filter(m => m.id !== id));
