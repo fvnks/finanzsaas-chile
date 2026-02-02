@@ -15,6 +15,7 @@ import { PurchaseOrdersPage } from './pages/PurchaseOrdersPage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { DocControlPage } from './pages/DocControlPage';
 import { InventoryPage } from './pages/InventoryPage';
+import { PlanosPage } from './pages/PlanosPage';
 
 import { API_URL } from './src/config.ts';
 
@@ -249,6 +250,7 @@ const App: React.FC = () => {
 
 
         {activeTab === 'docControl' && <DocControlPage clients={clients} />}
+        {activeTab === 'planos' && <PlanosPage projects={projects} currentUser={user} />}
 
 
         {activeTab === 'clients' && (
@@ -465,7 +467,7 @@ const App: React.FC = () => {
         {activeTab === 'financialReports' && (
           <ReportsPage invoices={invoices} projects={projects} costCenters={costCenters} clients={clients} />
         )}
-        {activeTab === 'admin' && <AdminPage currentUser={user} />}
+        {activeTab === 'admin' && <AdminPage currentUser={user} projects={projects} />}
       </main>
     </div>
   );

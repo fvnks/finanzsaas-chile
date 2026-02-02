@@ -18,6 +18,7 @@ export interface User {
   name: string;
   role: UserRole;
   allowedSections?: string[];
+  assignedProjectIds?: string[];
 }
 
 export interface Client {
@@ -164,4 +165,27 @@ export type AppState = {
   dailyReports: DailyReport[];
   documents: Document[];
   requirements: DocumentRequirement[];
+  plans: Plan[];
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  imageUrl: string;
+  projectId?: string;
+  createdAt: string;
+}
+
+export interface PlanMark {
+  id: string;
+  planId: string;
+  userId: string;
+  x: number;
+  y: number;
+  date: string; // ISO Date
+  meters: number;
+  comment?: string;
+  imageUrl?: string;
+  user?: { name: string }; // Expanded for UI
+  createdAt: string;
 }

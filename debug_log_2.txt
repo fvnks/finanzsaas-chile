@@ -1,0 +1,18 @@
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ­ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+--- Starting OneDrive Connection Debug ---
+Environment Variables Check:
+AZURE_TENANT_ID: Set
+AZURE_CLIENT_ID: Set
+AZURE_CLIENT_SECRET: Set
+
+--- Test 1: Fetching /sites/root (SharePoint Default) ---
+ÔØî Failed to fetch /sites/root
+Status: 401 - generalException
+
+--- Test 2: Fetching /sites/root/drives ---
+
+--- Test 3: Fetching /users (To test User Drive access) ---
+ÔØî Failed to fetch /sites/root/drives
+Status: 401 - generalException
+ÔØî Failed to fetch /users
+Status: 403 - Authorization_RequestDenied

@@ -22,6 +22,8 @@ export function DocControlPage({ clients }: DocControlPageProps) {
 
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadData, setUploadData] = useState({ name: '', url: '', type: 'OTHER', requirementId: '' });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [fileInputKey, setFileInputKey] = useState(0);
 
     // Import Modal
     const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
@@ -179,16 +181,21 @@ export function DocControlPage({ clients }: DocControlPageProps) {
         if (!selectedClientId) return;
 
         try {
-            const payload = {
-                ...uploadData,
-                clientId: selectedClientId,
-                projectId: '' // Optional context
-            };
+            const formData = new FormData();
+            formData.append('name', uploadData.name);
+            formData.append('type', uploadData.type);
+            formData.append('clientId', selectedClientId);
+            formData.append('requirementId', uploadData.requirementId);
+
+            if (selectedFile) {
+                formData.append('file', selectedFile);
+            } else if (uploadData.url) {
+                formData.append('url', uploadData.url);
+            }
 
             const res = await fetch(`${API_URL}/documents`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: formData
             });
 
             if (res.ok) {
@@ -196,6 +203,8 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                 fetchRequirements(selectedClientId);
                 setIsUploadModalOpen(false);
                 setUploadData({ name: '', url: '', type: 'OTHER', requirementId: '' });
+                setSelectedFile(null);
+                setFileInputKey(prev => prev + 1);
             }
         } catch (err) { console.error(err); }
     };
@@ -500,13 +509,27 @@ export function DocControlPage({ clients }: DocControlPageProps) {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">URL / Link</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Archivo</label>
                                 <input
-                                    required
+                                    key={fileInputKey}
+                                    type="file"
+                                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-2"
+                                    onChange={(e) => {
+                                        const file = e.target.files ? e.target.files[0] : null;
+                                        setSelectedFile(file);
+                                        if (file && !uploadData.name) {
+                                            setUploadData(prev => ({ ...prev, name: file.name }));
+                                        }
+                                    }}
+                                />
+                                <div className="text-center text-xs text-slate-400 my-2">- O -</div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">URL / Link Externo</label>
+                                <input
                                     placeholder="https://..."
                                     className="w-full rounded-lg border-slate-200 focus:ring-2 focus:ring-blue-500"
                                     value={uploadData.url}
                                     onChange={e => setUploadData({ ...uploadData, url: e.target.value })}
+                                    disabled={!!selectedFile}
                                 />
                             </div>
                             <div>

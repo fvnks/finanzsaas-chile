@@ -11,7 +11,8 @@ import {
   Sparkles,
   HardHat,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Map
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 
@@ -24,6 +25,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout }) => {
   const [expandedGroups, setExpandedGroups] = React.useState<string[]>(['obras', 'finanzas', 'directorio', 'admin']);
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  // Auto-collapse on small screens if needed, or stick to manual toggle
+
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev =>
@@ -40,8 +45,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }, // Dashboard fits best here or top level? Let's put top level or inside Obras. Usually Dashboard is global.
         { id: 'projects', label: 'Proyectos', icon: Briefcase },
         { id: 'reports', label: 'Reportes Diarios', icon: FileText },
-
         { id: 'docControl', label: 'Control Documental', icon: FileText },
+        { id: 'planos', label: 'Planos // Cuelgues', icon: Map },
       ]
     },
     {
@@ -104,40 +109,54 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
   const visibleGroups = getAllowedGroups();
 
   return (
-    <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen sticky top-0 shrink-0">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-          Vertikal Finanzas
-        </h1>
-        <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">SaaS ERP Edition</p>
+    <aside
+      className={`bg-slate-900 text-white flex flex-col h-screen sticky top-0 shrink-0 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'
+        }`}
+    >
+      <div className="p-4 flex items-center justify-between">
+        {!isCollapsed && (
+          <div>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent truncate">
+              Vertikal
+            </h1>
+            <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-semibold truncate">SaaS Edition</p>
+          </div>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors mx-auto"
+        >
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronRight className="rotate-180" size={20} />}
+        </button>
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto custom-scrollbar">
         {visibleGroups.map(group => (
-          <div key={group.id}>
-            {/* Group Header */}
-            <button
-              onClick={() => toggleGroup(group.id)}
-              className="w-full flex items-center justify-between px-2 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider hover:text-slate-300 transition-colors"
-            >
-              <div className="flex items-center space-x-2">
-                <span>{group.label}</span>
-              </div>
-              {expandedGroups.includes(group.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </button>
+          <div key={group.id} className="border-t border-slate-800/50 pt-2 first:border-0 first:pt-0">
+            {/* Group Header - Hide label if collapsed */}
+            {!isCollapsed && (
+              <button
+                onClick={() => toggleGroup(group.id)}
+                className="w-full flex items-center justify-between px-2 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider hover:text-slate-300 transition-colors group"
+              >
+                <span className="truncate">{group.label}</span>
+                {expandedGroups.includes(group.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              </button>
+            )}
 
-            <div className={`space-y-1 ${expandedGroups.includes(group.id) ? 'block' : 'hidden'}`}>
+            <div className={`space-y-1 ${!isCollapsed && expandedGroups.includes(group.id) ? 'block' : isCollapsed ? 'block' : 'hidden'}`}>
               {group.items.map(item => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-all ${activeTab === item.id
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  title={isCollapsed ? item.label : undefined}
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'space-x-3 px-3'} py-2.5 rounded-lg transition-all ${activeTab === item.id
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                     }`}
                 >
-                  <item.icon size={18} strokeWidth={2} />
-                  <span className="font-medium text-sm">{item.label}</span>
+                  <item.icon size={20} strokeWidth={2} />
+                  {!isCollapsed && <span className="font-medium text-sm truncate">{item.label}</span>}
                 </button>
               ))}
             </div>
@@ -145,26 +164,29 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         ))}
       </nav>
 
-      <div className="p-4 border-t border-slate-800 bg-slate-900">
-        <div className="flex items-center space-x-3 mb-4 px-2">
-          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-lg font-bold shadow-lg shadow-indigo-900/50">
+      <div className="p-3 border-t border-slate-800 bg-slate-900">
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} mb-4 px-1`}>
+          <div className="w-9 h-9 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold shadow-lg shadow-indigo-900/50">
             {user?.name.charAt(0).toUpperCase()}
           </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-bold truncate text-white">{user?.name}</p>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-              {user?.role === UserRole.ADMIN ? 'Administrador' :
-                user?.role === UserRole.SUPERVISOR ? 'Supervisor' :
-                  user?.role === UserRole.WORKER ? 'Trabajador' : 'Usuario'}
-            </p>
-          </div>
+          {!isCollapsed && (
+            <div className="overflow-hidden min-w-0">
+              <p className="text-sm font-bold truncate text-white">{user?.name}</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold truncate">
+                {user?.role === UserRole.ADMIN ? 'Administrador' :
+                  user?.role === UserRole.SUPERVISOR ? 'Supervisor' :
+                    user?.role === UserRole.WORKER ? 'Trabajador' : 'Usuario'}
+              </p>
+            </div>
+          )}
         </div>
         <button
           onClick={onLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-slate-800/50 rounded-lg transition-colors"
+          title={isCollapsed ? "Cerrar Sesión" : undefined}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/50 rounded-lg transition-colors`}
         >
-          <LogOut size={18} />
-          <span className="font-medium text-sm">Cerrar Sesión</span>
+          <LogOut size={isCollapsed ? 20 : 18} />
+          {!isCollapsed && <span className="font-medium text-sm">Salir</span>}
         </button>
       </div>
     </aside>

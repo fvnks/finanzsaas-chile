@@ -25,9 +25,10 @@ interface JobTitle {
 
 interface AdminPageProps {
     currentUser: User | null;
+    projects: any[]; // Or proper type
 }
 
-const AdminPage: React.FC<AdminPageProps> = ({ currentUser }) => {
+const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
     const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES'>('USERS');
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<JobTitle[]>([]);
@@ -55,7 +56,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser }) => {
         email: '',
         password: '',
         role: 'USER',
-        allowedSections: [] as string[]
+        allowedSections: [] as string[],
+        assignedProjectIds: [] as string[]
     });
 
     // Role Form State
@@ -163,7 +165,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser }) => {
                 email: user.email,
                 password: '',
                 role: user.role,
-                allowedSections: user.allowedSections || []
+                allowedSections: user.allowedSections || [],
+                assignedProjectIds: user.assignedProjectIds || []
             });
         } else {
             setEditingUser(null);
@@ -172,7 +175,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser }) => {
                 email: '',
                 password: '',
                 role: 'USER',
-                allowedSections: availableSections.map(s => s.id) // Default to all? Or empty? Let's default to all for now or empty. Let's make it ALL for simplicity, or handle better. Let's default to ALL.
+                allowedSections: availableSections.map(s => s.id),
+                assignedProjectIds: []
             });
         }
         setShowUserModal(true);
@@ -362,44 +366,64 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser }) => {
 
                             {/* Section Permissions UI */}
                             {userForm.role !== 'ADMIN' && (
-                                <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Permisos de Secciones</label>
-                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200 h-48 overflow-y-auto">
-                                        {availableSections.map(section => (
-                                            <label key={section.id} className="flex items-center space-x-2 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors">
-                                                <input
-                                                    type="checkbox"
-                                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                                    checked={userForm.allowedSections.includes(section.id)}
-                                                    onChange={e => {
-                                                        const checked = e.target.checked;
-                                                        setUserForm(prev => ({
-                                                            ...prev,
-                                                            allowedSections: checked
-                                                                ? [...prev.allowedSections, section.id]
-                                                                : prev.allowedSections.filter(id => id !== section.id)
-                                                        }));
-                                                    }}
-                                                />
-                                                <span className="text-sm font-medium text-slate-700">{section.label}</span>
-                                            </label>
-                                        ))}
+                                <div className="space-y-4">
+                                    {/* SECTIONS */}
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Permisos de Secciones</label>
+                                        <div className="grid grid-cols-2 gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200 h-32 overflow-y-auto">
+                                            {availableSections.map(section => (
+                                                <label key={section.id} className="flex items-center space-x-2 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                        checked={userForm.allowedSections.includes(section.id)}
+                                                        onChange={e => {
+                                                            const checked = e.target.checked;
+                                                            setUserForm(prev => ({
+                                                                ...prev,
+                                                                allowedSections: checked
+                                                                    ? [...prev.allowedSections, section.id]
+                                                                    : prev.allowedSections.filter(id => id !== section.id)
+                                                            }));
+                                                        }}
+                                                    />
+                                                    <span className="text-sm font-medium text-slate-700">{section.label}</span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="flex justify-end gap-2 mt-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setUserForm({ ...userForm, allowedSections: availableSections.map(s => s.id) })}
-                                            className="text-xs text-blue-600 font-bold hover:underline"
-                                        >
-                                            Seleccionar Todos
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setUserForm({ ...userForm, allowedSections: [] })}
-                                            className="text-xs text-slate-500 font-bold hover:underline"
-                                        >
-                                            Ninguno
-                                        </button>
+
+                                    {/* PROJECT ASSIGNMENT */}
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Asignación de Proyectos</label>
+                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 h-48 overflow-y-auto space-y-2">
+                                            {projects.length === 0 && <p className="text-xs text-slate-400 italic">No hay proyectos disponibles.</p>}
+                                            {projects.map(project => (
+                                                <label key={project.id} className="flex items-center space-x-2 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-slate-300 text-green-600 focus:ring-green-500"
+                                                        checked={userForm.assignedProjectIds?.includes(project.id)}
+                                                        onChange={e => {
+                                                            const checked = e.target.checked;
+                                                            setUserForm(prev => {
+                                                                const current = prev.assignedProjectIds || [];
+                                                                return {
+                                                                    ...prev,
+                                                                    assignedProjectIds: checked
+                                                                        ? [...current, project.id]
+                                                                        : current.filter(id => id !== project.id)
+                                                                };
+                                                            });
+                                                        }}
+                                                    />
+                                                    <span className="text-sm font-medium text-slate-700 truncate">{project.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-1 italic">
+                                            El usuario solo podrá reportar cuelgues en los proyectos seleccionados.
+                                        </p>
                                     </div>
                                 </div>
                             )}

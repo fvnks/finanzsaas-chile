@@ -1,0 +1,17 @@
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ÔÜÖ´©Å  specify custom .env file path with { path: '/custom/path/.env' }
+--- Starting OneDrive Connection Debug ---
+Environment Variables Check:
+AZURE_TENANT_ID: Set
+AZURE_CLIENT_ID: Set
+AZURE_CLIENT_SECRET: Set
+
+--- Test 1: Fetching /sites/root (SharePoint Default) ---
+Ô£à Success! Connected to SharePoint Root.
+Site Name: Protectivas
+
+--- Test 2: Fetching /sites/root/drives ---
+Ô£à Success! Found 1 drives on root site.
+
+--- Test 3: Fetching /users (To test User Drive access) ---
+ÔØî Failed to fetch /users
+Status: 403 - Authorization_RequestDenied

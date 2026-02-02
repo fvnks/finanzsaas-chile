@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
+import multer from "multer";
+import { Readable } from "stream";
+import { uploadToOneDrive, getFileStreamFromWebUrl } from "./services/onedrive";
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -487,7 +492,7 @@ router.delete("/crews/:id", async (req, res) => {
 router.get("/users", async (req, res) => {
     try {
         const users = await prisma.user.findMany({
-            select: { id: true, name: true, email: true, role: true, allowedSections: true, createdAt: true },
+            select: { id: true, name: true, email: true, role: true, allowedSections: true, assignedProjectIds: true, createdAt: true },
             orderBy: { createdAt: 'desc' }
         });
         res.json(users);
@@ -498,7 +503,7 @@ router.get("/users", async (req, res) => {
 
 router.post("/users", async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, allowedSections, assignedProjectIds } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await prisma.user.create({
@@ -507,9 +512,10 @@ router.post("/users", async (req, res) => {
                 email,
                 password: hashedPassword,
                 role: role || 'USER',
-                allowedSections: req.body.allowedSections || []
+                allowedSections: allowedSections || [],
+                assignedProjectIds: assignedProjectIds || []
             },
-            select: { id: true, name: true, email: true, role: true, allowedSections: true }
+            select: { id: true, name: true, email: true, role: true, allowedSections: true, assignedProjectIds: true }
         });
         res.json(newUser);
     } catch (err) {
@@ -521,14 +527,14 @@ router.post("/users", async (req, res) => {
 router.put("/users/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, password, role } = req.body;
+        const { name, password, role, allowedSections, assignedProjectIds } = req.body;
 
         const data: any = {};
         if (name) data.name = name;
         if (password) data.password = await bcrypt.hash(password, 10);
         if (role) data.role = role;
-        // Update allowedSections logic
-        if (req.body.allowedSections) data.allowedSections = req.body.allowedSections;
+        if (allowedSections) data.allowedSections = allowedSections;
+        if (assignedProjectIds) data.assignedProjectIds = assignedProjectIds;
 
         await prisma.user.update({
             where: { id },
@@ -929,19 +935,56 @@ router.get("/documents", async (req, res) => {
     }
 });
 
-router.post("/documents", async (req, res) => {
+router.post("/documents", upload.single('file'), async (req: any, res: any) => {
     try {
         // Metadata only for now. Appending requirementId linkage.
-        const { type, url, name, clientId, projectId, requirementId } = req.body;
+        const { type, clientId, projectId, requirementId, name } = req.body;
+        let url = req.body.url;
+        let fileName = name || req.body.name;
+
+        // Handle File Upload
+        if (req.file) {
+            try {
+                // Determine folder path
+                // /VertikalApp/Documents/{ClientName}/{RequirementName}/
+                let clientName = 'General';
+                let reqName = 'Doc';
+
+                if (clientId) {
+                    const client = await prisma.client.findUnique({ where: { id: clientId } });
+                    if (client) clientName = client.name;
+                }
+
+                if (requirementId) {
+                    const req = await prisma.documentRequirement.findUnique({ where: { id: requirementId } });
+                    if (req) reqName = req.name;
+                }
+
+                // Sanitize
+                clientName = clientName.replace(/[^a-zA-Z0-9 \-_]/g, '').trim();
+                reqName = reqName.replace(/[^a-zA-Z0-9 \-_]/g, '').trim();
+
+                const path = `/Planos-SaaS/Documentos/${clientName}/${reqName}`;
+
+                const uploadResult = await uploadToOneDrive(req.file.buffer, req.file.originalname, path);
+                url = uploadResult.webUrl;
+                if (!fileName) fileName = req.file.originalname;
+
+            } catch (uErr) {
+                console.error("Upload failed", uErr);
+                return res.status(500).json({ error: "Failed to upload file to OneDrive" });
+            }
+        }
 
         const newDoc = await prisma.document.create({
             data: {
-                type, // 'INVOICE', 'CONTRACT', 'RECEIPT', 'OTHER'
+                type: type || 'OTHER', // 'INVOICE', 'CONTRACT', 'RECEIPT', 'OTHER'
                 url: url || '',
-                name,
+                name: fileName,
                 clientId: clientId || undefined,
                 projectId: projectId || undefined,
-                requirementId: requirementId || undefined
+                requirementId: requirementId || undefined,
+                status: 'PENDING'
             }
         });
         res.json(newDoc);
@@ -1032,6 +1075,213 @@ router.post("/inventory/movements", async (req, res) => {
     }
 });
 
-// Add logic for movements...
+// --- NEW MODULES: PLANOS ---
+
+router.get("/plans", async (req, res) => {
+    try {
+        const { projectId } = req.query;
+        const where = projectId ? { projectId: String(projectId) } : {};
+
+        const plans = await prisma.plan.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            include: { project: true, _count: { select: { marks: true } } }
+        });
+        res.json(plans);
+    } catch (err) {
+        console.error("Error fetching plans:", err);
+        res.status(500).json({ error: "Failed to fetch plans" });
+    }
+});
+
+router.post("/plans", upload.single('file'), async (req: any, res: any) => {
+    try {
+        const { name, projectId } = req.body;
+        let imageUrl = req.body.imageUrl;
+
+        // Handle File Upload
+        if (req.file) {
+            try {
+                let folderName = 'General';
+                if (projectId) {
+                    const project = await prisma.project.findUnique({ where: { id: projectId } });
+                    if (project) {
+                        // Sanitize folder name
+                        folderName = project.name.replace(/[^a-zA-Z0-9 \-_]/g, '').trim();
+                    }
+                }
+
+                const uploadResult = await uploadToOneDrive(req.file.buffer, req.file.originalname, `/Planos-SaaS/Planos/${folderName}`);
+                imageUrl = uploadResult.webUrl;
+            } catch (uploadErr) {
+                console.error("OneDrive Upload Failed:", uploadErr);
+                return res.status(500).json({ error: "Failed to upload file to OneDrive" });
+            }
+        }
+
+        const newPlan = await prisma.plan.create({
+            data: {
+                name,
+                imageUrl: imageUrl || '',
+                projectId: projectId || null
+            }
+        });
+        res.json(newPlan);
+    } catch (err) {
+        console.error("Error creating plan:", err);
+        res.status(500).json({ error: "Failed to create plan" });
+    }
+});
+
+router.delete("/plans/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.plan.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete plan" });
+    }
+});
+
+router.get("/plans/:id/marks", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const marks = await prisma.planMark.findMany({
+            where: { planId: id },
+            include: { user: { select: { name: true } } }, // Include user name
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(marks);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch marks" });
+    }
+});
+
+router.post("/plans/:id/marks", upload.single('file'), async (req: any, res: any) => {
+    try {
+        const { id } = req.params;
+        const { x, y, userId, comment, meters, date } = req.body;
+        let imageUrl = null;
+
+        // VALDATION: Check if user is assigned to the project of this Plan
+        // 1. Get Plan with ProjectId
+        const plan = await prisma.plan.findUnique({
+            where: { id },
+            include: { project: true }
+        });
+        if (!plan) return res.status(404).json({ error: "Plano no encontrado" });
+
+        // 2. Get User
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+        // 3. Check permissions (Skip for ADMIN)
+        if (user.role !== 'ADMIN') {
+            // If plan belongs to a project...
+            if (plan.projectId) {
+                const assigned = user.assignedProjectIds || [];
+                // Check if project ID is in assigned list
+                if (!assigned.includes(plan.projectId)) {
+                    return res.status(403).json({ error: "No estás asignado a este proyecto. No puedes reportar cuelgues." });
+                }
+            }
+        }
+
+        // Handle File Upload
+        if (req.file) {
+            try {
+                const projectName = plan.project?.name || 'General';
+                const d = new Date(date || new Date());
+                const folder = `${projectName}/${d.getFullYear()}-${d.getMonth() + 1}`;
+                // Sanitize path
+                const cleanPath = `/Planos-SaaS/Cuelgues/${folder.replace(/[^a-zA-Z0-9 \-\/_]/g, '').trim()}`;
+
+                const uploadResult = await uploadToOneDrive(req.file.buffer, req.file.originalname, cleanPath);
+                imageUrl = uploadResult.webUrl;
+            } catch (uErr) {
+                console.error("Upload failed", uErr);
+                // Continue saving mark without image or fail? Let's continue but log.
+            }
+        }
+
+        const newMark = await prisma.planMark.create({
+            data: {
+                planId: id,
+                userId,
+                x: Number(x),
+                y: Number(y),
+                comment,
+                meters: meters ? Number(meters) : 0,
+                date: date ? new Date(date) : new Date(),
+                imageUrl
+            },
+            include: { user: { select: { name: true } } }
+        });
+        res.json(newMark);
+    } catch (err) {
+        console.error("Error creating mark:", err);
+        res.status(500).json({ error: "Failed to create mark" });
+    }
+});
+
+router.delete("/plans/marks/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.planMark.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete mark" });
+    }
+});
+
+// --- STATS FOR DASHBOARD ---
+router.get("/stats/marks", async (req, res) => {
+    try {
+        // Group by month/year? Or just return all valid marks and let frontend process
+        // For efficiency w/ huge data, we'd aggregate here. For now, let's return all or filter by date range.
+        const marks = await prisma.planMark.findMany({
+            select: { meters: true, date: true }
+        });
+        res.json(marks);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch stats" });
+    }
+});
+
+
+// --- PROXY FOR ONEDRIVE IMAGES ---
+router.get("/proxy-image", async (req, res) => {
+    const { url } = req.query;
+    if (!url || typeof url !== 'string') {
+        return res.status(400).send("Missing url parameter");
+    }
+
+    try {
+        // If it's not a OneDrive URL, just redirect (or handle as error)
+        if (!url.includes("sharepoint.com") && !url.includes("onedrive")) {
+            return res.redirect(url);
+        }
+
+        const stream = await getFileStreamFromWebUrl(url);
+
+        // Set basic headers - we don't know exact mime type unless we fetch metadata first
+        // But for images, browsers are good at sniffing or we can default to octet-stream
+        // Or we could query driveItem metadata. For speed, verify basic sniffing.
+        // res.setHeader('Content-Type', 'image/jpeg'); // Assuming mostly images?
+
+        if (typeof stream.pipe === 'function') {
+            stream.pipe(res);
+        } else {
+            // It's likely a Web Stream (ReadableStream)
+            // Convert to Node Stream
+            // @ts-ignore
+            const nodeStream = Readable.fromWeb ? Readable.fromWeb(stream) : Readable.from(stream);
+            nodeStream.pipe(res);
+        }
+    } catch (error) {
+        console.error("Proxy error:", error);
+        res.status(500).send("Failed to load image");
+    }
+});
 
 export default router;

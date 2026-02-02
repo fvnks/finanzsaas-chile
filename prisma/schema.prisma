@@ -14,8 +14,10 @@ model User {
   name      String
   role      String   @default("USER") // ADMIN, USER
   allowedSections String[] // Array of section IDs (e.g. 'invoices', 'projects')
+  assignedProjectIds String[] // IDs of projects this user is assigned to
 
   dailyReports DailyReport[]
+  planMarks    PlanMark[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -58,6 +60,8 @@ model Project {
   startDate   DateTime?
   endDate     DateTime?
   workerIds   String[] // Legacy field, prefer using Crew relations if possible
+
+  plans       Plan[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -289,4 +293,39 @@ model ClientMonthlyInfo {
   updatedAt DateTime @updatedAt
 
   @@unique([clientId, month, year])
+}
+
+model Plan {
+  id        String   @id @default(uuid())
+  name      String
+  imageUrl  String
+  
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  
+  marks     PlanMark[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlanMark {
+  id        String   @id @default(uuid())
+  
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  x         Float    // Percentage
+  y         Float    // Percentage
+  
+  date      DateTime @default(now())
+  meters    Float    @default(0)
+  comment   String?
+  imageUrl  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
