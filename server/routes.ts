@@ -1096,7 +1096,7 @@ router.get("/plans", async (req, res) => {
 
 router.post("/plans", upload.single('file'), async (req: any, res: any) => {
     try {
-        const { name, projectId } = req.body;
+        const { name, projectId, costCenterId, stages, systemType, installationType, installationDetail } = req.body;
         let imageUrl = req.body.imageUrl;
 
         // Handle File Upload
@@ -1123,7 +1123,12 @@ router.post("/plans", upload.single('file'), async (req: any, res: any) => {
             data: {
                 name,
                 imageUrl: imageUrl || '',
-                projectId: projectId || null
+                projectId: projectId && projectId !== '' ? projectId : null,
+                costCenterId: costCenterId && costCenterId !== '' ? costCenterId : null,
+                stages: stages ? Number(stages) : 1,
+                systemType,
+                installationType,
+                installationDetail
             }
         });
         res.json(newPlan);
@@ -1160,8 +1165,29 @@ router.get("/plans/:id/marks", async (req, res) => {
 router.post("/plans/:id/marks", upload.single('file'), async (req: any, res: any) => {
     try {
         const { id } = req.params;
-        const { x, y, userId, comment, meters, date } = req.body;
+        const { x, y, userId, comment, meters, date, workerIds, points, type, stage } = req.body;
         let imageUrl = null;
+
+        // Parse workerIds if it comes as a JSON string (common with FormData)
+        let parsedWorkerIds: string[] = [];
+        if (workerIds) {
+            try {
+                parsedWorkerIds = typeof workerIds === 'string' ? JSON.parse(workerIds) : workerIds;
+            } catch (e) {
+                console.error("Error parsing workerIds:", e);
+                parsedWorkerIds = [];
+            }
+        }
+
+        // Parse points if string
+        let parsedPoints = undefined;
+        if (points) {
+            try {
+                parsedPoints = typeof points === 'string' ? JSON.parse(points) : points;
+            } catch (e) {
+                console.error("Error parsing points:", e);
+            }
+        }
 
         // VALDATION: Check if user is assigned to the project of this Plan
         // 1. Get Plan with ProjectId
@@ -1213,9 +1239,18 @@ router.post("/plans/:id/marks", upload.single('file'), async (req: any, res: any
                 comment,
                 meters: meters ? Number(meters) : 0,
                 date: date ? new Date(date) : new Date(),
-                imageUrl
+                imageUrl,
+                points: parsedPoints,
+                type: type || 'POINT',
+                stage: stage ? Number(stage) : 1,
+                workers: {
+                    connect: parsedWorkerIds.map(id => ({ id }))
+                }
             },
-            include: { user: { select: { name: true } } }
+            include: {
+                user: { select: { name: true } },
+                workers: true
+            }
         });
         res.json(newMark);
     } catch (err) {

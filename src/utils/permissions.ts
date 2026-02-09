@@ -6,7 +6,7 @@ export const checkPermission = (user: User | null, resource: string, action: Per
     if (!user) return false;
 
     // 1. Admin always has full access
-    if (user.role === UserRole.ADMIN) return true;
+    if (user.role.toUpperCase() === 'ADMIN') return true;
 
     // 2. Supervisor / Worker Logic (can be customized, but usually permission based now)
     // For backwards compatibility or specific role overrides:

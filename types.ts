@@ -9,7 +9,8 @@ export enum UserRole {
 export enum InvoiceType {
   COMPRA = 'COMPRA',
   VENTA = 'VENTA',
-  NOTA_CREDITO = 'NOTA_CREDITO'
+  NOTA_CREDITO = 'NOTA_CREDITO',
+  NOTA_DEBITO = 'NOTA_DEBITO'
 }
 
 export interface User {
@@ -173,7 +174,12 @@ export interface Plan {
   name: string;
   imageUrl: string;
   projectId?: string;
-  createdAt: string;
+  costCenterId?: string;
+  stages?: number;
+  systemType?: string;
+  installationType?: string;
+  installationDetail?: string;
+  marks?: PlanMark[];
 }
 
 export interface PlanMark {
@@ -186,6 +192,10 @@ export interface PlanMark {
   meters: number;
   comment?: string;
   imageUrl?: string;
-  user?: { name: string }; // Expanded for UI
+  points?: { x: number; y: number }[];
+  type?: 'POINT' | 'PATH';
+  user?: User;
+  workers?: Worker[]; // Relation
+  stage?: number;
   createdAt: string;
 }

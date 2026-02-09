@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plan, Project, User, PlanMark } from '../types';
-import { Plus, Trash2, Map, Calendar } from 'lucide-react';
+import { Plus, Trash2, Map, Calendar, ChevronRight } from 'lucide-react';
 import { API_URL } from '../src/config';
 import { PlanDetailView } from './PlanDetailView';
 import { checkPermission } from '../src/utils/permissions';
@@ -59,50 +59,19 @@ export const PlanosPage: React.FC<PlanosPageProps> = ({ projects, currentUser })
         }
     };
 
+    const [costCenters, setCostCenters] = useState<{ id: string, name: string, code: string }[]>([]);
+
     useEffect(() => {
         fetchPlans();
         fetchStats();
+        // Fetch Cost Centers
+        fetch(`${API_URL}/cost-centers`)
+            .then(res => res.json())
+            .then(data => setCostCenters(data))
+            .catch(err => console.error("Error fetching cost centers:", err));
     }, []);
 
-    const handleAddPlan = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const form = e.target as HTMLFormElement;
-        const name = (form.elements.namedItem('name') as HTMLInputElement).value;
-        const projectId = (form.elements.namedItem('projectId') as HTMLSelectElement).value;
-        const imageUrlInput = form.elements.namedItem('imageUrl') as HTMLInputElement;
-        const imageUrl = imageUrlInput ? imageUrlInput.value : '';
 
-        const formData = new FormData();
-        formData.append('name', name);
-        if (projectId) formData.append('projectId', projectId);
-
-        if (selectedFile) {
-            formData.append('file', selectedFile);
-        } else if (imageUrl) {
-            formData.append('imageUrl', imageUrl);
-        }
-
-        try {
-            setLoading(true);
-            const res = await fetch(`${API_URL}/plans`, {
-                method: 'POST',
-                body: formData
-            });
-            if (res.ok) {
-                setShowAddModal(false);
-                setSelectedFile(null);
-                setFileInputKey(prev => prev + 1);
-                fetchPlans();
-            } else {
-                alert("Error creando el plano");
-            }
-        } catch (error) {
-            console.error("Error adding plan:", error);
-            alert("Error de conexión");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleDeletePlan = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -133,8 +102,106 @@ export const PlanosPage: React.FC<PlanosPageProps> = ({ projects, currentUser })
         );
     }
 
+    // Wizard State
+    const [currentStep, setCurrentStep] = useState(1);
+    const [wizardData, setWizardData] = useState({
+        name: '',
+        projectId: '',
+        costCenterId: '',
+        stages: '1',
+        imageUrl: '',
+        systemType: '',
+        installationType: '',
+        installationDetail: '', // Stores "Izaje N° X" or "Otros: details"
+        liftingCount: '', // Temporary for Izaje input
+        otherDetail: ''   // Temporary for Otros input
+    });
+
+    const handleWizardChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setWizardData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleNextStep = () => {
+        if (currentStep === 1) {
+            // Validate Step 1
+            if (!wizardData.name) {
+                alert("El nombre es obligatorio");
+                return;
+            }
+            setCurrentStep(2);
+        }
+    };
+
+    const handleAddPlan = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Prepare final data
+        const formData = new FormData();
+        formData.append('name', wizardData.name);
+        if (wizardData.projectId) formData.append('projectId', wizardData.projectId);
+        if (wizardData.costCenterId) formData.append('costCenterId', wizardData.costCenterId);
+        if (wizardData.stages) formData.append('stages', wizardData.stages);
+
+        if (wizardData.systemType) formData.append('systemType', wizardData.systemType);
+        if (wizardData.installationType) formData.append('installationType', wizardData.installationType);
+
+        // Determine installationDetail based on type
+        let detail = wizardData.installationDetail;
+        if (wizardData.installationType === 'Izaje') {
+            detail = `Izaje N° ${wizardData.liftingCount}`;
+        } else if (wizardData.installationType === 'Otros') {
+            detail = wizardData.otherDetail;
+        }
+        if (detail) formData.append('installationDetail', detail);
+
+        if (selectedFile) {
+            formData.append('file', selectedFile);
+        } else if (wizardData.imageUrl) {
+            formData.append('imageUrl', wizardData.imageUrl);
+        }
+
+        try {
+            setLoading(true);
+            const res = await fetch(`${API_URL}/plans`, {
+                method: 'POST',
+                body: formData
+            });
+            if (res.ok) {
+                setShowAddModal(false);
+                setSelectedFile(null);
+                setFileInputKey(prev => prev + 1);
+                // Reset Wizard
+                setCurrentStep(1);
+                setWizardData({
+                    name: '', projectId: '', costCenterId: '', stages: '1', imageUrl: '',
+                    systemType: '', installationType: '', installationDetail: '', liftingCount: '', otherDetail: ''
+                });
+                fetchPlans();
+            } else {
+                alert("Error creando el plano");
+            }
+        } catch (error) {
+            console.error("Error adding plan:", error);
+            alert("Error de conexión");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (selectedPlan) {
+        return (
+            <PlanDetailView
+                plan={selectedPlan}
+                onBack={() => { setSelectedPlan(null); fetchStats(); }} // Refresh stats on back
+                currentUser={currentUser}
+            />
+        );
+    }
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header and Listing Code... same as before... */}
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Planos Interactivos</h1>
@@ -236,63 +303,163 @@ export const PlanosPage: React.FC<PlanosPageProps> = ({ projects, currentUser })
                 })}
             </div>
 
-            {/* Add Modal */}
+            {/* Add Modal - WIZARD */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-                        <h2 className="text-xl font-bold text-slate-800 mb-4">Nuevo Plano</h2>
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-slate-800">
+                                {currentStep === 1 ? 'Nuevo Plano - Información General' : 'Nuevo Plano - Detalles Operativos'}
+                            </h2>
+                            <div className="text-sm font-medium text-slate-400">Paso {currentStep} de 2</div>
+                        </div>
+
                         <form onSubmit={handleAddPlan} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del Plano</label>
-                                <input name="name" required className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. Planta Baja Zona Norte" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Imagen del Plano</label>
-                                <div className="space-y-3">
-                                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-50 transition-colors relative">
-                                        <input
-                                            key={fileInputKey}
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        />
-                                        <div className="text-slate-500">
-                                            {selectedFile ? (
-                                                <span className="text-blue-600 font-medium">{selectedFile.name}</span>
-                                            ) : (
-                                                <span>Arrastra una imagen o haz clic para subir</span>
-                                            )}
+                            {currentStep === 1 && (
+                                <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del Plano</label>
+                                        <input name="name" required value={wizardData.name} onChange={handleWizardChange} className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. Planta Baja Zona Norte" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Imagen del Plano</label>
+                                        <div className="space-y-3">
+                                            <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-50 transition-colors relative">
+                                                <input
+                                                    key={fileInputKey}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <div className="text-slate-500">
+                                                    {selectedFile ? (
+                                                        <span className="text-blue-600 font-medium">{selectedFile.name}</span>
+                                                    ) : (
+                                                        <span>Arrastra una imagen o haz clic para subir</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <input
+                                                name="imageUrl"
+                                                value={wizardData.imageUrl}
+                                                onChange={handleWizardChange}
+                                                className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                placeholder="https://... (Si no subes archivo)"
+                                                disabled={!!selectedFile}
+                                            />
                                         </div>
                                     </div>
-                                    <div className="relative">
-                                        <div className="absolute inset-0 flex items-center">
-                                            <div className="w-full border-t border-slate-200"></div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Proyecto Asociado</label>
+                                        <select name="projectId" value={wizardData.projectId} onChange={handleWizardChange} className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Seleccionar Proyecto (Opcional)</option>
+                                            {projects.map(p => (
+                                                <option key={p.id} value={p.id}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Centro de Costo</label>
+                                            <select name="costCenterId" value={wizardData.costCenterId} onChange={handleWizardChange} className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="">(Opcional)</option>
+                                                {costCenters.map(cc => (
+                                                    <option key={cc.id} value={cc.id}>{cc.code}</option>
+                                                ))}
+                                            </select>
                                         </div>
-                                        <div className="relative flex justify-center text-sm">
-                                            <span className="px-2 bg-white text-slate-500">O usar URL</span>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Etapas / Pisos</label>
+                                            <input
+                                                name="stages"
+                                                type="number"
+                                                min="1"
+                                                value={wizardData.stages}
+                                                onChange={handleWizardChange}
+                                                className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
                                         </div>
                                     </div>
-                                    <input
-                                        name="imageUrl"
-                                        className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                        placeholder="https://..."
-                                        disabled={!!selectedFile}
-                                    />
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Proyecto Asociado</label>
-                                <select name="projectId" className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Seleccionar Proyecto (Opcional)</option>
-                                    {projects.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Fancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Guardar Plano</button>
+                            )}
+
+                            {currentStep === 2 && (
+                                <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Sistema</label>
+                                        <select name="systemType" value={wizardData.systemType} onChange={handleWizardChange} className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="Horcas">Horcas</option>
+                                            <option value="Marquesinas">Marquesinas</option>
+                                            <option value="Ascensor">Ascensor</option>
+                                            <option value="Red Vertical (Tipo U)">Red Vertical (Tipo U)</option>
+                                            <option value="Red Horizontal (Tipo S)">Red Horizontal (Tipo S)</option>
+                                            <option value="Muro Cortina">Muro Cortina</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Instalación</label>
+                                        <select name="installationType" value={wizardData.installationType} onChange={handleWizardChange} className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="Montaje Inicial">Montaje Inicial</option>
+                                            <option value="Izaje">Izaje</option>
+                                            <option value="Cambio de Posicion">Cambio de Posición</option>
+                                            <option value="Desmontaje">Desmontaje</option>
+                                            <option value="Limpieza de Redes">Limpieza de Redes</option>
+                                            <option value="Otros">Otros</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Conditional Inputs */}
+                                    {wizardData.installationType === 'Izaje' && (
+                                        <div className="bg-blue-50 p-4 rounded-lg animate-in fade-in">
+                                            <label className="block text-sm font-medium text-blue-800 mb-1">Número de Izaje</label>
+                                            <input
+                                                name="liftingCount"
+                                                type="number"
+                                                placeholder="Ej. 1, 2, 3..."
+                                                value={wizardData.liftingCount}
+                                                onChange={handleWizardChange}
+                                                className="w-full border border-blue-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {wizardData.installationType === 'Otros' && (
+                                        <div className="bg-slate-50 p-4 rounded-lg animate-in fade-in">
+                                            <label className="block text-sm font-medium text-slate-800 mb-1">Detalle (Otros)</label>
+                                            <input
+                                                name="otherDetail"
+                                                type="text"
+                                                placeholder="Especificar..."
+                                                value={wizardData.otherDetail}
+                                                onChange={handleWizardChange}
+                                                className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                                <button type="button" onClick={() => {
+                                    if (currentStep === 2) setCurrentStep(1);
+                                    else setShowAddModal(false);
+                                }} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                                    {currentStep === 2 ? 'Atrás' : 'Cancelar'}
+                                </button>
+
+                                {currentStep === 1 ? (
+                                    <button type="button" onClick={handleNextStep} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
+                                        Siguiente <ChevronRight size={16} />
+                                    </button>
+                                ) : (
+                                    <button type="submit" disabled={loading} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-lg shadow-blue-600/20">
+                                        {loading ? 'Guardando...' : 'Crear Plano'}
+                                    </button>
+                                )}
                             </div>
                         </form>
                     </div>

@@ -96,7 +96,8 @@ const App: React.FC = () => {
 
       const data = await res.json();
       if (res.ok) {
-        setUser(data);
+        // Ensure allowedSections is present even if backend sends null
+        setUser({ ...data, allowedSections: data.allowedSections || [] });
         setError('');
       } else {
         setError(data.error || 'Login failed');
@@ -185,7 +186,7 @@ const App: React.FC = () => {
       <main className="flex-1 p-8 overflow-y-auto">
         {activeTab === 'dashboard' && <Dashboard invoices={invoices} clients={clients} />}
         {activeTab === 'invoices' && (
-          <InvoicesPage invoices={invoices} clients={clients} costCenters={costCenters} projects={projects}
+          <InvoicesPage invoices={invoices} clients={clients} costCenters={costCenters} projects={projects} currentUser={user}
             onAdd={async (inv) => {
               try {
                 const res = await fetch(`${API_URL}/invoices`, {
@@ -254,7 +255,7 @@ const App: React.FC = () => {
 
 
         {activeTab === 'clients' && (
-          <ClientsPage clients={clients} invoices={invoices} costCenters={costCenters} projects={projects}
+          <ClientsPage clients={clients} invoices={invoices} costCenters={costCenters} projects={projects} currentUser={user}
             onAdd={async (c) => {
               try {
                 const res = await fetch(`${API_URL}/clients`, {
@@ -305,6 +306,7 @@ const App: React.FC = () => {
             costCenters={costCenters}
             dailyReports={dailyReports}
             users={allUsers}
+            currentUser={user}
             onAdd={async (proj) => {
               try {
                 const res = await fetch(`${API_URL}/projects`, {
@@ -342,7 +344,7 @@ const App: React.FC = () => {
           />
         )}
         {activeTab === 'workers' && (
-          <WorkersPage workers={workers} crews={crews} projects={projects} jobTitles={jobTitles}
+          <WorkersPage workers={workers} crews={crews} projects={projects} jobTitles={jobTitles} currentUser={user}
             onAddWorker={async (w) => {
               try {
                 const res = await fetch(`${API_URL}/workers`, {
@@ -401,7 +403,7 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'costCenters' && (
-          <CostCentersPage costCenters={costCenters} invoices={invoices} projects={projects} clients={clients}
+          <CostCentersPage costCenters={costCenters} invoices={invoices} projects={projects} clients={clients} currentUser={user}
             onAdd={async (cc) => {
               try {
                 const res = await fetch(`${API_URL}/cost-centers`, {
