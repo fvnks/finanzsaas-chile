@@ -29,7 +29,10 @@ import {
   // Added missing Calculator icon
   Calculator,
   CheckCircle, // Added CheckCircle
-  Clock // Added Clock for overdue icon
+  Clock, // Added Clock for overdue icon
+  ArrowUpDown, // Added for sorting
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem } from '../types';
 import { formatCLP, IVA_RATE } from '../constants';
@@ -85,6 +88,26 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     maxAmount: ''
   });
 
+  // Sorting State
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  }>({ key: 'date', direction: 'desc' });
+
+  const handleSort = (key: string) => {
+    setSortConfig(current => ({
+      key,
+      direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+
+  const getSortIcon = (columnKey: string) => {
+    if (sortConfig.key !== columnKey) return <ArrowUpDown size={14} className="ml-1 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />;
+    return sortConfig.direction === 'asc'
+      ? <ArrowUp size={14} className="ml-1 text-blue-600" />
+      : <ArrowDown size={14} className="ml-1 text-blue-600" />;
+  };
+
   const filteredInvoices = useMemo(() => {
     return invoices.filter(inv => {
       // Basic Filters
@@ -105,7 +128,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     });
   }, [invoices, searchTerm, filterType, advancedFilters, clients]);
 
-  // Grouping Logic
+  // Grouping & Sorting Logic
   const groupedInvoices = useMemo(() => {
     const idToNode = new Map<string, { invoice: Invoice, children: Invoice[] }>();
     const roots: { invoice: Invoice, children: Invoice[] }[] = [];
@@ -127,13 +150,51 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       }
     });
 
-    // Optional: Sort children? usually by date/number
+    // 3. Sort roots
+    roots.sort((a, b) => {
+      const { key, direction } = sortConfig;
+      const modifier = direction === 'asc' ? 1 : -1;
+
+      switch (key) {
+        case 'number':
+          // Attempt numeric sort if possible, else string
+          const numA = parseInt(a.invoice.number.replace(/\D/g, ''), 10) || 0;
+          const numB = parseInt(b.invoice.number.replace(/\D/g, ''), 10) || 0;
+          return (numA - numB) * modifier;
+
+        case 'date':
+          return a.invoice.date.localeCompare(b.invoice.date) * modifier;
+
+        case 'client':
+          const clientNameA = clients.find(c => c.id === a.invoice.clientId)?.razonSocial || '';
+          const clientNameB = clients.find(c => c.id === b.invoice.clientId)?.razonSocial || '';
+          return clientNameA.localeCompare(clientNameB) * modifier;
+
+        case 'total':
+          return (a.invoice.total - b.invoice.total) * modifier;
+
+        case 'status':
+          // Sort by paid status (unpaid first usually? or grouped)
+          // Let's sort: Cancelled last, then Unpaid, then Paid
+          // Or strictly by boolean isPaid
+          if (a.invoice.isPaid === b.invoice.isPaid) return 0;
+          return (a.invoice.isPaid ? 1 : -1) * modifier;
+
+        case 'type':
+          return a.invoice.type.localeCompare(b.invoice.type) * modifier;
+
+        default:
+          return 0;
+      }
+    });
+
+    // 4. Sort children (always by date/number for consistency within group)
     roots.forEach(root => {
       root.children.sort((a, b) => a.date.localeCompare(b.date));
     });
 
     return roots;
-  }, [filteredInvoices]);
+  }, [filteredInvoices, sortConfig, clients]);
 
   const stats = useMemo(() => {
     const net = filteredInvoices.reduce((sum, inv) => sum + inv.net, 0);
@@ -505,12 +566,42 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
               <tr>
-                <th className="px-6 py-4">Tipo</th>
-                <th className="px-6 py-4">Folio</th>
-                <th className="px-6 py-4">Fecha</th>
-                <th className="px-6 py-4">Entidad Comercial</th>
-                <th className="px-6 py-4">Total</th>
-                <th className="px-6 py-4">Estado Pago</th>
+                <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 hover:text-blue-600 transition-colors group" onClick={() => handleSort('type')}>
+                  <div className="flex items-center">
+                    Tipo
+                    {getSortIcon('type')}
+                  </div>
+                </th>
+                <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 hover:text-blue-600 transition-colors group" onClick={() => handleSort('number')}>
+                  <div className="flex items-center">
+                    Folio
+                    {getSortIcon('number')}
+                  </div>
+                </th>
+                <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 hover:text-blue-600 transition-colors group" onClick={() => handleSort('date')}>
+                  <div className="flex items-center">
+                    Fecha
+                    {getSortIcon('date')}
+                  </div>
+                </th>
+                <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 hover:text-blue-600 transition-colors group" onClick={() => handleSort('client')}>
+                  <div className="flex items-center">
+                    Entidad Comercial
+                    {getSortIcon('client')}
+                  </div>
+                </th>
+                <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 hover:text-blue-600 transition-colors group" onClick={() => handleSort('total')}>
+                  <div className="flex items-center">
+                    Total
+                    {getSortIcon('total')}
+                  </div>
+                </th>
+                <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 hover:text-blue-600 transition-colors group" onClick={() => handleSort('status')}>
+                  <div className="flex items-center">
+                    Estado Pago
+                    {getSortIcon('status')}
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-center">Antigüedad</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
