@@ -98,9 +98,10 @@ export interface Invoice {
   projectId?: string;
   items?: InvoiceItem[];
   pdfUrl?: string;
+  isPaid?: boolean;
+  relatedInvoiceId?: string;
   purchaseOrderNumber?: string;
   dispatchGuideNumber?: string;
-  relatedInvoiceId?: string;
 }
 
 

@@ -311,9 +311,27 @@ router.post("/invoices", async (req, res) => {
 router.delete("/invoices/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        await prisma.invoice.delete({ where: { id } });
+
+        await prisma.$transaction(async (tx) => {
+            // Check if it's a Credit Note
+            const invoice = await tx.invoice.findUnique({ where: { id } });
+
+            if (invoice && invoice.type === 'NOTA_CREDITO' && invoice.relatedInvoiceId) {
+                // Revert the related invoice status
+                // We assume it was CANCELLED, so we move it back to PENDING or SENT.
+                // Since we don't store previous status, PENDING is a safe default for re-processing.
+                await tx.invoice.update({
+                    where: { id: invoice.relatedInvoiceId },
+                    data: { status: 'PENDING' }
+                });
+            }
+
+            await tx.invoice.delete({ where: { id } });
+        });
+
         res.json({ success: true });
     } catch (err) {
+        console.error("Error deleting invoice:", err);
         res.status(500).json({ error: "Failed to delete invoice" });
     }
 });
@@ -321,7 +339,7 @@ router.delete("/invoices/:id", async (req, res) => {
 router.put("/invoices/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber } = req.body;
+        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber, isPaid } = req.body;
 
         const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
         const validProjectId = projectId && projectId !== '' ? projectId : undefined;
@@ -330,41 +348,65 @@ router.put("/invoices/:id", async (req, res) => {
             // Delete existing items
             await tx.invoiceItem.deleteMany({ where: { invoiceId: id } });
 
-            // Update invoice details and create new items
-            return await tx.invoice.update({
+            // Update Invoice
+            const invoice = await tx.invoice.update({
                 where: { id },
                 data: {
                     number,
                     netAmount: net,
                     taxAmount: iva,
                     totalAmount: total,
-                    date: date ? new Date(date) : undefined,
-                    status,
+                    date: new Date(date),
+                    status: status || 'DRAFT',
                     clientId,
                     projectId: validProjectId,
                     costCenterId: validCostCenterId,
                     type,
                     purchaseOrderNumber,
                     dispatchGuideNumber,
-                    items: items && items.length > 0 ? {
-                        create: items.map((item: any) => ({
-                            description: item.description,
-                            quantity: Number(item.quantity),
-                            unitPrice: Number(item.unitPrice),
-                            total: Number(item.total)
-                        }))
-                    } : undefined
-                },
-                include: { items: true }
+                    isPaid: isPaid ?? false
+                }
             });
+
+            // Re-create items
+            if (items && items.length > 0) {
+                await tx.invoiceItem.createMany({
+                    data: items.map((item: any) => ({
+                        description: item.description,
+                        quantity: Number(item.quantity),
+                        unitPrice: Number(item.unitPrice),
+                        total: Number(item.total),
+                        invoiceId: id
+                    }))
+                });
+            }
+
+            return invoice;
         });
 
         res.json(updatedInvoice);
     } catch (err) {
-        console.error(err);
+        console.error("Error updating invoice:", err);
         res.status(500).json({ error: "Failed to update invoice" });
     }
 });
+
+router.patch("/invoices/:id/payment", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isPaid } = req.body;
+
+        const updated = await prisma.invoice.update({
+            where: { id },
+            data: { isPaid }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error("Error updating invoice payment status:", err);
+        res.status(500).json({ error: "Failed to update invoice payment status" });
+    }
+});
+
 
 // --- WORKERS ---
 router.get("/workers", async (req, res) => {

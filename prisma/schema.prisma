@@ -150,6 +150,8 @@ model Invoice {
   relatedInvoice   Invoice?  @relation("InvoiceRelation", fields: [relatedInvoiceId], references: [id])
   relatedByInvoices Invoice[] @relation("InvoiceRelation")
 
+  isPaid       Boolean  @default(false)
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

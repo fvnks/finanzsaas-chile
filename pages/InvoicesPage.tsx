@@ -25,8 +25,11 @@ import {
   DollarSign,
   Eraser,
   Pencil,
+  CornerDownRight, // Added CornerDownRight
   // Added missing Calculator icon
-  Calculator
+  Calculator,
+  CheckCircle, // Added CheckCircle
+  Clock // Added Clock for overdue icon
 } from 'lucide-react';
 import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem } from '../types';
 import { formatCLP, IVA_RATE } from '../constants';
@@ -56,6 +59,19 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
   // Warning Modal State
   const [showAssignmentWarning, setShowAssignmentWarning] = useState(false);
   const [pendingSubmit, setPendingSubmit] = useState<boolean>(false);
+
+  // Grouping State
+  const [expandedInvoices, setExpandedInvoices] = useState<Set<string>>(new Set());
+
+  const toggleInvoice = (id: string) => {
+    const newSet = new Set(expandedInvoices);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setExpandedInvoices(newSet);
+  };
 
   // Basic Search State
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,6 +105,36 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     });
   }, [invoices, searchTerm, filterType, advancedFilters, clients]);
 
+  // Grouping Logic
+  const groupedInvoices = useMemo(() => {
+    const idToNode = new Map<string, { invoice: Invoice, children: Invoice[] }>();
+    const roots: { invoice: Invoice, children: Invoice[] }[] = [];
+
+    // 1. Initialize nodes
+    filteredInvoices.forEach(inv => {
+      idToNode.set(inv.id, { invoice: inv, children: [] });
+    });
+
+    // 2. Build tree
+    filteredInvoices.forEach(inv => {
+      const node = idToNode.get(inv.id)!;
+      if (inv.relatedInvoiceId && idToNode.has(inv.relatedInvoiceId)) {
+        // It's a child of a visible parent
+        idToNode.get(inv.relatedInvoiceId)!.children.push(inv);
+      } else {
+        // It's a root (either no parent, or parent not visible)
+        roots.push(node);
+      }
+    });
+
+    // Optional: Sort children? usually by date/number
+    roots.forEach(root => {
+      root.children.sort((a, b) => a.date.localeCompare(b.date));
+    });
+
+    return roots;
+  }, [filteredInvoices]);
+
   const stats = useMemo(() => {
     const net = filteredInvoices.reduce((sum, inv) => sum + inv.net, 0);
     const iva = filteredInvoices.reduce((sum, inv) => sum + inv.iva, 0);
@@ -107,6 +153,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     purchaseOrderNumber: '',
     dispatchGuideNumber: '',
     relatedInvoiceId: '', // Added for Credit Notes
+    isPaid: false,
     items: [] as InvoiceItem[]
   });
 
@@ -217,12 +264,42 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     processSubmit();
   };
 
+  // Helper to get next available number
+  const getNextCorrelative = (type: InvoiceType): string => {
+    // Filter invoices by the selected type
+    const relevantInvoices = invoices.filter(inv => inv.type === type);
+
+    // Extract numbers (assuming numeric or prefix-numeric format like "123" or "NC-123")
+    // We will try to extract the numeric part at the end
+    const numbers = relevantInvoices.map(inv => {
+      const match = inv.number.match(/(\d+)$/);
+      return match ? parseInt(match[1], 10) : 0;
+    });
+
+    const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
+    const nextNumber = maxNumber + 1;
+
+    // Optional: Add prefix based on type if customary, though user asked for "correlative".
+    // Keeping it simple number for now as per "folios" usually being numeric in Chile, 
+    // or customizable prefixes. Let's just return the number string.
+    // However, user prompt implied existing "NC-..." format in placeholders.
+    // Let's stick to just the number for "VENTA" and "COMPRA", but maybe prefixes for Notes if preferred?
+    // User request: "correlativo... igual deja la posibilidad de editar".
+    // I'll return just the number to be safe, or maybe "NC-{number}" if they are using prefixes.
+    // Looking at existing placeholders: placeholder={formData.type === InvoiceType.NOTA_CREDITO ? "NC-..." : ...}
+    // I will try to respect the format of the max found number.
+
+    // Actually, looking at placeholders again. Let's provide a smart default.
+    return nextNumber.toString();
+  };
+
   const resetForm = () => {
     setIsEditing(false);
     setEditingId(null);
+    const initialType = InvoiceType.VENTA;
     setFormData({
-      type: InvoiceType.VENTA,
-      number: '',
+      type: initialType,
+      number: getNextCorrelative(initialType),
       date: new Date().toISOString().split('T')[0],
       net: 0,
       clientId: '',
@@ -231,6 +308,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       purchaseOrderNumber: '',
       dispatchGuideNumber: '',
       relatedInvoiceId: '',
+      isPaid: false,
       items: []
     });
   };
@@ -249,6 +327,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       purchaseOrderNumber: inv.purchaseOrderNumber || '',
       dispatchGuideNumber: inv.dispatchGuideNumber || '',
       relatedInvoiceId: inv.relatedInvoiceId || '',
+      isPaid: inv.isPaid || false,
       items: inv.items ? inv.items.map(i => ({ ...i })) : []
     });
     setShowModal(true);
@@ -431,89 +510,192 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                 <th className="px-6 py-4">Fecha</th>
                 <th className="px-6 py-4">Entidad Comercial</th>
                 <th className="px-6 py-4">Total</th>
-                <th className="px-6 py-4">SII</th>
+                <th className="px-6 py-4">Estado Pago</th>
+                <th className="px-6 py-4 text-center">Antigüedad</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredInvoices.map((inv) => (
-                <tr key={inv.id} className={`hover:bg-slate-50/50 transition-colors group ${inv.status === 'CANCELLED' ? 'opacity-60 bg-red-50/30' : ''}`}>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter 
-                      ${inv.type === InvoiceType.VENTA ? 'bg-green-100 text-green-700' :
-                        inv.type === InvoiceType.COMPRA ? 'bg-orange-100 text-orange-700' :
-                          inv.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
-                            'bg-purple-100 text-purple-700' // Credit Note Style
-                      }`}>
-                      {inv.type.replace('_', ' ')}
-                    </span>
-                    {inv.status === 'CANCELLED' && (
-                      <span className="ml-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter bg-red-100 text-red-700">
-                        ANULADA
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 font-bold text-slate-800">
-                    <span className={inv.status === 'CANCELLED' ? 'line-through text-slate-400' : ''}>{inv.number}</span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 text-xs font-medium">{inv.date}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span className="text-slate-700 font-bold text-sm truncate max-w-[200px]">
-                        {clients.find(c => c.id === inv.clientId)?.razonSocial || 'Desconocido'}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {clients.find(c => c.id === inv.clientId)?.rut}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-black text-slate-900">{formatCLP(inv.total)}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded-full w-fit">
-                      <ShieldCheck size={12} className="mr-1" />
-                      <span className="text-[10px] font-bold uppercase">Validado</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center space-x-1">
+              {groupedInvoices.map(({ invoice: inv, children }) => (
+                <React.Fragment key={inv.id}>
+                  <tr className={`hover:bg-slate-50/50 transition-colors group ${inv.status === 'CANCELLED' ? 'opacity-60 bg-red-50/30' : ''}`}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        {children.length > 0 && (
+                          <button
+                            onClick={() => toggleInvoice(inv.id)}
+                            className="p-1 rounded hover:bg-slate-200 text-slate-400 text-xs transition-colors"
+                          >
+                            {expandedInvoices.has(inv.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
+                        )}
+                        <div className="flex flex-col items-start gap-1">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter 
+                              ${inv.type === InvoiceType.VENTA ? 'bg-green-100 text-green-700' :
+                              inv.type === InvoiceType.COMPRA ? 'bg-orange-100 text-orange-700' :
+                                inv.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
+                                  'bg-purple-100 text-purple-700' // Credit Note Style
+                            }`}>
+                            {inv.type.replace('_', ' ')}
+                          </span>
+                          {children.length > 0 && (
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight ml-1">
+                              + {children.length} Docs
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {inv.status === 'CANCELLED' && (
+                        <span className="mt-1 block w-fit px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter bg-red-100 text-red-700">
+                          ANULADA
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-bold text-slate-800">
+                      <span className={inv.status === 'CANCELLED' ? 'line-through text-slate-400' : ''}>{inv.number}</span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 text-xs font-medium">
+                      {/* Format Date: DD/MM/YYYY */}
+                      {new Date(inv.date).toLocaleDateString('es-CL', { timeZone: 'UTC' })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-slate-700 font-bold text-sm truncate max-w-[200px]">
+                          {clients.find(c => c.id === inv.clientId)?.razonSocial || 'Desconocido'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {clients.find(c => c.id === inv.clientId)?.rut}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-black text-slate-900">{formatCLP(inv.total)}</td>
+                    <td className="px-6 py-4">
+                      {/* Payment Status Toggle */}
                       <button
-                        onClick={() => setSelectedInvoice(inv)}
-                        className="text-slate-400 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-all"
-                        title="Ver Detalle"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUpdate({ ...inv, isPaid: !inv.isPaid });
+                        }}
+                        className={`flex items-center px-2.5 py-1 rounded-full w-fit transition-all active:scale-95 border ${inv.isPaid
+                          ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                          : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                          }`}
+                        title="Clic para cambiar estado"
                       >
-                        <Eye size={18} />
+                        {inv.isPaid ? <CheckCircle size={14} className="mr-1.5" /> : <AlertTriangle size={14} className="mr-1.5" />}
+                        <span className="text-[10px] font-black uppercase tracking-wide">
+                          {inv.isPaid ? 'PAGADA' : 'PENDIENTE'}
+                        </span>
                       </button>
-                      <button
-                        className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-lg transition-all"
-                        title="Descargar"
-                      >
-                        <Download size={18} />
-                      </button>
-                      {checkPermission(currentUser as User, 'invoices', 'update') && (
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {/* Days Overdue Calculation */}
+                      {!inv.isPaid && inv.status !== 'CANCELLED' ? (() => {
+                        const daysDiff = Math.floor((new Date().getTime() - new Date(inv.date).getTime()) / (1000 * 3600 * 24));
+                        let colorClass = 'text-slate-400 bg-slate-50 border-slate-200';
+                        if (daysDiff > 60) colorClass = 'text-red-600 bg-red-50 border-red-200';
+                        else if (daysDiff > 30) colorClass = 'text-amber-600 bg-amber-50 border-amber-200';
+
+                        return (
+                          <div className={`inline-flex items-center justify-center px-2 py-1 rounded-lg border \${colorClass}`}>
+                            <Clock size={12} className="mr-1" />
+                            <span className="text-[10px] font-bold">{daysDiff} días</span>
+                          </div>
+                        );
+                      })() : (
+                        <span className="text-slate-300">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center space-x-1">
                         <button
-                          onClick={() => handleEditClick(inv)}
+                          onClick={() => setSelectedInvoice(inv)}
                           className="text-slate-400 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-all"
-                          title="Editar"
+                          title="Ver Detalle"
                         >
-                          <Pencil size={18} />
+                          <Eye size={18} />
                         </button>
-                      )}
-                      {checkPermission(currentUser as User, 'invoices', 'delete') && (
                         <button
-                          onClick={() => setInvoiceToDelete(inv)}
-                          className="text-slate-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-all"
-                          title="Anular"
+                          className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-lg transition-all"
+                          title="Descargar"
                         >
-                          <Trash2 size={18} />
+                          <Download size={18} />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                        {checkPermission(currentUser as User, 'invoices', 'update') && (
+                          <button
+                            onClick={() => handleEditClick(inv)}
+                            className="text-slate-400 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-all"
+                            title="Editar"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                        )}
+                        {checkPermission(currentUser as User, 'invoices', 'delete') && (
+                          <button
+                            onClick={() => setInvoiceToDelete(inv)}
+                            className="text-slate-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-all"
+                            title="Anular"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Expanded Children Rows */}
+                  {
+                    expandedInvoices.has(inv.id) && children.map(child => (
+                      <tr key={child.id} className="bg-slate-50/80 animate-in slide-in-from-top-1 duration-200">
+                        <td className="px-6 py-3 pl-12 border-l-4 border-slate-200">
+                          <div className="flex items-center space-x-2">
+                            <CornerDownRight size={14} className="text-slate-300" />
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter 
+                                ${child.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
+                                'bg-purple-100 text-purple-700'
+                              }`}>
+                              {child.type.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3 font-bold text-slate-600 text-sm">
+                          {child.number}
+                        </td>
+                        <td className="px-6 py-3 text-slate-400 text-xs">{child.date}</td>
+                        <td className="px-6 py-3 text-xs text-slate-400 italic">
+                          Documento asociado
+                        </td>
+                        <td className="px-6 py-3 font-bold text-slate-700 text-sm">{formatCLP(child.total)}</td>
+                        <td className="px-6 py-3">
+                          {/* Empty or specific status for child */}
+                        </td>
+                        <td className="px-6 py-3">
+                          <div className="flex items-center justify-center space-x-1">
+                            <button
+                              onClick={() => setSelectedInvoice(child)}
+                              className="text-slate-400 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded-lg transition-all"
+                              title="Ver Detalle"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              onClick={() => setInvoiceToDelete(child)}
+                              className="text-slate-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition-all"
+                              title="Eliminar Nota"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  }
+                </React.Fragment>
               ))}
-              {filteredInvoices.length === 0 && (
+              {groupedInvoices.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-20 text-center text-slate-400 italic font-medium">
+                    {/* Empty State */}
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <Search size={40} className="text-slate-200" />
                       <p>No se encontraron facturas con los criterios aplicados.</p>
@@ -878,6 +1060,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                           setFormData({
                             ...formData,
                             type: newType,
+                            number: getNextCorrelative(newType), // Auto-update number on type change
                             relatedInvoiceId: (newType === InvoiceType.NOTA_CREDITO || newType === InvoiceType.NOTA_DEBITO) ? formData.relatedInvoiceId : undefined
                           });
                         }}
@@ -899,7 +1082,29 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                         <select
                           className="w-full p-2.5 bg-blue-50 border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-slate-700"
                           value={formData.relatedInvoiceId || ''}
-                          onChange={(e) => setFormData({ ...formData, relatedInvoiceId: e.target.value })}
+                          onChange={(e) => {
+                            const selectedId = e.target.value;
+                            const relatedInvoice = invoices.find(inv => inv.id === selectedId);
+
+                            if (relatedInvoice) {
+                              setFormData({
+                                ...formData,
+                                relatedInvoiceId: selectedId,
+                                clientId: relatedInvoice.clientId,
+                                costCenterId: relatedInvoice.costCenterId || '',
+                                projectId: relatedInvoice.projectId || '',
+                                net: relatedInvoice.net, // Copy Net Amount
+                                purchaseOrderNumber: relatedInvoice.purchaseOrderNumber || '',
+                                dispatchGuideNumber: relatedInvoice.dispatchGuideNumber || '',
+                                items: relatedInvoice.items ? relatedInvoice.items.map(item => ({
+                                  ...item,
+                                  id: Math.random().toString(36).substr(2, 9) // Generate new IDs for the copy
+                                })) : []
+                              });
+                            } else {
+                              setFormData({ ...formData, relatedInvoiceId: selectedId });
+                            }
+                          }}
                           required={formData.type === InvoiceType.NOTA_CREDITO}
                         >
                           <option value="">Seleccione Factura...</option>
@@ -1182,41 +1387,43 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
         )
       }
       {/* Modal de Advertencia de Asignación */}
-      {showAssignmentWarning && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
-            <div className="p-8 text-center space-y-4">
-              <div className="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                <AlertTriangle size={40} />
+      {
+        showAssignmentWarning && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-[60]">
+            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
+              <div className="p-8 text-center space-y-4">
+                <div className="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <AlertTriangle size={40} />
+                </div>
+                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                  ¿Guardar sin Asignación?
+                </h3>
+                <p className="text-sm text-slate-500 font-medium">
+                  Esta factura no está vinculada a ningún <strong>Centro de Costo</strong> ni <strong>Proyecto</strong>.
+                  <br /><br />
+                  Esto afectará la trazabilidad en los reportes de gestión.
+                </p>
               </div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                ¿Guardar sin Asignación?
-              </h3>
-              <p className="text-sm text-slate-500 font-medium">
-                Esta factura no está vinculada a ningún <strong>Centro de Costo</strong> ni <strong>Proyecto</strong>.
-                <br /><br />
-                Esto afectará la trazabilidad en los reportes de gestión.
-              </p>
-            </div>
-            <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex flex-col gap-3">
-              <button
-                onClick={processSubmit}
-                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
-              >
-                Guardar de todos modos
-              </button>
-              <button
-                onClick={() => setShowAssignmentWarning(false)}
-                className="w-full py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
-              >
-                Volver y Corregir
-              </button>
+              <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex flex-col gap-3">
+                <button
+                  onClick={processSubmit}
+                  className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
+                >
+                  Guardar de todos modos
+                </button>
+                <button
+                  onClick={() => setShowAssignmentWarning(false)}
+                  className="w-full py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                >
+                  Volver y Corregir
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-    </div>
+    </div >
   );
 };
 
