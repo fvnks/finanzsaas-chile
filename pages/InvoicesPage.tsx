@@ -197,9 +197,12 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
   }, [filteredInvoices, sortConfig, clients]);
 
   const stats = useMemo(() => {
-    const net = filteredInvoices.reduce((sum, inv) => sum + inv.net, 0);
-    const iva = filteredInvoices.reduce((sum, inv) => sum + inv.iva, 0);
-    const total = filteredInvoices.reduce((sum, inv) => sum + inv.total, 0);
+    // Exclude cancelled invoices from totals
+    const activeInvoices = filteredInvoices.filter(inv => inv.status !== 'CANCELLED');
+
+    const net = activeInvoices.reduce((sum, inv) => sum + inv.net, 0);
+    const iva = activeInvoices.reduce((sum, inv) => sum + inv.iva, 0);
+    const total = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
     return { net, iva, total };
   }, [filteredInvoices]);
 
@@ -286,6 +289,42 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
 
 
   const processSubmit = () => {
+    // Frontend Validation for Duplicates (Pre-check)
+    // We check against loaded invoices. This is not perfect (doesn't check server if pagination existed),
+    // but good for immediate feedback in this context.
+    // Logic: 
+    // - If it's a new invoice (!editingId)
+    // - Check if there is an existing invoice with same Number + Type
+    // - If Type is COMPRA, also match ClientId.
+    // - If editing, exclude self.
+
+    if (!isEditing) {
+      const isDuplicate = invoices.some(inv => {
+        if (inv.status === 'CANCELLED') return false; // Ignore cancelled? Or strict? strict for now.
+
+        const sameNumber = inv.number === formData.number;
+        const sameType = inv.type === formData.type;
+
+        if (formData.type === InvoiceType.COMPRA) {
+          return sameNumber && sameType && inv.clientId === formData.clientId;
+        }
+
+        // For Sales/Notes, check global uniqueness (or per company if multi-tenant, but here global)
+        return sameNumber && sameType;
+      });
+
+      if (isDuplicate) {
+        // We need a way to show error. For now, alert() or a toast would be best. 
+        // Since we don't have a toast system visible here, I'll use alert for immediate feedback
+        // or set a form error state if I had one.
+        // Let's use a standard alert for now as a blocking warning.
+        const typeName = formData.type === InvoiceType.COMPRA ? 'Compra' : 'Documento';
+        alert(`Ya existe un documento ${typeName} con el folio ${formData.number}. Por favor verifique.`);
+        setPendingSubmit(false); // Reset pending state
+        return;
+      }
+    }
+
     const net = Number(formData.net);
     const iva = Math.round(net * IVA_RATE);
     const total = net + iva;
@@ -660,24 +699,34 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                       </div>
                     </td>
                     <td className="px-6 py-4 font-black text-slate-900">{formatCLP(inv.total)}</td>
+
                     <td className="px-6 py-4">
                       {/* Payment Status Toggle */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUpdate({ ...inv, isPaid: !inv.isPaid });
-                        }}
-                        className={`flex items-center px-2.5 py-1 rounded-full w-fit transition-all active:scale-95 border ${inv.isPaid
-                          ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                          : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                          }`}
-                        title="Clic para cambiar estado"
-                      >
-                        {inv.isPaid ? <CheckCircle size={14} className="mr-1.5" /> : <AlertTriangle size={14} className="mr-1.5" />}
-                        <span className="text-[10px] font-black uppercase tracking-wide">
-                          {inv.isPaid ? 'PAGADA' : 'PENDIENTE'}
-                        </span>
-                      </button>
+                      {inv.status === 'CANCELLED' ? (
+                        <div className="flex items-center px-2.5 py-1 rounded-full w-fit border bg-slate-100 text-slate-500 border-slate-200">
+                          <AlertTriangle size={14} className="mr-1.5" />
+                          <span className="text-[10px] font-black uppercase tracking-wide">
+                            NULA
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdate({ ...inv, isPaid: !inv.isPaid });
+                          }}
+                          className={`flex items-center px-2.5 py-1 rounded-full w-fit transition-all active:scale-95 border ${inv.isPaid
+                            ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                            : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                            }`}
+                          title="Clic para cambiar estado"
+                        >
+                          {inv.isPaid ? <CheckCircle size={14} className="mr-1.5" /> : <AlertTriangle size={14} className="mr-1.5" />}
+                          <span className="text-[10px] font-black uppercase tracking-wide">
+                            {inv.isPaid ? 'PAGADA' : 'PENDIENTE'}
+                          </span>
+                        </button>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {/* Days Overdue Calculation */}

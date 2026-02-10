@@ -259,6 +259,47 @@ router.post("/invoices", async (req, res) => {
         // Validate projectId handles empty strings
         const validProjectId = projectId && projectId !== '' ? projectId : undefined;
 
+        // VALIDATION: Check for duplicates
+        // 1. Calculate check criteria
+        const checkType = type || 'SALE';
+
+        // Build where clause
+        const duplicateWhere: any = {
+            number: number,
+            type: checkType,
+            status: { not: 'CANCELLED' } // We might allow re-using folio if previous was cancelled? Or strictly never?
+            // Usually efficient tax systems don't allow re-use even if cancelled. 
+            // Let's stick to strict: no duplicates active or inactive. 
+            // actually, let's just check number + type + client (if purchase)
+        };
+        // Remove status check to be strict
+        delete duplicateWhere.status;
+
+        // 2. If it is a PURCHASE (COMPRA), it is unique per Client.
+        if (checkType === 'COMPRA') {
+            if (!clientId) {
+                return res.status(400).json({ error: "Debe especificar un cliente para facturas de compra." });
+            }
+            duplicateWhere.clientId = clientId;
+        } else {
+            // For SALES (VENTA), NOTES, etc emitted by US, they should be global unique.
+            // However, verify if we have multiple emission points? Assuming single SaaS for now.
+        }
+
+        const existing = await prisma.invoice.findFirst({
+            where: duplicateWhere
+        });
+
+        if (existing) {
+            const typeName = checkType === 'COMPRA' ? 'Compra' :
+                checkType === 'VENTA' ? 'Venta' :
+                    checkType === 'NOTA_CREDITO' ? 'Nota de Crédito' : 'Documento';
+
+            return res.status(409).json({
+                error: `El folio ${number} ya existe para ${typeName}.`
+            });
+        }
+
         const result = await prisma.$transaction(async (tx) => {
             const newInvoice = await tx.invoice.create({
                 data: {
