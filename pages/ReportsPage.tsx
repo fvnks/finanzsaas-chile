@@ -29,7 +29,7 @@ interface ReportsPageProps {
   clients?: any[];
 }
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCenters }) => {
   const [startDate, setStartDate] = useState<string>('2023-01-01');
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
@@ -42,7 +42,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
       return date >= start && date <= end;
     });
 
-    // Agrupar por proyecto
+    const totalSales = filteredInvoices
+      .filter(inv => inv.type === InvoiceType.VENTA)
+      .reduce((sum, inv) => sum + inv.total, 0);
+
+    const totalPurchases = filteredInvoices
+      .filter(inv => inv.type === InvoiceType.COMPRA)
+      .reduce((sum, inv) => sum + inv.total, 0);
+
+    // Group by project
     const projectStats = projects.map(p => {
       const pInvoices = filteredInvoices.filter(inv => inv.projectId === p.id);
       const sales = pInvoices
@@ -61,13 +69,30 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
         margin: sales - purchases,
         execution: p.budget > 0 ? (sales / p.budget) * 100 : 0
       };
-    });
+    }).filter(p => p.sales > 0 || p.purchases > 0);
 
-    const totalSales = projectStats.reduce((sum, p) => sum + p.sales, 0);
-    const totalPurchases = projectStats.reduce((sum, p) => sum + p.purchases, 0);
+    // Group by Cost Center
+    const ccStats = (costCenters || []).map(cc => {
+      const ccInvoices = filteredInvoices.filter(inv => inv.costCenterId === cc.id);
+      const sales = ccInvoices
+        .filter(inv => inv.type === InvoiceType.VENTA)
+        .reduce((sum, inv) => sum + inv.total, 0);
+      const purchases = ccInvoices
+        .filter(inv => inv.type === InvoiceType.COMPRA)
+        .reduce((sum, inv) => sum + inv.total, 0);
 
-    return { projectStats, totalSales, totalPurchases };
-  }, [invoices, projects, startDate, endDate]);
+      return {
+        id: cc.id,
+        name: cc.name,
+        code: cc.code,
+        sales,
+        purchases,
+        margin: sales - purchases
+      };
+    }).filter(cc => cc.sales > 0 || cc.purchases > 0);
+
+    return { projectStats, ccStats, totalSales, totalPurchases };
+  }, [invoices, projects, costCenters, startDate, endDate]);
 
   const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316'];
 
@@ -143,12 +168,14 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Gráfico de Barras: Comparativa Ventas vs Costos por Proyecto */}
+        {/* Gráfico de Barras: Comparativa Ventas vs Costos (Prioridad Centros de Costo si no hay proyectos) */}
         <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Rentabilidad Comparativa</h3>
-              <p className="text-xs text-slate-500 font-medium">Comparación directa entre Ventas (Ingresos) y Compras (Egresos) por cada proyecto.</p>
+              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">
+                Rentabilidad Comparativa {reportData.projectStats.length === 0 ? "(Por Centro de Costo)" : "(Por Proyecto)"}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium">Comparación directa entre Ventas (Ingresos) y Compras (Egresos).</p>
             </div>
             <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl shadow-sm">
               <Activity size={24} />
@@ -156,7 +183,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
           </div>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={reportData.projectStats} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
                   dataKey="name"
@@ -196,7 +223,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
           </div>
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={reportData.projectStats}>
+              <BarChart data={reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
                   dataKey="name"
@@ -216,7 +243,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
                   formatter={(value: any) => formatCLP(value)}
                 />
                 <Bar dataKey="sales" name="Ventas" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={40}>
-                  {reportData.projectStats.map((entry, index) => (
+                  {(reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
@@ -240,7 +267,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={reportData.projectStats}
+                  data={reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats}
                   cx="50%"
                   cy="50%"
                   innerRadius={70}
@@ -248,7 +275,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
                   paddingAngle={8}
                   dataKey="sales"
                 >
-                  {reportData.projectStats.map((entry, index) => (
+                  {(reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -260,67 +287,114 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects }) => {
         </div>
       </div>
 
-      {/* Tabla de Detalle de Proyectos */}
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="text-lg font-black text-slate-800 flex items-center">
-            <FileText className="mr-2 text-slate-400" size={20} /> Detalle de Ejecución Comercial
-          </h3>
-          <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-lg uppercase tracking-widest">
-            {reportData.projectStats.length} Proyectos Analizados
-          </span>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              <tr>
-                <th className="px-8 py-4">Proyecto</th>
-                <th className="px-8 py-4">Presupuesto</th>
-                <th className="px-8 py-4">Ventas Brutas</th>
-                <th className="px-8 py-4">Compras/Gastos</th>
-                <th className="px-8 py-4">Margen Neto</th>
-                <th className="px-8 py-4">Ejecución</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {reportData.projectStats.map((stat, idx) => (
-                <tr key={stat.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-8 py-5">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
-                        {idx + 1}
-                      </div>
-                      <span className="font-bold text-slate-800 text-sm">{stat.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5 text-sm text-slate-500 font-medium">{formatCLP(stat.budget)}</td>
-                  <td className="px-8 py-5 text-sm font-black text-green-600">{formatCLP(stat.sales)}</td>
-                  <td className="px-8 py-5 text-sm font-bold text-orange-500">{formatCLP(stat.purchases)}</td>
-                  <td className="px-8 py-5 text-sm font-black text-slate-900">{formatCLP(stat.margin)}</td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex-1 h-1.5 w-20 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-blue-500 rounded-full"
-                          style={{ width: `${Math.min(stat.execution, 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-black text-slate-400">{stat.execution.toFixed(1)}%</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {reportData.projectStats.length === 0 && (
+      {/* Tabla de Detalle de Centros de Costo (Si no hay proyectos) */}
+      {reportData.projectStats.length === 0 && reportData.ccStats.length > 0 && (
+        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="text-lg font-black text-slate-800 flex items-center">
+              <Calculator className="mr-2 text-slate-400" size={20} /> Detalle por Centro de Costo
+            </h3>
+            <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-lg uppercase tracking-widest">
+              {reportData.ccStats.length} Centros Analizados
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 <tr>
-                  <td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">
-                    No hay datos suficientes en el período seleccionado.
-                  </td>
+                  <th className="px-8 py-4">Código / Nombre</th>
+                  <th className="px-8 py-4">Ventas Brutas</th>
+                  <th className="px-8 py-4">Compras/Gastos</th>
+                  <th className="px-8 py-4">Margen Neto</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {reportData.ccStats.map((stat, idx) => (
+                  <tr key={stat.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-xs uppercase">
+                          {stat.code.charAt(0)}
+                        </div>
+                        <div>
+                          <span className="font-bold text-slate-800 text-sm block">{stat.name}</span>
+                          <span className="text-[10px] font-mono text-slate-400">{stat.code}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-sm font-black text-green-600">{formatCLP(stat.sales)}</td>
+                    <td className="px-8 py-5 text-sm font-bold text-orange-500">{formatCLP(stat.purchases)}</td>
+                    <td className="px-8 py-5 text-sm font-black text-slate-900">{formatCLP(stat.margin)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Tabla de Detalle de Proyectos */}
+      {reportData.projectStats.length > 0 && (
+        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="text-lg font-black text-slate-800 flex items-center">
+              <FileText className="mr-2 text-slate-400" size={20} /> Detalle de Ejecución Comercial
+            </h3>
+            <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-lg uppercase tracking-widest">
+              {reportData.projectStats.length} Proyectos Analizados
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <tr>
+                  <th className="px-8 py-4">Proyecto</th>
+                  <th className="px-8 py-4">Presupuesto</th>
+                  <th className="px-8 py-4">Ventas Brutas</th>
+                  <th className="px-8 py-4">Compras/Gastos</th>
+                  <th className="px-8 py-4">Margen Neto</th>
+                  <th className="px-8 py-4">Ejecución</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {reportData.projectStats.map((stat, idx) => (
+                  <tr key={stat.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                          {idx + 1}
+                        </div>
+                        <span className="font-bold text-slate-800 text-sm">{stat.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-sm text-slate-500 font-medium">{formatCLP(stat.budget)}</td>
+                    <td className="px-8 py-5 text-sm font-black text-green-600">{formatCLP(stat.sales)}</td>
+                    <td className="px-8 py-5 text-sm font-bold text-orange-500">{formatCLP(stat.purchases)}</td>
+                    <td className="px-8 py-5 text-sm font-black text-slate-900">{formatCLP(stat.margin)}</td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex-1 h-1.5 w-20 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full"
+                            style={{ width: `${Math.min(stat.execution, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400">{stat.execution.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {reportData.projectStats.length === 0 && reportData.ccStats.length === 0 && (
+        <div className="bg-white p-12 rounded-[2rem] border border-slate-100 text-center text-slate-400 italic font-medium">
+          No hay datos disponibles para el período seleccionado.
+        </div>
+      )}
     </div>
   );
 };

@@ -21,7 +21,7 @@ app.use((req, res, next) => {
     }
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, x-company-id, active-company-id');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
     // Handle Preflight directly
@@ -34,6 +34,15 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+// Company Context Middleware
+app.use((req, res, next) => {
+    const companyId = req.headers['x-company-id'];
+    if (companyId) {
+        (req as any).companyId = typeof companyId === 'string' ? companyId : companyId[0];
+    }
+    next();
+});
 
 // API Routes
 app.use("/api", routes);

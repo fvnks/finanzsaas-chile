@@ -11,9 +11,10 @@ import {
     UserPlus,
     Briefcase,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    Building
 } from 'lucide-react';
-import { User, UserRole } from '../types';
+import { User, UserRole, Company } from '../types';
 
 import { API_URL } from '../src/config.ts';
 
@@ -26,12 +27,14 @@ interface JobTitle {
 interface AdminPageProps {
     currentUser: User | null;
     projects: any[]; // Or proper type
+    onRefreshUser?: () => void;
 }
 
-const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
-    const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES'>('USERS');
+const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshUser }) => {
+    const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES' | 'COMPANIES'>('USERS');
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<JobTitle[]>([]);
+    const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(false);
 
     // Define available sections for permissions
@@ -58,8 +61,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
         password: '',
         role: 'USER',
         allowedSections: [] as string[],
-        assignedProjectIds: [] as string[]
+        assignedProjectIds: [] as string[],
+        companyIds: [] as string[]
     });
+
+    // Company Form State
+    const [companyForm, setCompanyForm] = useState({ name: '', rut: '', logoUrl: '' });
+    const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 
     // Role Form State
     const [roleForm, setRoleForm] = useState({ name: '', description: '' });
@@ -75,10 +83,21 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
                 const res = await fetch(`${API_URL}/users`);
                 const data = await res.json();
                 setUsers(Array.isArray(data) ? data : []);
-            } else {
+            } else if (activeTab === 'ROLES') {
                 const res = await fetch(`${API_URL}/job-titles`);
                 const data = await res.json();
                 setRoles(Array.isArray(data) ? data : []);
+            } else {
+                const res = await fetch(`${API_URL}/companies`);
+                const data = await res.json();
+                setCompanies(Array.isArray(data) ? data : []);
+            }
+
+            // Always fetch companies for User modal if not already fetched
+            if (activeTab === 'USERS' && companies.length === 0) {
+                const res = await fetch(`${API_URL}/companies`);
+                const data = await res.json();
+                setCompanies(Array.isArray(data) ? data : []);
             }
         } catch (error) {
             console.error("Error fetching admin data:", error);
@@ -158,6 +177,62 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
         }
     };
 
+    const handleCompanySubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (editingCompany) {
+                const res = await fetch(`${API_URL}/companies/${editingCompany.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(companyForm)
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    setCompanies(companies.map(c => c.id === updated.id ? updated : c));
+                    setEditingCompany(null);
+                    setCompanyForm({ name: '', rut: '', logoUrl: '' });
+                }
+            } else {
+                const res = await fetch(`${API_URL}/companies`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...companyForm,
+                        creatorId: currentUser?.id
+                    })
+                });
+                if (res.ok) {
+                    const created = await res.json();
+                    setCompanies([...companies, created]);
+                    setCompanyForm({ name: '', rut: '', logoUrl: '' });
+                    if (onRefreshUser) onRefreshUser();
+                }
+            }
+        } catch (err) {
+            console.error("Error creating/updating company:", err);
+        }
+    };
+
+    const handleDeleteCompany = async (id: string) => {
+        if (!confirm('¿Estás seguro de eliminar esta empresa? Esto podría afectar datos vinculados.')) return;
+        try {
+            await fetch(`${API_URL}/companies/${id}`, { method: 'DELETE' });
+            setCompanies(companies.filter(c => c.id !== id));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const startEditCompany = (company: Company) => {
+        setEditingCompany(company);
+        setCompanyForm({ name: company.name, rut: company.rut, logoUrl: company.logoUrl || '' });
+    };
+
+    const cancelEditCompany = () => {
+        setEditingCompany(null);
+        setCompanyForm({ name: '', rut: '', logoUrl: '' });
+    };
+
     const openUserModal = (user?: User) => {
         if (user) {
             setEditingUser(user);
@@ -167,7 +242,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
                 password: '',
                 role: user.role,
                 allowedSections: user.allowedSections || [],
-                assignedProjectIds: user.assignedProjectIds || []
+                assignedProjectIds: user.assignedProjectIds || [],
+                companyIds: user.companies?.map(c => c.id) || []
             });
         } else {
             setEditingUser(null);
@@ -177,9 +253,11 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
                 password: '',
                 role: 'USER',
                 allowedSections: availableSections.map(s => s.id),
-                assignedProjectIds: []
+                assignedProjectIds: [],
+                companyIds: []
             });
         }
+        setShowUserModal(false); // Close first then open to reset? No, setState is enough.
         setShowUserModal(true);
     };
 
@@ -213,7 +291,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
                         onClick={() => setActiveTab('ROLES')}
                         className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'ROLES' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        <Briefcase size={14} /> CARGOS / ROLES
+                        <Briefcase size={14} /> CARGOS
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('COMPANIES')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'COMPANIES' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <Building size={14} /> EMPRESAS
                     </button>
                 </div>
             </div>
@@ -324,6 +408,96 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
                 </div>
             )}
 
+            {activeTab === 'COMPANIES' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="md:col-span-1">
+                        <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl">
+                            <h3 className="text-xl font-black mb-6 flex items-center">
+                                <Plus className="mr-2" /> {editingCompany ? 'Editar Empresa' : 'Nueva Empresa'}
+                            </h3>
+                            <form onSubmit={handleCompanySubmit} className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Ej: Constructora Vertikal"
+                                        className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 rounded-2xl text-white font-bold placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={companyForm.name}
+                                        onChange={e => setCompanyForm({ ...companyForm, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">RUT</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="76.123.456-7"
+                                        className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 rounded-2xl text-white font-bold placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={companyForm.rut}
+                                        onChange={e => setCompanyForm({ ...companyForm, rut: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Logo URL (Opcional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="https://..."
+                                        className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 rounded-2xl text-white font-medium placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={companyForm.logoUrl}
+                                        onChange={e => setCompanyForm({ ...companyForm, logoUrl: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex space-x-2">
+                                    <button type="submit" className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-lg transition-all active:scale-95">
+                                        {editingCompany ? 'Actualizar' : 'Guardar'}
+                                    </button>
+                                    {editingCompany && (
+                                        <button type="button" onClick={cancelEditCompany} className="px-4 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-2xl transition-all">
+                                            Cancelar
+                                        </button>
+                                    )}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-200">
+                            <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center"><Building className="mr-2 text-slate-400" /> Empresas Registradas</h3>
+                            <div className="space-y-3">
+                                {companies.length === 0 && <p className="text-slate-400 italic font-medium">No hay empresas registradas.</p>}
+                                {companies.map(company => (
+                                    <div key={company.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-indigo-200 transition-all">
+                                        <div className="flex items-center space-x-4">
+                                            {company.logoUrl ? (
+                                                <img src={company.logoUrl} alt={company.name} className="w-10 h-10 rounded-lg object-contain bg-white" />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-black">
+                                                    {company.name.charAt(0)}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h4 className="font-bold text-slate-800">{company.name}</h4>
+                                                <p className="text-xs text-slate-500 font-mono">{company.rut}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => startEditCompany(company)} className="p-2 text-slate-300 hover:text-blue-500 transition-colors">
+                                                <Edit2 size={18} />
+                                            </button>
+                                            <button onClick={() => handleDeleteCompany(company.id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showUserModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
                     <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden my-8">
@@ -365,6 +539,32 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects }) => {
                                         <option value="SUPERVISOR">Jefe de Área</option>
                                         <option value="ADMIN">Administrador</option>
                                     </select>
+                                </div>
+
+                                {/* Company Assignment */}
+                                <div className="pt-4 border-t border-slate-100">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Empresas Asignadas</label>
+                                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-1">
+                                        {companies.map(company => (
+                                            <label key={company.id} className="flex items-center space-x-2 p-1.5 hover:bg-white rounded-lg cursor-pointer transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                    checked={userForm.companyIds?.includes(company.id)}
+                                                    onChange={e => {
+                                                        const checked = e.target.checked;
+                                                        setUserForm(prev => ({
+                                                            ...prev,
+                                                            companyIds: checked
+                                                                ? [...(prev.companyIds || []), company.id]
+                                                                : (prev.companyIds || []).filter(id => id !== company.id)
+                                                        }));
+                                                    }}
+                                                />
+                                                <span className="text-xs font-medium text-slate-700 truncate">{company.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* Project Assignment - Condensed */}

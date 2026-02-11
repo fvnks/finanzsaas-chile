@@ -13,6 +13,13 @@ export enum InvoiceType {
   NOTA_DEBITO = 'NOTA_DEBITO'
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  rut: string;
+  logoUrl?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -20,6 +27,8 @@ export interface User {
   role: UserRole;
   allowedSections?: string[];
   assignedProjectIds?: string[];
+  companies?: Company[];
+  activeCompanyId?: string;
 }
 
 export interface Client {

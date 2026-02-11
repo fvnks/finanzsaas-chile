@@ -15,6 +15,7 @@ import {
   Map
 } from 'lucide-react';
 import { User, UserRole } from '../types';
+import CompanySwitcher from './CompanySwitcher.tsx';
 
 interface SidebarProps {
   activeTab: string;
@@ -114,17 +115,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         }`}
     >
       <div className="p-4 flex items-center justify-between">
-        {!isCollapsed && (
-          <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent truncate">
-              Vertikal
-            </h1>
-            <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-semibold truncate">SaaS Edition</p>
+        {!isCollapsed ? (
+          <div className="w-full mr-2">
+            <CompanySwitcher />
+          </div>
+        ) : (
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shrink-0 mx-auto mb-2">
+            V
           </div>
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors mx-auto"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
         >
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronRight className="rotate-180" size={20} />}
         </button>
@@ -151,8 +153,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
                   onClick={() => setActiveTab(item.id)}
                   title={isCollapsed ? item.label : undefined}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'space-x-3 px-3'} py-2.5 rounded-lg transition-all ${activeTab === item.id
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                     }`}
                 >
                   <item.icon size={20} strokeWidth={2} />

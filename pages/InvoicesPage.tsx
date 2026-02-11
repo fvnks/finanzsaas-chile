@@ -92,7 +92,27 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: 'asc' | 'desc';
-  }>({ key: 'date', direction: 'desc' });
+  }>(() => {
+    // Initialize from localStorage if available
+    try {
+      const saved = localStorage.getItem('invoiceSortConfig');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Failed to parse sort config', e);
+    }
+    return { key: 'date', direction: 'desc' };
+  });
+
+  // Persist sort config
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('invoiceSortConfig', JSON.stringify(sortConfig));
+    } catch (e) {
+      console.error('Failed to save sort config', e);
+    }
+  }, [sortConfig]);
 
   const handleSort = (key: string) => {
     setSortConfig(current => ({
@@ -629,6 +649,9 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                     {getSortIcon('client')}
                   </div>
                 </th>
+                <th className="px-6 py-4 text-left">
+                  Asignación
+                </th>
                 <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 hover:text-blue-600 transition-colors group" onClick={() => handleSort('total')}>
                   <div className="flex items-center">
                     Total
@@ -696,6 +719,45 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                         <span className="text-[10px] text-slate-400 font-medium">
                           {clients.find(c => c.id === inv.clientId)?.rut}
                         </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1.5">
+                        {inv.projectId && (
+                          <div className="flex items-center text-xs" title="Proyecto asociado">
+                            <Briefcase size={12} className="mr-1.5 text-blue-500 flex-shrink-0" />
+                            <span className="font-semibold text-slate-700 truncate max-w-[140px]">
+                              {projects.find(p => p.id === inv.projectId)?.name}
+                            </span>
+                          </div>
+                        )}
+                        {inv.costCenterId && (
+                          <div className="flex items-center text-xs" title="Centro de Costo">
+                            <Building2 size={12} className="mr-1.5 text-indigo-500 flex-shrink-0" />
+                            <span className="font-medium text-slate-600 truncate max-w-[140px]">
+                              {costCenters.find(cc => cc.id === inv.costCenterId)?.name}
+                            </span>
+                          </div>
+                        )}
+                        {/* References Group */}
+                        {(inv.purchaseOrderNumber || inv.dispatchGuideNumber) && (
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {inv.purchaseOrderNumber && (
+                              <span className="text-[9px] bg-slate-50 border border-slate-200 text-slate-500 px-1.5 py-0.5 rounded flex items-center" title="Orden de Compra">
+                                <span className="font-bold mr-1">OC:</span> {inv.purchaseOrderNumber}
+                              </span>
+                            )}
+                            {inv.dispatchGuideNumber && (
+                              <span className="text-[9px] bg-slate-50 border border-slate-200 text-slate-500 px-1.5 py-0.5 rounded flex items-center" title="Guía de Despacho">
+                                <span className="font-bold mr-1">GD:</span> {inv.dispatchGuideNumber}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {!inv.projectId && !inv.costCenterId && !inv.purchaseOrderNumber && !inv.dispatchGuideNumber && (
+                          <span className="text-[10px] text-slate-300 italic pl-1">-</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 font-black text-slate-900">{formatCLP(inv.total)}</td>
@@ -805,9 +867,15 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                         <td className="px-6 py-3 text-xs text-slate-400 italic">
                           Documento asociado
                         </td>
+                        <td className="px-6 py-3">
+                          {/* Assignment Empty */}
+                        </td>
                         <td className="px-6 py-3 font-bold text-slate-700 text-sm">{formatCLP(child.total)}</td>
                         <td className="px-6 py-3">
                           {/* Empty or specific status for child */}
+                        </td>
+                        <td className="px-6 py-3">
+                          {/* Antigüedad Empty */}
                         </td>
                         <td className="px-6 py-3">
                           <div className="flex items-center justify-center space-x-1">
@@ -834,7 +902,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
               ))}
               {groupedInvoices.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-20 text-center text-slate-400 italic font-medium">
+                  <td colSpan={9} className="px-6 py-20 text-center text-slate-400 italic font-medium">
                     {/* Empty State */}
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <Search size={40} className="text-slate-200" />
@@ -878,143 +946,179 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
               </div>
 
               {/* WEB VIEW CONTENT (Scrollable) */}
-              <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex-1 overflow-y-auto bg-slate-100 p-8 flex justify-center">
+                <div className="bg-white w-full max-w-3xl shadow-xl rounded-sm border border-slate-200 p-10 min-h-[800px] flex flex-col relative text-slate-800">
 
-                  {/* Left Column: Details */}
-                  <div className="md:col-span-2 space-y-6">
-                    {/* Status Card */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Resumen General</h4>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <p className="text-slate-500 text-sm mb-1">Fecha Emisión</p>
-                          <div className="flex items-center space-x-2">
-                            <Calendar size={18} className="text-blue-500" />
-                            <span className="font-bold text-slate-800">{selectedInvoice.date}</span>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-slate-500 text-sm mb-1">Estado SII</p>
-                          <div className="flex items-center space-x-2">
-                            <ShieldCheck size={18} className="text-green-500" />
-                            <span className="font-bold text-slate-800">Validado y Recibido</span>
-                          </div>
+                  {/* Watermark */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rotate-45 transform translate-x-32 -translate-y-32 z-0 rounded-full mix-blend-multiply opacity-50 pointer-events-none"></div>
+
+                  {/* HEADER ROW */}
+                  <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-8 relative z-10">
+                    <div>
+                      <div className="mb-2">
+                        <div className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">
+                          Vertikal Finanzas
+                          <span className="text-blue-600">.SaaS</span>
                         </div>
                       </div>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Soluciones Tecnológicas</p>
+                      <p className="text-[10px] text-slate-400">Av. Providencia 1234, Of. 601, Santiago</p>
+                      <p className="text-[10px] text-slate-400">contacto@vertikalfinanzas.cl</p>
                     </div>
-
-                    {/* Items Table */}
-                    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                      <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/50">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Detalle de Ítems</h4>
+                    <div className="text-right">
+                      <div className="border-[3px] border-red-600 p-3 inline-block mb-2 bg-white">
+                        <p className="text-red-600 font-bold text-sm uppercase tracking-widest leading-none text-center mb-1">R.U.T.: 76.123.456-7</p>
+                        <p className="text-slate-900 font-black text-lg uppercase tracking-tight my-1 text-center leading-none">
+                          {selectedInvoice.type.replace('_', ' ')}
+                        </p>
+                        <p className="text-red-600 font-black text-lg text-center">Nº {selectedInvoice.number}</p>
                       </div>
-                      <table className="w-full text-left text-sm">
-                        <thead className="bg-white text-slate-500 font-bold border-b border-slate-100">
-                          <tr>
-                            <th className="px-6 py-3">Descripción</th>
-                            <th className="px-6 py-3 text-center">Cant.</th>
-                            <th className="px-6 py-3 text-right">Precio Unit.</th>
-                            <th className="px-6 py-3 text-right">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {selectedInvoice.items?.map((item, idx) => (
-                            <tr key={idx}>
-                              <td className="px-6 py-4 font-medium text-slate-700">{item.description}</td>
-                              <td className="px-6 py-4 text-center text-slate-500">{item.quantity}</td>
-                              <td className="px-6 py-4 text-right text-slate-500">{formatCLP(item.unitPrice)}</td>
-                              <td className="px-6 py-4 text-right font-bold text-slate-800">{formatCLP(item.total)}</td>
-                            </tr>
-                          ))}
-                          {(!selectedInvoice.items || selectedInvoice.items.length === 0) && (
-                            <tr>
-                              <td colSpan={4} className="px-6 py-8 text-center text-slate-400 italic">
-                                Sin ítems detallados (Ingreso manual directo).
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                      <p className="text-[9px] font-bold text-red-600 uppercase mt-1">S.I.I. - SANTIAGO CENTRO</p>
                     </div>
                   </div>
 
-                  {/* Right Column: Financials & Meta */}
-                  <div className="space-y-6">
-                    {/* Totals Card */}
-                    <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-200">
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-slate-400 text-sm">
-                          <span>Monto Neto</span>
-                          <span>{formatCLP(selectedInvoice.net)}</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400 text-sm">
-                          <span>IVA (19%)</span>
-                          <span>{formatCLP(selectedInvoice.iva)}</span>
-                        </div>
-                        <div className="pt-4 mt-2 border-t border-slate-700 flex justify-between items-center">
-                          <span className="font-bold text-sm uppercase text-slate-400">Total a Pagar</span>
-                          <span className="text-2xl font-black text-white">{formatCLP(selectedInvoice.total)}</span>
-                        </div>
+                  {/* INFO ROW GRID */}
+                  <div className="grid grid-cols-12 gap-8 mb-8 relative z-10 text-xs">
+                    {/* COL 1: EMISOR (Implícito arriba, aquí ponemos fecha) */}
+                    <div className="col-span-4 space-y-4">
+                      <div>
+                        <p className="font-bold uppercase text-slate-400 text-[10px] mb-1">Fecha Emisión</p>
+                        <p className="font-bold text-slate-900 text-sm">{selectedInvoice.date}</p>
+                      </div>
+                      <div>
+                        <p className="font-bold uppercase text-slate-400 text-[10px] mb-1">Vencimiento</p>
+                        <p className="font-bold text-slate-900 text-sm">
+                          {selectedInvoice.dueDate || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-bold uppercase text-slate-400 text-[10px] mb-1">Estado Pago</p>
+                        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide border \${selectedInvoice.isPaid 
+                            ? 'bg-green-50 text-green-700 border-green-200' 
+                            : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                          {selectedInvoice.isPaid ? 'PAGADO' : 'PENDIENTE'}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Entity Card */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Información Comercial</h4>
-                      <div className="space-y-3">
-                        <div className="p-3 bg-slate-50 rounded-xl">
-                          <p className="text-xs text-slate-400 uppercase font-bold mb-1">Razón Social</p>
-                          <p className="font-bold text-slate-800 text-sm line-clamp-2">
-                            {clients.find(c => c.id === selectedInvoice.clientId)?.razonSocial || 'Desconocido'}
+                    {/* COL 2: RECEPTOR (Cliente) */}
+                    <div className="col-span-4 space-y-3 bg-slate-50 p-4 rounded border border-slate-100">
+                      <p className="font-bold uppercase text-slate-400 text-[10px] tracking-wider mb-2 border-b border-slate-200 pb-1">Señor(es)</p>
+                      <div>
+                        <p className="font-black text-slate-800 text-sm uppercase leading-tight">
+                          {clients.find(c => c.id === selectedInvoice.clientId)?.razonSocial || 'Cliente Desconocido'}
+                        </p>
+                        <p className="font-mono text-slate-500 font-bold mt-1">
+                          {clients.find(c => c.id === selectedInvoice.clientId)?.rut || 'S/R'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 italic truncate">
+                          {clients.find(c => c.id === selectedInvoice.clientId)?.email || 'Sin contacto'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* COL 3: REFERENCIAS (Trazabilidad) */}
+                    <div className="col-span-4 space-y-3 bg-slate-50 p-4 rounded border border-slate-100">
+                      <p className="font-bold uppercase text-slate-400 text-[10px] tracking-wider mb-2 border-b border-slate-200 pb-1">Referencias</p>
+
+                      <div className="grid grid-cols-1 gap-2">
+                        {/* Centro de Costo */}
+                        <div>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase">Centro de Costo</p>
+                          <p className="font-bold text-slate-700">
+                            {costCenters.find(cc => cc.id === selectedInvoice.costCenterId)?.name || '-'}
                           </p>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="p-3 bg-slate-50 rounded-xl">
-                            <p className="text-xs text-slate-400 uppercase font-bold mb-1">RUT</p>
-                            <p className="font-mono font-bold text-slate-600 text-xs">
-                              {clients.find(c => c.id === selectedInvoice.clientId)?.rut || 'S/R'}
-                            </p>
-                          </div>
-                          <div className="p-3 bg-slate-50 rounded-xl">
-                            <p className="text-xs text-slate-400 uppercase font-bold mb-1">Contacto</p>
-                            <p className="font-bold text-blue-600 text-xs truncate">
-                              {clients.find(c => c.id === selectedInvoice.clientId)?.email || 'N/A'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Assignment Card */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-full -mr-8 -mt-8"></div>
-                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 relative z-10">Trazabilidad</h4>
-                      <div className="space-y-4 relative z-10">
-                        <div>
-                          <p className="text-xs text-slate-400 mb-1">Centro de Costo</p>
-                          <div className="flex items-center space-x-2">
-                            <Target size={16} className="text-blue-500" />
-                            <span className="font-bold text-slate-700 text-sm">
-                              {costCenters.find(cc => cc.id === selectedInvoice.costCenterId)?.name || 'Sin Asignar'}
-                            </span>
-                          </div>
-                        </div>
+                        {/* Proyecto - Si existe */}
                         {selectedInvoice.projectId && (
                           <div>
-                            <p className="text-xs text-slate-400 mb-1">Proyecto</p>
-                            <div className="flex items-center space-x-2">
-                              <Briefcase size={16} className="text-purple-500" />
-                              <span className="font-bold text-slate-700 text-sm">
-                                {projects.find(p => p.id === selectedInvoice.projectId)?.name}
-                              </span>
-                            </div>
+                            <p className="text-[9px] text-slate-400 font-bold uppercase">Proyecto</p>
+                            <p className="font-bold text-blue-700">
+                              {projects.find(p => p.id === selectedInvoice.projectId)?.name}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* OC / GD */}
+                        {(selectedInvoice.purchaseOrderNumber || selectedInvoice.dispatchGuideNumber) && (
+                          <div className="pt-2 border-t border-slate-200 mt-1 flex flex-wrap gap-2">
+                            {selectedInvoice.purchaseOrderNumber && (
+                              <div>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase mr-1">O.C.:</span>
+                                <span className="font-mono font-bold text-slate-800 bg-white px-1 border border-slate-200 rounded">
+                                  {selectedInvoice.purchaseOrderNumber}
+                                </span>
+                              </div>
+                            )}
+                            {selectedInvoice.dispatchGuideNumber && (
+                              <div>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase mr-1">G.D.:</span>
+                                <span className="font-mono font-bold text-slate-800 bg-white px-1 border border-slate-200 rounded">
+                                  {selectedInvoice.dispatchGuideNumber}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                     </div>
-
                   </div>
+
+                  {/* ITEMS TABLE */}
+                  <div className="flex-1 mb-8">
+                    <table className="w-full text-xs">
+                      <thead className="border-b-2 border-slate-900 text-slate-900 font-black uppercase tracking-wider">
+                        <tr>
+                          <th className="py-2 text-left">Descripción</th>
+                          <th className="py-2 text-center w-20">Cant.</th>
+                          <th className="py-2 text-right w-32">Precio Unit.</th>
+                          <th className="py-2 text-right w-32">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                        {selectedInvoice.items && selectedInvoice.items.length > 0 ? (
+                          selectedInvoice.items.map((item, idx) => (
+                            <tr key={idx}>
+                              <td className="py-3 pr-4">
+                                <p className="font-bold text-slate-900">{item.description}</p>
+                              </td>
+                              <td className="py-3 text-center">{item.quantity}</td>
+                              <td className="py-3 text-right text-slate-500">{formatCLP(item.unitPrice)}</td>
+                              <td className="py-3 text-right font-bold text-slate-900">{formatCLP(item.total)}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="py-8 text-center text-slate-400 italic">
+                              Sin detalle de ítems.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* FOOTER / TOTALS */}
+                  <div className="border-t-2 border-slate-900 pt-4 flex justify-end">
+                    <div className="w-64 space-y-2 text-sm">
+                      <div className="flex justify-between text-slate-500 font-medium">
+                        <span>Monto Neto</span>
+                        <span>{formatCLP(selectedInvoice.net)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-500 font-medium">
+                        <span>I.V.A. (19%)</span>
+                        <span>{formatCLP(selectedInvoice.iva)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-900 font-black text-lg pt-2 border-t border-slate-200 mt-2">
+                        <span>TOTAL</span>
+                        <span>{formatCLP(selectedInvoice.total)}</span>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -1092,6 +1196,24 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                         )}
                       </div>
                     </div>
+                    <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-slate-200">
+                      {selectedInvoice.purchaseOrderNumber && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">Orden de Compra</span>
+                          <span className="font-mono font-bold text-slate-900 text-sm border border-slate-300 px-2 py-0.5 rounded bg-white">
+                            {selectedInvoice.purchaseOrderNumber}
+                          </span>
+                        </div>
+                      )}
+                      {selectedInvoice.dispatchGuideNumber && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">Guía de Despacho</span>
+                          <span className="font-mono font-bold text-slate-900 text-sm border border-slate-300 px-2 py-0.5 rounded bg-white">
+                            {selectedInvoice.dispatchGuideNumber}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Desglose Financiero */}
                     <div className="space-y-4 mt-8">
@@ -1162,7 +1284,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                 </button>
               </div>
             </div>
-          </div>
+          </div >
         )
       }
 
