@@ -32,7 +32,8 @@ import {
   Clock, // Added Clock for overdue icon
   ArrowUpDown, // Added for sorting
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Truck // Added for Dispatch Guides
 } from 'lucide-react';
 import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem } from '../types';
 import { formatCLP, IVA_RATE } from '../constants';
@@ -85,7 +86,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     dateStart: '',
     dateEnd: '',
     minAmount: '',
-    maxAmount: ''
+    maxAmount: '',
+    clientId: ''
   });
 
   // Sorting State
@@ -121,6 +123,37 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     }));
   };
 
+  const handleExportExcel = () => {
+    import('xlsx').then(XLSX => {
+      const data = groupedInvoices.flatMap(group => {
+        const parent = group.invoice;
+        const children = group.children;
+
+        const formatRow = (inv: Invoice) => ({
+          'Folio': inv.number,
+          'Tipo': inv.type,
+          'Fecha': new Date(inv.date).toLocaleDateString('es-CL'),
+          'Razón Social': clients.find(c => c.id === inv.clientId)?.razonSocial || 'N/A',
+          'RUT': clients.find(c => c.id === inv.clientId)?.rut || 'N/A',
+          'Proyecto': projects.find(p => p.id === inv.projectId)?.name || '-',
+          'Centro Costo': costCenters.find(cc => cc.id === inv.costCenterId)?.name || '-',
+          'Neto': inv.net,
+          'IVA': inv.iva,
+          'Total': inv.total,
+          'Estado Pago': inv.paymentStatus || (inv.isPaid ? 'PAID' : 'PENDING'),
+          'Estado Doc': inv.status === 'CANCELLED' ? 'NULA' : 'VIGENTE'
+        });
+
+        return [formatRow(parent), ...children.map(formatRow)];
+      });
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Facturas");
+      XLSX.writeFile(wb, `Reporte_Facturas_${new Date().toISOString().split('T')[0]}.xlsx`);
+    });
+  };
+
   const getSortIcon = (columnKey: string) => {
     if (sortConfig.key !== columnKey) return <ArrowUpDown size={14} className="ml-1 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />;
     return sortConfig.direction === 'asc'
@@ -144,7 +177,10 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       const matchesMinAmount = !advancedFilters.minAmount || inv.total >= Number(advancedFilters.minAmount);
       const matchesMaxAmount = !advancedFilters.maxAmount || inv.total <= Number(advancedFilters.maxAmount);
 
-      return matchesType && matchesSearch && matchesDateStart && matchesDateEnd && matchesMinAmount && matchesMaxAmount;
+      // Client Filter
+      const matchesClient = !advancedFilters.clientId || inv.clientId === advancedFilters.clientId;
+
+      return matchesType && matchesSearch && matchesDateStart && matchesDateEnd && matchesMinAmount && matchesMaxAmount && matchesClient;
     });
   }, [invoices, searchTerm, filterType, advancedFilters, clients]);
 
@@ -238,6 +274,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
     dispatchGuideNumber: '',
     relatedInvoiceId: '', // Added for Credit Notes
     isPaid: false,
+    paymentStatus: 'PENDING' as 'PENDING' | 'PAID' | 'FACTORING' | 'COLLECTION',
     items: [] as InvoiceItem[]
   });
 
@@ -287,7 +324,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       dateStart: '',
       dateEnd: '',
       minAmount: '',
-      maxAmount: ''
+      maxAmount: '',
+      clientId: ''
     });
   };
 
@@ -429,6 +467,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       dispatchGuideNumber: '',
       relatedInvoiceId: '',
       isPaid: false,
+      paymentStatus: 'PENDING',
       items: []
     });
   };
@@ -448,6 +487,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
       dispatchGuideNumber: inv.dispatchGuideNumber || '',
       relatedInvoiceId: inv.relatedInvoiceId || '',
       isPaid: inv.isPaid || false,
+      paymentStatus: inv.paymentStatus || (inv.isPaid ? 'PAID' : 'PENDING'),
       items: inv.items ? inv.items.map(i => ({ ...i })) : []
     });
     setShowModal(true);
@@ -501,6 +541,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
               <option value="ALL">Todos los flujos</option>
               <option value={InvoiceType.VENTA}>Ventas Emitidas</option>
               <option value={InvoiceType.COMPRA}>Compras Recibidas</option>
+              <option value={InvoiceType.GUIA_DESPACHO}>Guías de Despacho</option>
             </select>
 
             <button
@@ -524,6 +565,15 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                 <Eraser size={20} />
               </button>
             )}
+
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-all font-bold text-sm"
+              title="Exportar a Excel"
+            >
+              <Download size={18} />
+              <span className="hidden sm:inline">Excel</span>
+            </button>
           </div>
         </div>
 
@@ -532,6 +582,24 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
           showAdvanced && (
             <div className="px-6 pb-6 pt-2 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <select
+                      className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 appearance-none"
+                      value={advancedFilters.clientId}
+                      onChange={(e) => setAdvancedFilters({ ...advancedFilters, clientId: e.target.value })}
+                    >
+                      <option value="">Todos los Clientes</option>
+                      {clients.map(client => (
+                        <option key={client.id} value={client.id}>
+                          {client.razonSocial}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Desde Fecha</label>
                   <div className="relative">
@@ -686,10 +754,18 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                           <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter 
                               ${inv.type === InvoiceType.VENTA ? 'bg-green-100 text-green-700' :
                               inv.type === InvoiceType.COMPRA ? 'bg-orange-100 text-orange-700' :
-                                inv.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
-                                  'bg-purple-100 text-purple-700' // Credit Note Style
+                                inv.type === InvoiceType.GUIA_DESPACHO ? 'bg-indigo-100 text-indigo-700' :
+                                  inv.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
+                                    'bg-purple-100 text-purple-700' // Credit Note Style
                             }`}>
-                            {inv.type.replace('_', ' ')}
+                            {inv.type === InvoiceType.GUIA_DESPACHO ? (
+                              <div className="flex items-center gap-1">
+                                <Truck size={10} />
+                                <span>GUIA DESPACHO</span>
+                              </div>
+                            ) : (
+                              inv.type.replace('_', ' ')
+                            )}
                           </span>
                           {children.length > 0 && (
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight ml-1">
@@ -763,7 +839,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                     <td className="px-6 py-4 font-black text-slate-900">{formatCLP(inv.total)}</td>
 
                     <td className="px-6 py-4">
-                      {/* Payment Status Toggle */}
+                      {/* Payment Status Dropdown */}
                       {inv.status === 'CANCELLED' ? (
                         <div className="flex items-center px-2.5 py-1 rounded-full w-fit border bg-slate-100 text-slate-500 border-slate-200">
                           <AlertTriangle size={14} className="mr-1.5" />
@@ -772,34 +848,87 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                           </span>
                         </div>
                       ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUpdate({ ...inv, isPaid: !inv.isPaid });
-                          }}
-                          className={`flex items-center px-2.5 py-1 rounded-full w-fit transition-all active:scale-95 border ${inv.isPaid
-                            ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                            : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                            }`}
-                          title="Clic para cambiar estado"
-                        >
-                          {inv.isPaid ? <CheckCircle size={14} className="mr-1.5" /> : <AlertTriangle size={14} className="mr-1.5" />}
-                          <span className="text-[10px] font-black uppercase tracking-wide">
-                            {inv.isPaid ? 'PAGADA' : 'PENDIENTE'}
-                          </span>
-                        </button>
+                        <div className="relative group/status">
+                          <button
+                            className={`flex items-center px-2.5 py-1 rounded-full w-fit transition-all border ${(inv.paymentStatus === 'PAID' || (!inv.paymentStatus && inv.isPaid)) ? 'bg-green-50 text-green-700 border-green-200' :
+                              inv.paymentStatus === 'FACTORING' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                inv.paymentStatus === 'COLLECTION' ? 'bg-red-50 text-red-700 border-red-200' :
+                                  'bg-amber-50 text-amber-700 border-amber-200'
+                              }`}
+                          >
+                            {/* Icon based on status */}
+                            {(inv.paymentStatus === 'PAID' || (!inv.paymentStatus && inv.isPaid)) ? <CheckCircle size={14} className="mr-1.5" /> :
+                              inv.paymentStatus === 'FACTORING' ? <Building2 size={14} className="mr-1.5" /> :
+                                inv.paymentStatus === 'COLLECTION' ? <AlertTriangle size={14} className="mr-1.5" /> :
+                                  <Clock size={14} className="mr-1.5" />}
+
+                            <span className="text-[10px] font-black uppercase tracking-wide">
+                              {(inv.paymentStatus === 'PAID' || (!inv.paymentStatus && inv.isPaid)) ? 'PAGADA' :
+                                inv.paymentStatus === 'FACTORING' ? 'FACTORING' :
+                                  inv.paymentStatus === 'COLLECTION' ? 'COBRANZA' :
+                                    'PENDIENTE'}
+                            </span>
+                            <ChevronDown size={12} className="ml-1 opacity-50" />
+                          </button>
+
+                          {/* Dropdown Menu */}
+                          <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-20 hidden group-hover/status:block animate-in fade-in zoom-in-95 duration-200">
+                            <div className="p-1 space-y-0.5">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdate({ ...inv, paymentStatus: 'PENDING', isPaid: false });
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg flex items-center"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-amber-400 mr-2"></div>
+                                Pendiente
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdate({ ...inv, paymentStatus: 'PAID', isPaid: true });
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-green-50 text-green-700 rounded-lg flex items-center"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                                Pagada
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdate({ ...inv, paymentStatus: 'FACTORING', isPaid: false }); // Factoring usually means we got money but technically debt is transferred. Let's keep isPaid false or true? Usually true for cashflow, but liability exists. Let's say false for now as "Customer hasn't paid us directly". Or True? Let's keep false to track it distinct.
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-blue-50 text-blue-700 rounded-lg flex items-center"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                                Factoring
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdate({ ...inv, paymentStatus: 'COLLECTION', isPaid: false });
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-red-50 text-red-700 rounded-lg flex items-center"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+                                En Cobranza
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {/* Days Overdue Calculation */}
-                      {!inv.isPaid && inv.status !== 'CANCELLED' ? (() => {
+                      {(!inv.paymentStatus || inv.paymentStatus === 'PENDING' || inv.paymentStatus === 'COLLECTION') && !inv.isPaid && inv.status !== 'CANCELLED' ? (() => {
                         const daysDiff = Math.floor((new Date().getTime() - new Date(inv.date).getTime()) / (1000 * 3600 * 24));
                         let colorClass = 'text-slate-400 bg-slate-50 border-slate-200';
                         if (daysDiff > 60) colorClass = 'text-red-600 bg-red-50 border-red-200';
                         else if (daysDiff > 30) colorClass = 'text-amber-600 bg-amber-50 border-amber-200';
 
                         return (
-                          <div className={`inline-flex items-center justify-center px-2 py-1 rounded-lg border \${colorClass}`}>
+                          <div className={`inline-flex items-center justify-center px-2 py-1 rounded-lg border ${colorClass}`}>
                             <Clock size={12} className="mr-1" />
                             <span className="text-[10px] font-bold">{daysDiff} días</span>
                           </div>
@@ -854,7 +983,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                             <CornerDownRight size={14} className="text-slate-300" />
                             <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter 
                                 ${child.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
-                                'bg-purple-100 text-purple-700'
+                                child.type === InvoiceType.GUIA_DESPACHO ? 'bg-indigo-100 text-indigo-700' :
+                                  'bg-purple-100 text-purple-700'
                               }`}>
                               {child.type.replace('_', ' ')}
                             </span>

@@ -125,7 +125,56 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
               />
             </div>
           </div>
-          <button className="bg-slate-900 text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
+          <button
+            onClick={() => {
+              import('xlsx').then(XLSX => {
+                // 1. Prepare Data
+                const projectData = reportData.projectStats.map(p => ({
+                  'Proyecto': p.name,
+                  'Presupuesto': p.budget,
+                  'Ventas (Ingresos)': p.sales,
+                  'Compras (Gastos)': p.purchases,
+                  'Margen': p.margin,
+                  'Ejecución (%)': (p.execution).toFixed(2)
+                }));
+
+                const ccData = reportData.ccStats.map(cc => ({
+                  'Centro Costo': cc.name,
+                  'Código': cc.code,
+                  'Ventas (Ingresos)': cc.sales,
+                  'Compras (Gastos)': cc.purchases,
+                  'Margen': cc.margin
+                }));
+
+                const summaryData = [{
+                  'Total Ventas': reportData.totalSales,
+                  'Total Compras': reportData.totalPurchases,
+                  'Margen Global': reportData.totalSales - reportData.totalPurchases
+                }];
+
+                // 2. Create Workbook
+                const wb = XLSX.utils.book_new();
+
+                if (projectData.length > 0) {
+                  const wsProjects = XLSX.utils.json_to_sheet(projectData);
+                  XLSX.utils.book_append_sheet(wb, wsProjects, "Proyectos");
+                }
+
+                if (ccData.length > 0) {
+                  const wsCC = XLSX.utils.json_to_sheet(ccData);
+                  XLSX.utils.book_append_sheet(wb, wsCC, "Centros de Costo");
+                }
+
+                const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen Global");
+
+                // 3. Save File
+                XLSX.writeFile(wb, `Reporte_Financiero_${startDate}_${endDate}.xlsx`);
+              });
+            }}
+            className="bg-slate-900 text-white p-2 rounded-xl hover:bg-slate-800 transition-colors"
+            title="Descargar Reporte Excel"
+          >
             <Download size={18} />
           </button>
         </div>

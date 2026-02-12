@@ -382,8 +382,10 @@ router.post("/invoices", async (req, res) => {
                     type: type || 'SALE',
                     emissionType: 'MANUAL',
                     purchaseOrderNumber: req.body.purchaseOrderNumber,
+                    purchaseOrderNumber: req.body.purchaseOrderNumber,
                     dispatchGuideNumber: req.body.dispatchGuideNumber,
                     relatedInvoiceId: relatedInvoiceId || undefined,
+                    paymentStatus: req.body.paymentStatus || 'PENDING',
                     companyId,
                     items: items && items.length > 0 ? {
                         create: items.map((item: any) => ({
@@ -473,13 +475,14 @@ router.put("/invoices/:id", async (req, res) => {
                     totalAmount: total,
                     date: new Date(date),
                     status: status || 'DRAFT',
-                    clientId,
-                    projectId: validProjectId,
-                    costCenterId: validCostCenterId,
+                    client: clientId ? { connect: { id: clientId } } : { disconnect: true },
+                    project: validProjectId ? { connect: { id: validProjectId } } : { disconnect: true },
+                    costCenter: validCostCenterId ? { connect: { id: validCostCenterId } } : { disconnect: true },
                     type,
                     purchaseOrderNumber,
                     dispatchGuideNumber,
-                    isPaid: isPaid ?? false
+                    isPaid: isPaid ?? false,
+                    paymentStatus: req.body.paymentStatus || (isPaid ? 'PAID' : 'PENDING') // Handle logic if not sent
                 }
             });
 

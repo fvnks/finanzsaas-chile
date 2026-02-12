@@ -10,7 +10,8 @@ export enum InvoiceType {
   COMPRA = 'COMPRA',
   VENTA = 'VENTA',
   NOTA_CREDITO = 'NOTA_CREDITO',
-  NOTA_DEBITO = 'NOTA_DEBITO'
+  NOTA_DEBITO = 'NOTA_DEBITO',
+  GUIA_DESPACHO = 'GUIA_DESPACHO'
 }
 
 export interface Company {
@@ -111,6 +112,8 @@ export interface Invoice {
   relatedInvoiceId?: string;
   purchaseOrderNumber?: string;
   dispatchGuideNumber?: string;
+  status?: 'CANCELLED' | 'PENDING' | 'PAID';
+  paymentStatus?: 'PENDING' | 'PAID' | 'FACTORING' | 'COLLECTION'; // Enhanced status
 }
 
 
