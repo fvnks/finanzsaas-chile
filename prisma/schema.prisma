@@ -52,6 +52,8 @@ model Company {
   Material           Material[]
   Plan               Plan[]
   jobTitles          JobTitle[]
+  payments           Payment[]
+  suppliers          Supplier[]
 }
 
 model Client {
@@ -202,6 +204,7 @@ model Invoice {
   costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
 
   items InvoiceItem[]
+  payments Payment[]
 
   // Relations for Credit Notes
   relatedInvoiceId  String?
@@ -209,7 +212,7 @@ model Invoice {
   relatedByInvoices Invoice[] @relation("InvoiceRelation")
 
   isPaid Boolean @default(false)
-  paymentStatus String @default("PENDING") // PENDING, PAID, FACTORING, COLLECTION
+  paymentStatus String @default("PENDING") // PENDING, PAID, PARTIAL, FACTORING, COLLECTION
 
 
   createdAt DateTime @default(now())
@@ -217,6 +220,41 @@ model Invoice {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  amount      Float
+  date        DateTime @default(now())
+  method      String   @default("TRANSFER") // TRANSFER, CASH, CHECK, WEBPAY
+  reference   String?  // Transaction ID
+  comment     String?
+  
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+}
+
+model Supplier {
+  id          String   @id @default(uuid())
+  rut         String   @unique
+  razonSocial String
+  fantasyName String?
+  email       String?
+  phone       String?
+  address     String?
+  category    String?  // e.g., "Materiales", "Servicios"
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
 }
 
 model InvoiceItem {

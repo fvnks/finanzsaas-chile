@@ -1,19 +1,16 @@
 
 import React, { useState, useMemo } from 'react';
 import {
-  PieChart as PieChartIcon,
   BarChart3,
   TrendingUp,
   Calendar,
-  Filter,
   Download,
   FileText,
-  Briefcase,
-  ArrowUpRight,
   Calculator,
   Target,
-  ChevronRight,
-  Activity
+  ArrowUpRight,
+  Activity,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -21,6 +18,9 @@ import {
 } from 'recharts';
 import { Invoice, Project, InvoiceType } from '../types';
 import { formatCLP } from '../constants';
+import CashFlowChart from '../components/charts/CashFlowChart';
+import AgingReportChart from '../components/charts/AgingReportChart';
+import TopEntitiesChart from '../components/charts/TopEntitiesChart';
 
 interface ReportsPageProps {
   invoices: Invoice[];
@@ -29,7 +29,7 @@ interface ReportsPageProps {
   clients?: any[];
 }
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCenters }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCenters, clients }) => {
   const [startDate, setStartDate] = useState<string>('2023-01-01');
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
@@ -91,7 +91,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
       };
     }).filter(cc => cc.sales > 0 || cc.purchases > 0);
 
-    return { projectStats, ccStats, totalSales, totalPurchases };
+    return { projectStats, ccStats, totalSales, totalPurchases, filteredInvoices };
   }, [invoices, projects, costCenters, startDate, endDate]);
 
   const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316'];
@@ -101,9 +101,9 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center">
-            <BarChart3 className="mr-2 text-blue-600" size={28} /> Reportes Estratégicos
+            <BarChart3 className="mr-2 text-blue-600" size={28} /> Dashboard Financiero
           </h2>
-          <p className="text-slate-500 font-medium">Análisis consolidado de rentabilidad y ejecución por proyecto.</p>
+          <p className="text-slate-500 font-medium">Visión estratégica de flujo de caja y rentabilidad.</p>
         </div>
 
         <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center gap-2">
@@ -180,15 +180,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
         </div>
       </div>
 
-      {/* Tarjetas de Resumen */}
+      {/* Tarjetas de Resumen KPI */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors"></div>
           <div className="relative z-10">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ventas Proyectos</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ingresos Totales (Ventas)</p>
             <p className="text-3xl font-black text-slate-900">{formatCLP(reportData.totalSales)}</p>
             <div className="flex items-center mt-4 text-green-600 text-xs font-bold bg-green-50 w-fit px-2 py-1 rounded-lg">
-              <TrendingUp size={14} className="mr-1" /> Análisis del Período
+              <TrendingUp size={14} className="mr-1" /> Ventas Facturadas
             </div>
           </div>
         </div>
@@ -196,10 +196,10 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50/50 rounded-full -mr-16 -mt-16 group-hover:bg-orange-100/50 transition-colors"></div>
           <div className="relative z-10">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Costos Operativos</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Egresos Totales (Compras)</p>
             <p className="text-3xl font-black text-slate-900">{formatCLP(reportData.totalPurchases)}</p>
             <div className="flex items-center mt-4 text-orange-600 text-xs font-bold bg-orange-50 w-fit px-2 py-1 rounded-lg">
-              <Calculator size={14} className="mr-1" /> Imputación Directa
+              <Calculator size={14} className="mr-1" /> Gastos Operativos
             </div>
           </div>
         </div>
@@ -207,190 +207,77 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
         <div className="bg-slate-900 p-6 rounded-3xl shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full -mr-16 -mt-16"></div>
           <div className="relative z-10 text-white">
-            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Margen Consolidado</p>
+            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Margen Operacional</p>
             <p className="text-3xl font-black text-white">{formatCLP(reportData.totalSales - reportData.totalPurchases)}</p>
             <div className="flex items-center mt-4 text-blue-200 text-xs font-bold bg-white/10 w-fit px-2 py-1 rounded-lg">
-              <Target size={14} className="mr-1" /> Rendimiento Global
+              <Target size={14} className="mr-1" /> Resultado Neto
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Gráfico de Barras: Comparativa Ventas vs Costos (Prioridad Centros de Costo si no hay proyectos) */}
+
+        {/* Gráfico 1: Flujo de Caja Mensual */}
         <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">
-                Rentabilidad Comparativa {reportData.projectStats.length === 0 ? "(Por Centro de Costo)" : "(Por Proyecto)"}
+                Flujo de Caja Mensual
               </h3>
-              <p className="text-xs text-slate-500 font-medium">Comparación directa entre Ventas (Ingresos) y Compras (Egresos).</p>
+              <p className="text-xs text-slate-500 font-medium">Evolución de Ingresos y Egresos en el tiempo.</p>
             </div>
             <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl shadow-sm">
               <Activity size={24} />
             </div>
           </div>
           <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }}
-                  tickFormatter={(val) => `$${(val / 1000000).toFixed(1)}M`}
-                />
-                <Tooltip
-                  cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
-                  formatter={(value: any) => formatCLP(value)}
-                />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="sales" name="Ventas (Ingresos)" fill="#22c55e" radius={[6, 6, 0, 0]} barSize={32} />
-                <Bar dataKey="purchases" name="Compras (Gastos)" fill="#f97316" radius={[6, 6, 0, 0]} barSize={32} />
-              </BarChart>
-            </ResponsiveContainer>
+            <CashFlowChart invoices={invoices} />
           </div>
         </div>
 
-        {/* Gráfico de Barras: Ranking de Facturación */}
+        {/* Gráfico 2: Antigüedad de Deuda (Aging) */}
         <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Ranking de Facturación</h3>
-              <p className="text-xs text-slate-500 font-medium">Volumen de ventas brutas totales.</p>
-            </div>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-              <ArrowUpRight size={20} />
-            </div>
-          </div>
-          <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 10, fontWeight: '700' }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 10, fontWeight: '700' }}
-                  tickFormatter={(val) => `$${(val / 1000000).toFixed(1)}M`}
-                />
-                <Tooltip
-                  cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
-                  formatter={(value: any) => formatCLP(value)}
-                />
-                <Bar dataKey="sales" name="Ventas" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={40}>
-                  {(reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Gráfico Circular: Distribución de Mercado */}
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Mix de Ingresos</h3>
-              <p className="text-xs text-slate-500 font-medium">Participación porcentual del flujo total.</p>
+              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Cuentas por Cobrar</h3>
+              <p className="text-xs text-slate-500 font-medium">Estado de facturas de venta pendientes de pago.</p>
             </div>
             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
               <PieChartIcon size={20} />
             </div>
           </div>
           <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={70}
-                  outerRadius={100}
-                  paddingAngle={8}
-                  dataKey="sales"
-                >
-                  {(reportData.projectStats.length > 0 ? reportData.projectStats : reportData.ccStats).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: any) => formatCLP(value)} />
-                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-              </PieChart>
-            </ResponsiveContainer>
+            <AgingReportChart invoices={invoices} />
+          </div>
+        </div>
+
+        {/* Gráfico 3: Ranking Top Clients */}
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Mejores Clientes</h3>
+              <p className="text-xs text-slate-500 font-medium">Top 5 clientes por volumen de facturación.</p>
+            </div>
+            <div className="p-2 bg-pink-50 text-pink-600 rounded-xl">
+              <ArrowUpRight size={20} />
+            </div>
+          </div>
+          <div className="h-[350px]">
+            <TopEntitiesChart invoices={invoices} clients={clients || []} type="CLIENTS" />
           </div>
         </div>
       </div>
 
-      {/* Tabla de Detalle de Centros de Costo (Si no hay proyectos) */}
-      {reportData.projectStats.length === 0 && reportData.ccStats.length > 0 && (
-        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-          <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
-            <h3 className="text-lg font-black text-slate-800 flex items-center">
-              <Calculator className="mr-2 text-slate-400" size={20} /> Detalle por Centro de Costo
-            </h3>
-            <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-lg uppercase tracking-widest">
-              {reportData.ccStats.length} Centros Analizados
-            </span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <tr>
-                  <th className="px-8 py-4">Código / Nombre</th>
-                  <th className="px-8 py-4">Ventas Brutas</th>
-                  <th className="px-8 py-4">Compras/Gastos</th>
-                  <th className="px-8 py-4">Margen Neto</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {reportData.ccStats.map((stat, idx) => (
-                  <tr key={stat.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-8 py-5">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-xs uppercase">
-                          {stat.code.charAt(0)}
-                        </div>
-                        <div>
-                          <span className="font-bold text-slate-800 text-sm block">{stat.name}</span>
-                          <span className="text-[10px] font-mono text-slate-400">{stat.code}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-sm font-black text-green-600">{formatCLP(stat.sales)}</td>
-                    <td className="px-8 py-5 text-sm font-bold text-orange-500">{formatCLP(stat.purchases)}</td>
-                    <td className="px-8 py-5 text-sm font-black text-slate-900">{formatCLP(stat.margin)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Tabla de Detalle de Proyectos */}
+      {/* Tabla de Detalle por Proyecto (Existente, mantenida) */}
       {reportData.projectStats.length > 0 && (
         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
           <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
             <h3 className="text-lg font-black text-slate-800 flex items-center">
-              <FileText className="mr-2 text-slate-400" size={20} /> Detalle de Ejecución Comercial
+              <FileText className="mr-2 text-slate-400" size={20} /> Rentabilidad por Proyecto
             </h3>
             <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-lg uppercase tracking-widest">
-              {reportData.projectStats.length} Proyectos Analizados
+              {reportData.projectStats.length} Activos
             </span>
           </div>
           <div className="overflow-x-auto">

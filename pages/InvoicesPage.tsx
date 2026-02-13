@@ -81,6 +81,9 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'ALL' | InvoiceType>('ALL');
 
+  // Status Dropdown State
+  const [openStatusId, setOpenStatusId] = useState<string | null>(null);
+
   // Advanced Filter State
   const [advancedFilters, setAdvancedFilters] = useState({
     dateStart: '',
@@ -848,15 +851,18 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                           </span>
                         </div>
                       ) : (
-                        <div className="relative group/status">
+                        <div className="relative">
                           <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenStatusId(openStatusId === inv.id ? null : inv.id);
+                            }}
                             className={`flex items-center px-2.5 py-1 rounded-full w-fit transition-all border ${(inv.paymentStatus === 'PAID' || (!inv.paymentStatus && inv.isPaid)) ? 'bg-green-50 text-green-700 border-green-200' :
                               inv.paymentStatus === 'FACTORING' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                                 inv.paymentStatus === 'COLLECTION' ? 'bg-red-50 text-red-700 border-red-200' :
                                   'bg-amber-50 text-amber-700 border-amber-200'
                               }`}
                           >
-                            {/* Icon based on status */}
                             {(inv.paymentStatus === 'PAID' || (!inv.paymentStatus && inv.isPaid)) ? <CheckCircle size={14} className="mr-1.5" /> :
                               inv.paymentStatus === 'FACTORING' ? <Building2 size={14} className="mr-1.5" /> :
                                 inv.paymentStatus === 'COLLECTION' ? <AlertTriangle size={14} className="mr-1.5" /> :
@@ -871,51 +877,62 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                             <ChevronDown size={12} className="ml-1 opacity-50" />
                           </button>
 
+                          {/* Backdrop to close */}
+                          {openStatusId === inv.id && (
+                            <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setOpenStatusId(null); }} />
+                          )}
+
                           {/* Dropdown Menu */}
-                          <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-20 hidden group-hover/status:block animate-in fade-in zoom-in-95 duration-200">
-                            <div className="p-1 space-y-0.5">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdate({ ...inv, paymentStatus: 'PENDING', isPaid: false });
-                                }}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg flex items-center"
-                              >
-                                <div className="w-2 h-2 rounded-full bg-amber-400 mr-2"></div>
-                                Pendiente
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdate({ ...inv, paymentStatus: 'PAID', isPaid: true });
-                                }}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-green-50 text-green-700 rounded-lg flex items-center"
-                              >
-                                <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                                Pagada
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdate({ ...inv, paymentStatus: 'FACTORING', isPaid: false }); // Factoring usually means we got money but technically debt is transferred. Let's keep isPaid false or true? Usually true for cashflow, but liability exists. Let's say false for now as "Customer hasn't paid us directly". Or True? Let's keep false to track it distinct.
-                                }}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-blue-50 text-blue-700 rounded-lg flex items-center"
-                              >
-                                <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-                                Factoring
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdate({ ...inv, paymentStatus: 'COLLECTION', isPaid: false });
-                                }}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-red-50 text-red-700 rounded-lg flex items-center"
-                              >
-                                <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
-                                En Cobranza
-                              </button>
+                          {openStatusId === inv.id && (
+                            <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
+                              <div className="p-1 space-y-0.5">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdate({ ...inv, paymentStatus: 'PENDING', isPaid: false });
+                                    setOpenStatusId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg flex items-center"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-amber-400 mr-2"></div>
+                                  Pendiente
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdate({ ...inv, paymentStatus: 'PAID', isPaid: true });
+                                    setOpenStatusId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-green-50 text-green-700 rounded-lg flex items-center"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                                  Pagada
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdate({ ...inv, paymentStatus: 'FACTORING', isPaid: false });
+                                    setOpenStatusId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-blue-50 text-blue-700 rounded-lg flex items-center"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                                  Factoring
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdate({ ...inv, paymentStatus: 'COLLECTION', isPaid: false });
+                                    setOpenStatusId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-red-50 text-red-700 rounded-lg flex items-center"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+                                  En Cobranza
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       )}
                     </td>

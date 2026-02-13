@@ -12,7 +12,8 @@ import {
   HardHat,
   ChevronDown,
   ChevronRight,
-  Map
+  Map,
+  Truck
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 import CompanySwitcher from './CompanySwitcher.tsx';

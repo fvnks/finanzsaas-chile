@@ -16,6 +16,7 @@ import { DocumentsPage } from '../pages/DocumentsPage';
 import { DocControlPage } from '../pages/DocControlPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { PlanosPage } from '../pages/PlanosPage';
+import SuppliersPage from '../pages/SuppliersPage';
 
 import { API_URL } from '../src/config.ts';
 import { useCompany } from './CompanyContext';
@@ -171,6 +172,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 {activeTab === 'planos' && <PlanosPage projects={projects} currentUser={user} />}
 
 
+
                 {activeTab === 'clients' && (
                     <ClientsPage clients={clients} invoices={invoices} costCenters={costCenters} projects={projects} currentUser={user}
                         onAdd={async (c) => {
@@ -215,6 +217,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                         }}
                     />
                 )}
+
+                {activeTab === 'suppliers' && <SuppliersPage />}
+
                 {activeTab === 'projects' && (
                     <ProjectsPage
                         projects={projects}

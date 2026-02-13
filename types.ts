@@ -107,13 +107,27 @@ export interface Invoice {
   costCenterId: string;
   projectId?: string;
   items?: InvoiceItem[];
+  payments?: Payment[]; // Optional to avoid breaking existing assignments
   pdfUrl?: string;
-  isPaid?: boolean;
   relatedInvoiceId?: string;
+  relatedInvoice?: Invoice;
   purchaseOrderNumber?: string;
   dispatchGuideNumber?: string;
   status?: 'CANCELLED' | 'PENDING' | 'PAID';
-  paymentStatus?: 'PENDING' | 'PAID' | 'FACTORING' | 'COLLECTION'; // Enhanced status
+  isPaid: boolean;
+  paymentStatus: 'PENDING' | 'PAID' | 'PARTIAL' | 'FACTORING' | 'COLLECTION';
+  companyId: string;
+}
+
+export interface Payment {
+  id: string;
+  amount: number;
+  date: string | Date;
+  method: string;
+  reference?: string;
+  comment?: string;
+  invoiceId: string;
+  companyId: string;
 }
 
 
@@ -211,4 +225,16 @@ export interface PlanMark {
   workers?: Worker[]; // Relation
   stage?: number;
   createdAt: string;
+}
+
+export interface Supplier {
+  id: string;
+  rut: string;
+  razonSocial: string;
+  fantasyName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  category?: string;
+  companyId: string;
 }

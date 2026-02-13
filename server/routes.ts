@@ -382,7 +382,6 @@ router.post("/invoices", async (req, res) => {
                     type: type || 'SALE',
                     emissionType: 'MANUAL',
                     purchaseOrderNumber: req.body.purchaseOrderNumber,
-                    purchaseOrderNumber: req.body.purchaseOrderNumber,
                     dispatchGuideNumber: req.body.dispatchGuideNumber,
                     relatedInvoiceId: relatedInvoiceId || undefined,
                     paymentStatus: req.body.paymentStatus || 'PENDING',
@@ -486,7 +485,6 @@ router.put("/invoices/:id", async (req, res) => {
                 }
             });
 
-            // Re-create items
             if (items && items.length > 0) {
                 await tx.invoiceItem.createMany({
                     data: items.map((item: any) => ({
@@ -500,12 +498,123 @@ router.put("/invoices/:id", async (req, res) => {
             }
 
             return invoice;
+        }, {
+            maxWait: 5000, // default: 2000
+            timeout: 20000 // default: 5000
         });
 
         res.json(updatedInvoice);
     } catch (err) {
         console.error("Error updating invoice:", err);
         res.status(500).json({ error: "Failed to update invoice" });
+    }
+});
+
+// --- PAYMENTS ---
+
+// Get Payments for Invoice
+router.get("/invoices/:id/payments", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const payments = await prisma.payment.findMany({
+            where: { invoiceId: id },
+            orderBy: { date: 'desc' }
+        });
+        res.json(payments);
+    } catch (error) {
+        console.error("Error fetching payments:", error);
+        res.status(500).json({ error: "Failed to fetch payments" });
+    }
+});
+
+// Add Payment
+router.post("/invoices/:id/payments", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount, date, method, reference, comment, companyId } = req.body;
+
+        // 1. Create Payment
+        const payment = await prisma.payment.create({
+            data: {
+                invoiceId: id,
+                amount: Number(amount),
+                date: new Date(date),
+                method,
+                reference,
+                comment,
+                companyId
+            }
+        });
+
+        // 2. Recalculate Invoice Status
+        const invoice = await prisma.invoice.findUnique({
+            where: { id },
+            include: { payments: true }
+        });
+
+        if (invoice) {
+            const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
+            const isFullyPaid = totalPaid >= invoice.totalAmount;
+
+            let newStatus = 'PENDING';
+            if (isFullyPaid) newStatus = 'PAID';
+            else if (totalPaid > 0) newStatus = 'PARTIAL';
+
+            await prisma.invoice.update({
+                where: { id },
+                data: {
+                    isPaid: isFullyPaid,
+                    paymentStatus: newStatus
+                }
+            });
+        }
+
+        res.status(201).json(payment);
+    } catch (error) {
+        console.error("Error creating payment:", error);
+        res.status(500).json({ error: "Failed to create payment" });
+    }
+});
+
+// Delete Payment
+router.delete("/payments/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const payment = await prisma.payment.findUnique({ where: { id } });
+        if (!payment) return res.status(404).json({ error: "Payment not found" });
+
+        const invoiceId = payment.invoiceId;
+
+        await prisma.payment.delete({ where: { id } });
+
+        // Recalculate Invoice Status
+        const invoice = await prisma.invoice.findUnique({
+            where: { id: invoiceId },
+            include: { payments: true }
+        });
+
+        if (invoice) {
+            const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
+            const isFullyPaid = totalPaid >= invoice.totalAmount;
+
+            let newStatus = 'PENDING';
+            if (isFullyPaid) newStatus = 'PAID';
+            else if (totalPaid > 0) newStatus = 'PARTIAL';
+
+            await prisma.invoice.update({
+                where: { id: invoiceId },
+                data: {
+                    isPaid: isFullyPaid,
+                    paymentStatus: newStatus
+                }
+            });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error deleting payment:", error);
+        res.status(500).json({ error: "Failed to delete payment" });
     }
 });
 
@@ -530,6 +639,99 @@ router.patch("/invoices/:id/payment", async (req, res) => {
     }
 });
 
+
+// --- SUPPLIERS ---
+
+router.get("/suppliers", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const suppliers = await prisma.supplier.findMany({
+            where: { companyId },
+            orderBy: { razonSocial: 'asc' }
+        });
+        res.json(suppliers);
+    } catch (err) {
+        console.error("Error fetching suppliers:", err);
+        res.status(500).json({ error: "Failed to fetch suppliers" });
+    }
+});
+
+router.post("/suppliers", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { rut, razonSocial, fantasyName, email, phone, address, category } = req.body;
+
+        const existing = await prisma.supplier.findFirst({
+            where: { rut, companyId }
+        });
+
+        if (existing) {
+            return res.status(400).json({ error: "Un proveedor con este RUT ya existe." });
+        }
+
+        const supplier = await prisma.supplier.create({
+            data: {
+                rut,
+                razonSocial,
+                fantasyName,
+                email,
+                phone,
+                address,
+                category,
+                companyId
+            }
+        });
+        res.status(201).json(supplier);
+    } catch (err) {
+        console.error("Error creating supplier:", err);
+        res.status(500).json({ error: "Failed to create supplier" });
+    }
+});
+
+router.put("/suppliers/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        const { rut, razonSocial, fantasyName, email, phone, address, category } = req.body;
+
+        // Ensure ownership
+        const existing = await prisma.supplier.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Supplier not found" });
+
+        const updated = await prisma.supplier.update({
+            where: { id },
+            data: {
+                rut,
+                razonSocial,
+                fantasyName,
+                email,
+                phone,
+                address,
+                category
+            }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error("Error updating supplier:", err);
+        res.status(500).json({ error: "Failed to update supplier" });
+    }
+});
+
+router.delete("/suppliers/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+
+        const existing = await prisma.supplier.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Supplier not found" });
+
+        await prisma.supplier.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error deleting supplier:", err);
+        res.status(500).json({ error: "Failed to delete supplier" });
+    }
+});
 
 // --- WORKERS ---
 router.get("/workers", async (req, res) => {
