@@ -31,6 +31,10 @@ model Company {
   rut       String   @unique
   name      String
   logoUrl   String?
+  address   String?
+  email     String?
+  phone     String?
+  website   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -54,6 +58,9 @@ model Company {
   jobTitles          JobTitle[]
   payments           Payment[]
   suppliers          Supplier[]
+
+  paidExpenses     Expense[] @relation("PaidExpenses")
+  receivedExpenses Expense[] @relation("ReceivedExpenses")
 }
 
 model Client {
@@ -107,6 +114,8 @@ model Project {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
+
+  expenseDistributions ExpenseDistribution[]
 }
 
 model CostCenter {
@@ -125,6 +134,8 @@ model CostCenter {
   company   Company @relation(fields: [companyId], references: [id])
 
   @@unique([code, companyId])
+
+  expenseDistributions ExpenseDistribution[]
 }
 
 model Worker {
@@ -148,6 +159,8 @@ model Worker {
   company   Company @relation(fields: [companyId], references: [id])
 
   @@unique([rut, companyId])
+
+  expenses Expense[]
 }
 
 model Crew {
@@ -475,4 +488,45 @@ model PlanMark {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  description String
+  amount      Float
+  category    String? // New field for classification
+  date        DateTime
+
+  originCompanyId String
+  originCompany   Company @relation("PaidExpenses", fields: [originCompanyId], references: [id])
+
+  targetCompanyId String
+  targetCompany   Company @relation("ReceivedExpenses", fields: [targetCompanyId], references: [id])
+
+  // Optional reference to a worker (e.g., for reimbursements)
+  workerId String?
+  worker   Worker? @relation(fields: [workerId], references: [id])
+
+  invoiceNumber String? // Optional: If it replaces a formal document or is a receipt
+
+  status String @default("PENDING") // PENDING, SETTLED
+
+  distributions ExpenseDistribution[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseDistribution {
+  id     String @id @default(uuid())
+  amount Float
+
+  expenseId String
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  costCenterId String?
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
 }

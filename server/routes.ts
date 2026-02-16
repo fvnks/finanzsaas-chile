@@ -1916,4 +1916,185 @@ router.get("/proxy-image", async (req, res) => {
     }
 });
 
+// --- EXPENSES ---
+router.get("/expenses", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        // Fetch expenses where the company is either the payer (Origin) or beneficiary (Target)
+        const expenses = await prisma.expense.findMany({
+            where: {
+                OR: [
+                    { originCompanyId: companyId },
+                    { targetCompanyId: companyId }
+                ]
+            },
+            include: {
+                originCompany: true,
+                targetCompany: true,
+                worker: true,
+                distributions: {
+                    include: { project: true, costCenter: true }
+                }
+            },
+            orderBy: { date: 'desc' }
+        });
+        res.json(expenses);
+    } catch (err) {
+        console.error("Error fetching expenses:", err);
+        res.status(500).json({ error: "Failed to fetch expenses" });
+    }
+});
+
+router.post("/expenses", async (req, res) => {
+    try {
+        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, distributions } = req.body;
+
+        const newExpense = await prisma.expense.create({
+            data: {
+                description,
+                amount: Number(amount),
+                category,
+                date: new Date(date),
+                originCompanyId,
+                targetCompanyId,
+                workerId: workerId || undefined,
+                invoiceNumber: invoiceNumber || undefined,
+                status: 'PENDING',
+                distributions: distributions && distributions.length > 0 ? {
+                    create: distributions.map((d: any) => ({
+                        amount: Number(d.amount),
+                        projectId: d.projectId || undefined,
+                        costCenterId: d.costCenterId || undefined
+                    }))
+                } : undefined
+            },
+            include: {
+                distributions: true
+            }
+        });
+        res.status(201).json(newExpense);
+    } catch (err) {
+        console.error("Error creating expense:", err);
+        res.status(500).json({ error: "Failed to create expense" });
+    }
+});
+
+
+router.put("/expenses/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, status } = req.body;
+
+        const updated = await prisma.expense.update({
+            where: { id },
+            data: {
+                description,
+                amount: amount ? Number(amount) : undefined,
+                category,
+                date: date ? new Date(date) : undefined,
+                originCompanyId,
+                targetCompanyId,
+                workerId,
+                invoiceNumber,
+                status
+            },
+            include: {
+                originCompany: true,
+                targetCompany: true,
+                worker: true,
+                distributions: { include: { project: true, costCenter: true } }
+            }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error("Error updating expense:", err);
+        res.status(500).json({ error: "Failed to update expense" });
+    }
+});
+
+router.delete("/expenses/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.expense.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error deleting expense:", err);
+        res.status(500).json({ error: "Failed to delete expense" });
+    }
+});
+
+
+// --- EXPENSES ---
+router.get("/expenses", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        // Fetch expenses where the company is either the payer (Origin) or beneficiary (Target)
+        const expenses = await prisma.expense.findMany({
+            where: {
+                OR: [
+                    { originCompanyId: companyId },
+                    { targetCompanyId: companyId }
+                ]
+            },
+            include: {
+                originCompany: true,
+                targetCompany: true,
+                worker: true,
+                distributions: {
+                    include: { project: true, costCenter: true }
+                }
+            },
+            orderBy: { date: 'desc' }
+        });
+        res.json(expenses);
+    } catch (err) {
+        console.error("Error fetching expenses:", err);
+        res.status(500).json({ error: "Failed to fetch expenses" });
+    }
+});
+
+router.post("/expenses", async (req, res) => {
+    try {
+        const { description, amount, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, distributions } = req.body;
+
+        const newExpense = await prisma.expense.create({
+            data: {
+                description,
+                amount: Number(amount),
+                date: new Date(date),
+                originCompanyId,
+                targetCompanyId,
+                workerId: workerId || undefined,
+                invoiceNumber: invoiceNumber || undefined,
+                status: 'PENDING',
+                distributions: distributions && distributions.length > 0 ? {
+                    create: distributions.map((d: any) => ({
+                        amount: Number(d.amount),
+                        projectId: d.projectId || undefined,
+                        costCenterId: d.costCenterId || undefined
+                    }))
+                } : undefined
+            },
+            include: {
+                distributions: true
+            }
+        });
+        res.status(201).json(newExpense);
+    } catch (err) {
+        console.error("Error creating expense:", err);
+        res.status(500).json({ error: "Failed to create expense" });
+    }
+});
+
+router.delete("/expenses/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.expense.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error deleting expense:", err);
+        res.status(500).json({ error: "Failed to delete expense" });
+    }
+});
+
 export default router;

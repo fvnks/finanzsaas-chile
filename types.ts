@@ -19,6 +19,10 @@ export interface Company {
   name: string;
   rut: string;
   logoUrl?: string;
+  address?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
 }
 
 export interface User {
@@ -237,4 +241,61 @@ export interface Supplier {
   address?: string;
   category?: string;
   companyId: string;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  category?: string;
+  date: string;
+  originCompanyId: string;
+  originCompany?: Company;
+  targetCompanyId: string;
+  targetCompany?: Company;
+  workerId?: string;
+  worker?: Worker;
+  invoiceNumber?: string;
+  status: 'PENDING' | 'SETTLED';
+  distributions?: ExpenseDistribution[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseDistribution {
+  id: string;
+  amount: number;
+  expenseId: string;
+  projectId?: string;
+  project?: Project;
+  costCenterId?: string;
+  costCenter?: CostCenter;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+  originCompanyId: string;
+  originCompany?: Company;
+  targetCompanyId: string;
+  targetCompany?: Company;
+  workerId?: string;
+  worker?: Worker;
+  invoiceNumber?: string;
+  status: 'PENDING' | 'SETTLED';
+  distributions?: ExpenseDistribution[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseDistribution {
+  id: string;
+  amount: number;
+  expenseId: string;
+  projectId?: string;
+  project?: Project;
+  costCenterId?: string;
+  costCenter?: CostCenter;
 }

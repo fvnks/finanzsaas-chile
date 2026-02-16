@@ -35,25 +35,31 @@ import {
   ArrowDown,
   Truck // Added for Dispatch Guides
 } from 'lucide-react';
-import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem } from '../types';
+import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem, Supplier } from '../types';
 import { formatCLP, IVA_RATE } from '../constants';
+import SupplierFormModal from '../components/SupplierFormModal';
 
 interface InvoicesPageProps {
   invoices: Invoice[];
   clients: Client[];
+  suppliers?: Supplier[]; // Added suppliers prop
   costCenters: CostCenter[];
   projects: Project[];
   onAdd: (invoice: Invoice) => void;
   onUpdate: (invoice: Invoice) => void;
   onDelete: (id: string) => void;
+  onAddSupplier?: (supplier: Omit<Supplier, 'id' | 'companyId'>) => Promise<any>; // Added callback
   currentUser: any;
 }
 
 import { checkPermission } from '../src/utils/permissions';
 import { User } from '../types';
+import { useCompany } from '../components/CompanyContext';
 
-const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCenters, projects, onAdd, onUpdate, onDelete, currentUser }) => {
+const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, suppliers = [], costCenters, projects, onAdd, onUpdate, onDelete, onAddSupplier, currentUser }) => {
+  const { activeCompany } = useCompany();
   const [showModal, setShowModal] = useState(false);
+  const [showSupplierModal, setShowSupplierModal] = useState(false); // State for supplier modal
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -793,10 +799,14 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-slate-700 font-bold text-sm truncate max-w-[200px]">
-                          {clients.find(c => c.id === inv.clientId)?.razonSocial || 'Desconocido'}
+                          {inv.type === InvoiceType.COMPRA
+                            ? (suppliers.find(s => s.id === inv.clientId)?.razonSocial || 'Desconocido')
+                            : (clients.find(c => c.id === inv.clientId)?.razonSocial || 'Desconocido')}
                         </span>
                         <span className="text-[10px] text-slate-400 font-medium">
-                          {clients.find(c => c.id === inv.clientId)?.rut}
+                          {inv.type === InvoiceType.COMPRA
+                            ? (suppliers.find(s => s.id === inv.clientId)?.rut)
+                            : (clients.find(c => c.id === inv.clientId)?.rut)}
                         </span>
                       </div>
                     </td>
@@ -1282,17 +1292,17 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                       <div>
                         <div className="mb-4">
                           <div className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">
-                            Vertikal Finanzas
-                            <span className="text-blue-600">.SaaS</span>
+                            {activeCompany?.name || 'Vertikal Finanzas'}
+                            {/* <span className="text-blue-600">.SaaS</span> */}
                           </div>
                         </div>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Soluciones Tecnológicas</p>
-                        <p className="text-xs text-slate-400">Av. Providencia 1234, Of. 601, Santiago</p>
-                        <p className="text-xs text-slate-400">contacto@vertikalfinanzas.cl</p>
+                        <p className="text-xs text-slate-400">{activeCompany?.address || 'Sin dirección registrada'}</p>
+                        <p className="text-xs text-slate-400">{activeCompany?.email || 'Sin contacto'}</p>
                       </div>
                       <div className="text-right">
                         <div className="border-4 border-red-600 p-4 inline-block mb-2">
-                          <p className="text-red-600 font-bold text-lg uppercase tracking-widest leading-none text-center">R.U.T.: 76.123.456-7</p>
+                          <p className="text-red-600 font-bold text-lg uppercase tracking-widest leading-none text-center">R.U.T.: {activeCompany?.rut || 'Sin RUT'}</p>
                           <p className="text-slate-900 font-black text-xl uppercase tracking-tight my-1 text-center">Factura Electrónica</p>
                           <p className="text-red-600 font-bold text-lg text-center">Nº {selectedInvoice.number}</p>
                         </div>
@@ -1663,20 +1673,40 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
                 <div className="space-y-4 pt-4 border-t border-slate-50">
                   <div className="flex items-center space-x-2 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
                     <Building2 size={12} />
-                    <span>Entidad Comercial</span>
+                    <span>{formData.type === InvoiceType.COMPRA ? 'Proveedor' : 'Cliente / Receptor'}</span>
                   </div>
-                  <div className="space-y-1.5">
-                    <select
-                      required
-                      className="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold text-slate-700"
-                      value={formData.clientId}
-                      onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                    >
-                      <option value="">Seleccione un Cliente o Proveedor...</option>
-                      {clients.map(c => (
-                        <option key={c.id} value={c.id}>{c.rut} — {c.razonSocial}</option>
-                      ))}
-                    </select>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <select
+                        required
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold text-slate-700"
+                        value={formData.clientId}
+                        onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                      >
+                        <option value="">
+                          {formData.type === InvoiceType.COMPRA ? 'Seleccione un Proveedor...' : 'Seleccione un Cliente...'}
+                        </option>
+                        {formData.type === InvoiceType.COMPRA ? (
+                          suppliers.map(s => (
+                            <option key={s.id} value={s.id}>{s.rut} — {s.razonSocial}</option>
+                          ))
+                        ) : (
+                          clients.map(c => (
+                            <option key={c.id} value={c.id}>{c.rut} — {c.razonSocial}</option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+                    {formData.type === InvoiceType.COMPRA && onAddSupplier && (
+                      <button
+                        type="button"
+                        onClick={() => setShowSupplierModal(true)}
+                        className="p-3 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors"
+                        title="Crear Nuevo Proveedor"
+                      >
+                        <Plus size={20} />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1831,6 +1861,20 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, costCent
           </div>
         )
       }
+
+      {/* Supplier Modal */}
+      {showSupplierModal && onAddSupplier && (
+        <SupplierFormModal
+          isOpen={showSupplierModal}
+          onClose={() => setShowSupplierModal(false)}
+          onSave={async (newSupplier) => {
+            const saved = await onAddSupplier(newSupplier);
+            if (saved && saved.id) {
+              setFormData(prev => ({ ...prev, clientId: saved.id }));
+            }
+          }}
+        />
+      )}
 
     </div >
   );

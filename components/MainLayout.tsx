@@ -10,7 +10,8 @@ import CostCentersPage from '../pages/CostCentersPage.tsx';
 import WorkersPage from '../pages/WorkersPage.tsx';
 import AdminPage from '../pages/AdminPage.tsx';
 import DailyReportsPage from '../pages/DailyReportsPage.tsx';
-import { User, UserRole, Client, Invoice, Project, CostCenter, InvoiceType, Worker, Crew, JobTitle, DailyReport, Plan } from '../types.ts';
+import { User, UserRole, Client, Invoice, Project, CostCenter, InvoiceType, Worker, Crew, JobTitle, DailyReport, Plan, Supplier, Expense } from '../types.ts';
+import ExpensesPage from '../pages/ExpensesPage';
 import { PurchaseOrdersPage } from '../pages/PurchaseOrdersPage';
 import { DocumentsPage } from '../pages/DocumentsPage';
 import { DocControlPage } from '../pages/DocControlPage';
@@ -40,6 +41,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
     const [crews, setCrews] = useState<Crew[]>([]);
     const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
     const [dailyReports, setDailyReports] = useState<DailyReport[]>([]);
+    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -57,7 +60,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
         try {
             const headers = { 'x-company-id': activeCompany.id };
 
-            const [resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resDailyReports, resUsers] = await Promise.all([
+            const [resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resDailyReports, resUsers, resSuppliers, resExpenses] = await Promise.all([
                 fetch(`${API_URL}/clients`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/projects`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/invoices`, { headers }).then(res => res.json()),
@@ -66,7 +69,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 fetch(`${API_URL}/crews`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/job-titles`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/daily-reports`, { headers }).then(res => res.json()),
-                fetch(`${API_URL}/users`, { headers }).then(res => res.json())
+                fetch(`${API_URL}/daily-reports`, { headers }).then(res => res.json()),
+                fetch(`${API_URL}/users`, { headers }).then(res => res.json()),
+                fetch(`${API_URL}/suppliers`, { headers }).then(res => res.json()),
+                fetch(`${API_URL}/expenses`, { headers }).then(res => res.json())
             ]);
             setClients(Array.isArray(resClients) ? resClients : []);
             setProjects(Array.isArray(resProjs) ? resProjs : []);
@@ -84,6 +90,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             setJobTitles(Array.isArray(resJobTitles) ? resJobTitles : []);
             setDailyReports(Array.isArray(resDailyReports) ? resDailyReports : []);
             setAllUsers(Array.isArray(resUsers) ? resUsers : []);
+            setAllUsers(Array.isArray(resUsers) ? resUsers : []);
+            setSuppliers(Array.isArray(resSuppliers) ? resSuppliers : []);
+            setExpenses(Array.isArray(resExpenses) ? resExpenses : []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -104,7 +113,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             <main className="flex-1 p-8 overflow-y-auto">
                 {activeTab === 'dashboard' && <Dashboard invoices={invoices} clients={clients} />}
                 {activeTab === 'invoices' && (
-                    <InvoicesPage invoices={invoices} clients={clients} costCenters={costCenters} projects={projects} currentUser={user}
+                    <InvoicesPage invoices={invoices} clients={clients} suppliers={suppliers} costCenters={costCenters} projects={projects} currentUser={user}
+                        onAddSupplier={async (sup) => {
+                            try {
+                                const res = await fetch(`${API_URL}/suppliers`, {
+                                    method: 'POST',
+                                    headers: getHeaders(),
+                                    body: JSON.stringify(sup)
+                                });
+                                if (res.ok) {
+                                    const saved = await res.json();
+                                    setSuppliers([saved, ...suppliers]);
+                                    return saved;
+                                }
+                            } catch (err) { console.error("Failed to add supplier", err); }
+                        }}
                         onAdd={async (inv) => {
                             try {
                                 const res = await fetch(`${API_URL}/invoices`, {
@@ -167,6 +190,49 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                     />
                 )}
 
+                {activeTab === 'expenses' && (
+                    <ExpensesPage
+                        expenses={expenses}
+                        projects={projects}
+                        costCenters={costCenters}
+                        workers={workers}
+                        currentUser={user}
+                        onAdd={async (exp) => {
+                            try {
+                                const res = await fetch(`${API_URL}/expenses`, {
+                                    method: 'POST',
+                                    headers: getHeaders(),
+                                    body: JSON.stringify(exp)
+                                });
+                                if (res.ok) {
+                                    const saved = await res.json();
+                                    setExpenses([saved, ...expenses]);
+                                }
+                            } catch (err) { console.error("Failed to add expense", err); }
+                        }}
+                        onUpdate={async (updated) => {
+                            try {
+                                const res = await fetch(`${API_URL}/expenses/${updated.id}`, {
+                                    method: 'PUT',
+                                    headers: getHeaders(),
+                                    body: JSON.stringify(updated)
+                                });
+                                if (res.ok) {
+                                    const saved = await res.json();
+                                    setExpenses(expenses.map(e => e.id === saved.id ? saved : e));
+                                }
+                            } catch (err) { console.error("Failed to update expense", err); }
+                        }}
+                        onDelete={async (id) => {
+                            try {
+                                const res = await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE', headers: getHeaders() });
+                                if (res.ok) {
+                                    setExpenses(expenses.filter(e => e.id !== id));
+                                }
+                            } catch (err) { console.error("Failed to delete expense", err); }
+                        }}
+                    />
+                )}
 
                 {activeTab === 'docControl' && <DocControlPage clients={clients} />}
                 {activeTab === 'planos' && <PlanosPage projects={projects} currentUser={user} />}
@@ -174,7 +240,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
 
 
                 {activeTab === 'clients' && (
-                    <ClientsPage clients={clients} invoices={invoices} costCenters={costCenters} projects={projects} currentUser={user}
+                    <ClientsPage
+                        clients={clients}
+                        suppliers={suppliers}
+                        invoices={invoices}
+                        costCenters={costCenters}
+                        projects={projects}
+                        currentUser={user}
                         onAdd={async (c) => {
                             try {
                                 const res = await fetch(`${API_URL}/clients`, {
@@ -215,10 +287,76 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                                 }
                             } catch (err) { console.error("Failed to delete client", err); }
                         }}
+                        onAddSupplier={async (s) => {
+                            try {
+                                const res = await fetch(`${API_URL}/suppliers`, {
+                                    method: 'POST',
+                                    headers: getHeaders(),
+                                    body: JSON.stringify(s)
+                                });
+                                if (res.ok) {
+                                    const saved = await res.json();
+                                    setSuppliers([saved, ...suppliers]);
+                                }
+                            } catch (err) { console.error("Failed to add supplier", err); }
+                        }}
+                        onUpdateSupplier={async (u) => {
+                            try {
+                                const res = await fetch(`${API_URL}/suppliers/${u.id}`, {
+                                    method: 'PUT',
+                                    headers: getHeaders(),
+                                    body: JSON.stringify(u)
+                                });
+                                if (res.ok) {
+                                    setSuppliers(suppliers.map(s => s.id === u.id ? { ...s, ...u } : s));
+                                }
+                            } catch (err) { console.error("Failed to update supplier", err); }
+                        }}
+                        onDeleteSupplier={async (id) => {
+                            try {
+                                const res = await fetch(`${API_URL}/suppliers/${id}`, { method: 'DELETE', headers: getHeaders() });
+                                if (res.ok) {
+                                    setSuppliers(suppliers.filter(s => s.id !== id));
+                                }
+                            } catch (err) { console.error("Failed to delete supplier", err); }
+                        }}
                     />
                 )}
 
-                {activeTab === 'suppliers' && <SuppliersPage />}
+                {activeTab === 'suppliers' && <SuppliersPage suppliers={suppliers} onUpdate={async (u) => {
+                    try {
+                        const res = await fetch(`${API_URL}/suppliers/${u.id}`, {
+                            method: 'PUT',
+                            headers: getHeaders(),
+                            body: JSON.stringify(u)
+                        });
+                        if (res.ok) {
+                            setSuppliers(suppliers.map(s => s.id === u.id ? { ...s, ...u } : s));
+                        }
+                    } catch (err) { console.error("Failed to update supplier", err); }
+                }}
+                    onDelete={async (id) => {
+                        try {
+                            const res = await fetch(`${API_URL}/suppliers/${id}`, { method: 'DELETE', headers: getHeaders() });
+                            if (res.ok) {
+                                setSuppliers(suppliers.filter(s => s.id !== id));
+                            }
+                        } catch (err) { console.error("Failed to delete supplier", err); }
+                    }}
+                    onAdd={async (s) => {
+                        try {
+                            const res = await fetch(`${API_URL}/suppliers`, {
+                                method: 'POST',
+                                headers: getHeaders(),
+                                body: JSON.stringify(s)
+                            });
+                            if (res.ok) {
+                                const saved = await res.json();
+                                setSuppliers([saved, ...suppliers]);
+                            }
+                        } catch (err) { console.error("Failed to add supplier", err); }
+                    }}
+                />}
 
                 {activeTab === 'projects' && (
                     <ProjectsPage

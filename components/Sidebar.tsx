@@ -13,7 +13,8 @@ import {
   ChevronDown,
   ChevronRight,
   Map,
-  Truck
+  Truck,
+  TrendingUp,
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 import CompanySwitcher from './CompanySwitcher.tsx';
@@ -59,6 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
 
         { id: 'costCenters', label: 'Centros de Costo', icon: Target },
         { id: 'financialReports', label: 'Reportes Financieros', icon: PieChart },
+        { id: 'expenses', label: 'Gastos', icon: TrendingUp },
       ]
     },
 
