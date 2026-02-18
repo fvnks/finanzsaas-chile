@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "tsx --watch server/index.ts",
-    "start": "npx prisma migrate deploy && tsx server/index.ts",
+    "start": "npx prisma db push && tsx server/index.ts",
     "postinstall": "prisma generate",
     "dev:all": "concurrently \"npm run server\" \"npm run dev\""
   },
