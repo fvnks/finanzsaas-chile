@@ -28,7 +28,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout }) => {
   const [expandedGroups, setExpandedGroups] = React.useState<string[]>(['obras', 'finanzas', 'directorio', 'admin']);
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(true);
 
   // Auto-collapse on small screens if needed, or stick to manual toggle
 
@@ -116,6 +116,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
     <aside
       className={`bg-slate-900 text-white flex flex-col h-screen sticky top-0 shrink-0 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'
         }`}
+      onMouseEnter={() => setIsCollapsed(false)}
+      onMouseLeave={() => setIsCollapsed(true)}
     >
       <div className="p-4 flex items-center justify-between">
         {!isCollapsed ? (
@@ -127,12 +129,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
             V
           </div>
         )}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
-        >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronRight className="rotate-180" size={20} />}
-        </button>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto custom-scrollbar">

@@ -144,8 +144,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                                         total: saved.totalAmount
                                     };
 
-                                    // If it's a Credit Note, update the related invoice status in local state
-                                    if (normalized.type === 'NOTA_CREDITO' && normalized.relatedInvoiceId) {
+                                    // If it's a Credit Note, update the related invoice status in local state IF requested
+                                    if (normalized.type === 'NOTA_CREDITO' && normalized.relatedInvoiceId && (inv as any).annulInvoice !== false) {
                                         setInvoices(prev => prev.map(inv => {
                                             if (inv.id === normalized.relatedInvoiceId) {
                                                 return { ...inv, status: 'CANCELLED' };

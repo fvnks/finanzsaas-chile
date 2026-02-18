@@ -151,8 +151,9 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFormData({ ...formData, email: value });
+    // Only validate if not empty
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setEmailError(value.length > 5 && !emailRegex.test(value));
+    setEmailError(value.length > 0 && !emailRegex.test(value));
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,7 +161,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
     setFormData({ ...formData, telefono: value });
     const phoneRegex = /^(\+?56)?\s?9\s?\d{8}$/;
     const cleanedPhone = value.replace(/\s/g, '');
-    setPhoneError(cleanedPhone.length >= 9 && !phoneRegex.test(cleanedPhone));
+    // Only validate if not empty
+    setPhoneError(cleanedPhone.length > 0 && !phoneRegex.test(cleanedPhone));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -189,9 +191,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
       emailError ||
       phoneError ||
       !formData.rut ||
-      !formData.razonSocial ||
-      !formData.email ||
-      !formData.telefono;
+      !formData.razonSocial;
   }, [rutValid, emailError, phoneError, formData]);
 
   const filteredHistoryInvoices = useMemo(() => {
@@ -644,11 +644,11 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Email</label>
-                        <input required type="email" className={`w-full p-3 border rounded-xl outline-none font-bold ${emailError ? 'border-red-300' : 'border-slate-200'}`} value={formData.email} onChange={handleEmailChange} />
+                        <input type="email" className={`w-full p-3 border rounded-xl outline-none font-bold ${emailError ? 'border-red-300' : 'border-slate-200'}`} value={formData.email} onChange={handleEmailChange} />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Teléfono</label>
-                        <input required type="text" className={`w-full p-3 border rounded-xl outline-none font-bold ${phoneError ? 'border-red-300' : 'border-slate-200'}`} value={formData.telefono} onChange={handlePhoneChange} />
+                        <input type="text" className={`w-full p-3 border rounded-xl outline-none font-bold ${phoneError ? 'border-red-300' : 'border-slate-200'}`} value={formData.telefono} onChange={handlePhoneChange} />
                       </div>
                     </div>
 

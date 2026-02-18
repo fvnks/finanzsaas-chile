@@ -281,6 +281,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
     projectId: '',
     purchaseOrderNumber: '',
     dispatchGuideNumber: '',
+    hesNumber: '',
     relatedInvoiceId: '', // Added for Credit Notes
     isPaid: false,
     paymentStatus: 'PENDING' as 'PENDING' | 'PAID' | 'FACTORING' | 'COLLECTION',
@@ -397,17 +398,21 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
     const total = net + iva;
 
     // Construct the invoice object
+    // Construct the invoice object
     const invoiceData: any = {
       ...formData,
       net,
       iva,
       total,
-      pdfUrl: '#'
+      pdfUrl: '#',
+      // Ensure annulInvoice is sent, default to true if it's a Credit Note and undefined
+      annulInvoice: formData.type === InvoiceType.NOTA_CREDITO ? (formData.annulInvoice !== false) : undefined
     };
 
     if (isEditing && editingId) {
       onUpdate({ ...invoiceData, id: editingId });
     } else {
+      // @ts-ignore
       onAdd({ ...invoiceData, id: Math.random().toString(36).substr(2, 9) }); // ID will be replaced by backend
     }
 
@@ -474,6 +479,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       projectId: '',
       purchaseOrderNumber: '',
       dispatchGuideNumber: '',
+      hesNumber: '',
       relatedInvoiceId: '',
       isPaid: false,
       paymentStatus: 'PENDING',
@@ -494,6 +500,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       projectId: inv.projectId || '',
       purchaseOrderNumber: inv.purchaseOrderNumber || '',
       dispatchGuideNumber: inv.dispatchGuideNumber || '',
+      hesNumber: inv.hesNumber || '',
       relatedInvoiceId: inv.relatedInvoiceId || '',
       isPaid: inv.isPaid || false,
       paymentStatus: inv.paymentStatus || (inv.isPaid ? 'PAID' : 'PENDING'),
@@ -697,7 +704,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
         </div>
       </div >
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
@@ -746,7 +753,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {groupedInvoices.map(({ invoice: inv, children }) => (
+              {groupedInvoices.map(({ invoice: inv, children }, index) => (
                 <React.Fragment key={inv.id}>
                   <tr className={`hover:bg-slate-50/50 transition-colors group ${inv.status === 'CANCELLED' ? 'opacity-60 bg-red-50/30' : ''}`}>
                     <td className="px-6 py-4">
@@ -894,7 +901,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
 
                           {/* Dropdown Menu */}
                           {openStatusId === inv.id && (
-                            <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
+                            <div className={`absolute left-0 w-40 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200 ${index >= groupedInvoices.length - 2 ? 'bottom-full mb-1 origin-bottom-left' : 'top-full mt-1'
+                              }`}>
                               <div className="p-1 space-y-0.5">
                                 <button
                                   onClick={(e) => {
@@ -1496,7 +1504,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                       <div className="col-span-2 space-y-1.5 animate-in slide-in-from-top-1">
                         <label className="text-xs font-bold text-slate-600 uppercase flex items-center text-blue-600">
                           <Target size={12} className="mr-1" />
-                          Referencia Factura {formData.type === InvoiceType.NOTA_CREDITO ? '(A Anular)' : '(Asociada)'}
+                          Referencia Factura {formData.type === InvoiceType.NOTA_CREDITO ? '(A Anular o Corregir)' : '(Asociada)'}
                         </label>
                         <select
                           className="w-full p-2.5 bg-blue-50 border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-slate-700"
@@ -1528,7 +1536,11 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                         >
                           <option value="">Seleccione Factura...</option>
                           {invoices
-                            .filter(inv => inv.type === InvoiceType.VENTA && inv.status !== 'CANCELLED')
+                            .filter(inv => (
+                              inv.type === InvoiceType.VENTA ||
+                              inv.type === InvoiceType.NOTA_DEBITO ||
+                              inv.type === InvoiceType.FACTURA_EXENTA
+                            ) && inv.status !== 'CANCELLED')
                             .map(inv => {
                               const client = clients.find(c => c.id === inv.clientId);
                               return (
@@ -1538,10 +1550,28 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                               );
                             })}
                         </select>
+
+                        {/* Checkbox for Full Annulment */}
                         {formData.type === InvoiceType.NOTA_CREDITO && (
-                          <p className="text-[10px] text-blue-500 font-medium ml-1">
-                            * Al emitir esta Nota de Crédito, la factura seleccionada quedará ANULADA.
-                          </p>
+                          <div className="flex items-start space-x-2 mt-2 p-2 bg-blue-50/50 rounded-lg border border-blue-100">
+                            <input
+                              type="checkbox"
+                              id="annulInvoice"
+                              checked={formData.annulInvoice !== false} // Default to true if undefined
+                              onChange={(e) => setFormData({ ...formData, annulInvoice: e.target.checked })}
+                              className="mt-0.5 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <div className="flex flex-col">
+                              <label htmlFor="annulInvoice" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                                Anular Factura Completa
+                              </label>
+                              <p className="text-[10px] text-slate-500 leading-tight">
+                                {formData.annulInvoice !== false
+                                  ? "La factura referenciada cambiará su estado a NULA (Cancelada)."
+                                  : "La factura referenciada mantendrá su estado actual (Vigente/Pagada)."}
+                              </p>
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}
@@ -1578,8 +1608,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                       />
                     </div>
                   </div>
-                  {/* New Fields for PO and Dispatch Guide */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* New Fields for PO, Dispatch Guide, and HES */}
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-600 uppercase">Nº Orden de Compra</label>
                       <input
@@ -1598,6 +1628,16 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                         value={formData.dispatchGuideNumber}
                         placeholder="GD-67890"
                         onChange={(e) => setFormData({ ...formData, dispatchGuideNumber: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 uppercase">Nº HES</label>
+                      <input
+                        type="text"
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                        value={formData.hesNumber}
+                        placeholder="HES-12345"
+                        onChange={(e) => setFormData({ ...formData, hesNumber: e.target.value })}
                       />
                     </div>
                   </div>

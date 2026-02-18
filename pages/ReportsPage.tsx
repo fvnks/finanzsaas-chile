@@ -39,12 +39,29 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
       const date = new Date(inv.date).getTime();
       const start = new Date(startDate).getTime();
       const end = new Date(endDate).getTime();
-      return date >= start && date <= end;
+      // Ensure we exclude cancelled invoices generally, unless we want to track them as 0
+      // Actually, cancelled VENTA should be 0. Cancelled NC should be 0.
+      return date >= start && date <= end && inv.status !== 'CANCELLED';
     });
 
-    const totalSales = filteredInvoices
-      .filter(inv => inv.type === InvoiceType.VENTA)
-      .reduce((sum, inv) => sum + inv.total, 0);
+    const calculateNetSales = (invs: Invoice[]) => {
+      const gross = invs
+        .filter(inv => inv.type === InvoiceType.VENTA || inv.type === InvoiceType.FACTURA_EXENTA)
+        .reduce((sum, inv) => sum + inv.total, 0);
+
+      const cn = invs
+        .filter(inv => inv.type === InvoiceType.NOTA_CREDITO)
+        .reduce((sum, inv) => sum + inv.total, 0);
+
+      const dn = invs
+        .filter(inv => inv.type === InvoiceType.NOTA_DEBITO)
+        .reduce((sum, inv) => sum + inv.total, 0);
+
+      return { gross, cn, dn, net: gross - cn + dn };
+    };
+
+    const globalSales = calculateNetSales(filteredInvoices);
+    const totalSales = globalSales.net; // For compatibility with existing UI props
 
     const totalPurchases = filteredInvoices
       .filter(inv => inv.type === InvoiceType.COMPRA)
@@ -53,9 +70,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
     // Group by project
     const projectStats = projects.map(p => {
       const pInvoices = filteredInvoices.filter(inv => inv.projectId === p.id);
-      const sales = pInvoices
-        .filter(inv => inv.type === InvoiceType.VENTA)
-        .reduce((sum, inv) => sum + inv.total, 0);
+      const { net: sales, gross, cn, dn } = calculateNetSales(pInvoices);
+
       const purchases = pInvoices
         .filter(inv => inv.type === InvoiceType.COMPRA)
         .reduce((sum, inv) => sum + inv.total, 0);
@@ -64,19 +80,21 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
         id: p.id,
         name: p.name,
         budget: p.budget,
-        sales,
+        sales, // This is now Net Sales
+        grossSales: gross,
+        creditNotes: cn,
+        debitNotes: dn,
         purchases,
         margin: sales - purchases,
         execution: p.budget > 0 ? (sales / p.budget) * 100 : 0
       };
-    }).filter(p => p.sales > 0 || p.purchases > 0);
+    }).filter(p => p.sales !== 0 || p.purchases !== 0); // Changed > 0 to !== 0 to allow negative net sales or refunds
 
     // Group by Cost Center
     const ccStats = (costCenters || []).map(cc => {
       const ccInvoices = filteredInvoices.filter(inv => inv.costCenterId === cc.id);
-      const sales = ccInvoices
-        .filter(inv => inv.type === InvoiceType.VENTA)
-        .reduce((sum, inv) => sum + inv.total, 0);
+      const { net: sales } = calculateNetSales(ccInvoices);
+
       const purchases = ccInvoices
         .filter(inv => inv.type === InvoiceType.COMPRA)
         .reduce((sum, inv) => sum + inv.total, 0);
@@ -89,9 +107,18 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
         purchases,
         margin: sales - purchases
       };
-    }).filter(cc => cc.sales > 0 || cc.purchases > 0);
+    }).filter(cc => cc.sales !== 0 || cc.purchases !== 0);
 
-    return { projectStats, ccStats, totalSales, totalPurchases, filteredInvoices };
+    return {
+      projectStats,
+      ccStats,
+      totalSales, // Net
+      grossSales: globalSales.gross,
+      totalCreditNotes: globalSales.cn,
+      totalDebitNotes: globalSales.dn,
+      totalPurchases,
+      filteredInvoices
+    };
   }, [invoices, projects, costCenters, startDate, endDate]);
 
   const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316'];
@@ -147,7 +174,10 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
                 }));
 
                 const summaryData = [{
-                  'Total Ventas': reportData.totalSales,
+                  'Ventas Brutas': reportData.grossSales,
+                  '(-) Notas de Crédito': reportData.totalCreditNotes,
+                  '(+) Notas de Débito': reportData.totalDebitNotes,
+                  'Total Ventas (Neto)': reportData.totalSales,
                   'Total Compras': reportData.totalPurchases,
                   'Margen Global': reportData.totalSales - reportData.totalPurchases
                 }];
@@ -185,7 +215,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors"></div>
           <div className="relative z-10">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ingresos Totales (Ventas)</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ingresos Reales (Ventas Netas)</p>
             <p className="text-3xl font-black text-slate-900">{formatCLP(reportData.totalSales)}</p>
             <div className="flex items-center mt-4 text-green-600 text-xs font-bold bg-green-50 w-fit px-2 py-1 rounded-lg">
               <TrendingUp size={14} className="mr-1" /> Ventas Facturadas
@@ -212,6 +242,31 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
             <div className="flex items-center mt-4 text-blue-200 text-xs font-bold bg-white/10 w-fit px-2 py-1 rounded-lg">
               <Target size={14} className="mr-1" /> Resultado Neto
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desglose de Notas de Crédito/Débito */}
+      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm animate-in slide-in-from-bottom-2">
+        <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide mb-4 flex items-center">
+          <Activity size={16} className="mr-2 text-slate-400" /> Desglose de Facturación
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Ventas Brutas</p>
+            <p className="text-xl font-black text-slate-800">{formatCLP(reportData.grossSales)}</p>
+          </div>
+          <div className="p-4 bg-red-50 rounded-2xl border border-red-100">
+            <p className="text-[10px] uppercase font-bold text-red-500 mb-1">(-) Notas de Crédito</p>
+            <p className="text-xl font-black text-red-600">{formatCLP(reportData.totalCreditNotes)}</p>
+          </div>
+          <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
+            <p className="text-[10px] uppercase font-bold text-green-500 mb-1">(+) Notas de Débito</p>
+            <p className="text-xl font-black text-green-600">{formatCLP(reportData.totalDebitNotes)}</p>
+          </div>
+          <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+            <p className="text-[10px] uppercase font-bold text-blue-500 mb-1">(=) Ventas Reales</p>
+            <p className="text-xl font-black text-blue-600">{formatCLP(reportData.totalSales)}</p>
           </div>
         </div>
       </div>

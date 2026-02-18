@@ -6,12 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('--- USERS IN DATABASE ---');
     const users = await prisma.user.findMany();
-    console.table(users.map(u => ({
-        email: u.email,
-        role: u.role,
-        roleType: typeof u.role,
-        allowedSections: u.allowedSections
-    })));
+    if (users.length === 0) {
+        console.log('No users found.');
+    } else {
+        users.forEach(u => {
+            console.log(`User: ${u.email} | Role: ${u.role} | ID: ${u.id}`);
+        });
+    }
 }
 
 main()

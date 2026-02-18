@@ -12,7 +12,9 @@ import {
     Briefcase,
     CheckCircle,
     AlertCircle,
-    Building
+    Building,
+    Database,
+    Download
 } from 'lucide-react';
 import { User, UserRole, Company } from '../types';
 
@@ -31,10 +33,11 @@ interface AdminPageProps {
 }
 
 const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshUser }) => {
-    const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES' | 'COMPANIES'>('USERS');
+    const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES' | 'COMPANIES' | 'BACKUPS'>('USERS');
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<JobTitle[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
+    const [backups, setBackups] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
     // Define available sections for permissions
@@ -87,10 +90,14 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                 const res = await fetch(`${API_URL}/job-titles`);
                 const data = await res.json();
                 setRoles(Array.isArray(data) ? data : []);
-            } else {
+            } else if (activeTab === 'COMPANIES') {
                 const res = await fetch(`${API_URL}/companies`);
                 const data = await res.json();
                 setCompanies(Array.isArray(data) ? data : []);
+            } else if (activeTab === 'BACKUPS') {
+                const res = await fetch(`${API_URL}/backups`);
+                const data = await res.json();
+                setBackups(Array.isArray(data) ? data : []);
             }
 
             // Always fetch companies for User modal if not already fetched
@@ -261,6 +268,32 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
         setShowUserModal(true);
     };
 
+    const handleCreateBackup = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_URL}/backups`, { method: 'POST' });
+            if (res.ok) {
+                fetchData();
+            } else {
+                alert('Failed to create backup');
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteBackup = async (filename: string) => {
+        if (!confirm('Are you sure you want to delete this backup?')) return;
+        try {
+            await fetch(`${API_URL}/backups/${filename}`, { method: 'DELETE' });
+            setBackups(backups.filter(b => b.name !== filename));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     if (currentUser?.role !== UserRole.ADMIN) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
@@ -298,6 +331,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                         className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'COMPANIES' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         <Building size={14} /> EMPRESAS
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('BACKUPS')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'BACKUPS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <Database size={14} /> BACKUPS
                     </button>
                 </div>
             </div>
@@ -494,6 +533,79 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                 ))}
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'BACKUPS' && (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm max-w-2xl border border-blue-100">
+                            <p className="font-bold flex items-center"><AlertCircle size={16} className="mr-2" /> Importante</p>
+                            <p>Los respaldos guardan toda la base de datos. Descárgalos periódicamente para evitar pérdida de información.</p>
+                        </div>
+                        <button
+                            onClick={handleCreateBackup}
+                            disabled={loading}
+                            className={`bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl flex items-center space-x-2 transition-all shadow-xl active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <Save size={18} />
+                            <span className="font-bold">{loading ? 'Creando...' : 'Crear Respaldo'}</span>
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 border-b border-slate-100">
+                                <tr>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Archivo</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tamaño</th>
+                                    <th className="px-8 py-5 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {backups.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="px-8 py-10 text-center text-slate-400 italic font-medium">No hay respaldos disponibles.</td>
+                                    </tr>
+                                )}
+                                {backups.map((backup: any) => (
+                                    <tr key={backup.name} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-5 font-bold text-slate-700 flex items-center">
+                                            <Database size={16} className="mr-3 text-slate-400" />
+                                            {backup.name}
+                                        </td>
+                                        <td className="px-8 py-5 text-sm font-medium text-slate-600">
+                                            {new Date(backup.date).toLocaleString()}
+                                        </td>
+                                        <td className="px-8 py-5 text-sm font-medium text-slate-600">
+                                            {(backup.size / 1024 / 1024).toFixed(2)} MB
+                                        </td>
+                                        <td className="px-8 py-5 text-center">
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <a
+                                                    href={`${API_URL}/backups/${backup.name}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                                                    title="Descargar"
+                                                >
+                                                    <Download size={18} />
+                                                </a>
+                                                <button
+                                                    onClick={() => handleDeleteBackup(backup.name)}
+                                                    className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                                                    title="Eliminar"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             )}

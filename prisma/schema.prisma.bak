@@ -205,7 +205,6 @@ model Invoice {
 
   purchaseOrderNumber String?
   dispatchGuideNumber String?
-  hesNumber           String? // Hoja de Entrada de Servicios
 
   netAmount   Float
   taxAmount   Float // IVA

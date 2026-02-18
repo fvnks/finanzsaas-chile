@@ -11,7 +11,8 @@ export enum InvoiceType {
   VENTA = 'VENTA',
   NOTA_CREDITO = 'NOTA_CREDITO',
   NOTA_DEBITO = 'NOTA_DEBITO',
-  GUIA_DESPACHO = 'GUIA_DESPACHO'
+  GUIA_DESPACHO = 'GUIA_DESPACHO',
+  FACTURA_EXENTA = 'FACTURA_EXENTA'
 }
 
 export interface Company {
@@ -117,6 +118,7 @@ export interface Invoice {
   relatedInvoice?: Invoice;
   purchaseOrderNumber?: string;
   dispatchGuideNumber?: string;
+  hesNumber?: string;
   status?: 'CANCELLED' | 'PENDING' | 'PAID';
   isPaid: boolean;
   paymentStatus: 'PENDING' | 'PAID' | 'PARTIAL' | 'FACTORING' | 'COLLECTION';
@@ -162,14 +164,29 @@ export interface Document {
   createdAt: string;
 }
 
+export interface DocumentCategory {
+  id: string;
+  name: string;
+  color?: string;
+  companyId: string;
+}
+
 export interface DocumentRequirement {
   id: string;
   name: string;
   description?: string;
   clientId: string;
+
+  month?: number;
+  year?: number;
+
   documents?: Document[];
-  status?: string; // 'PENDING' | 'OK'
+  status?: string; // 'PENDING' | 'REVIEW' | 'OK'
   dueDate?: string;
+
+  categoryId?: string;
+  category?: DocumentCategory;
+
   createdAt: string;
   updatedAt: string;
 }

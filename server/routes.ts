@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import multer from "multer";
 import { Readable } from "stream";
 import { uploadToOneDrive, getFileStreamFromWebUrl } from "./services/onedrive";
+import { createBackup, listBackups, getBackupPath, deleteBackup } from "./services/backup";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -88,8 +89,9 @@ router.post("/clients", async (req, res) => {
                 companyId,
                 rut,
                 name: razonSocial,
-                email,
-                address
+                email: email || null,
+                phone: telefono || null,
+                address: address || null
             }
         });
 
@@ -318,7 +320,7 @@ router.get("/invoices", async (req, res) => {
 
 router.post("/invoices", async (req, res) => {
     try {
-        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, relatedInvoiceId } = req.body;
+        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, relatedInvoiceId, annulInvoice } = req.body;
         // Validate costCenterId handles empty strings or 'none' if sent by frontend
         const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
         // Validate projectId handles empty strings
@@ -383,6 +385,7 @@ router.post("/invoices", async (req, res) => {
                     emissionType: 'MANUAL',
                     purchaseOrderNumber: req.body.purchaseOrderNumber,
                     dispatchGuideNumber: req.body.dispatchGuideNumber,
+                    hesNumber: req.body.hesNumber,
                     relatedInvoiceId: relatedInvoiceId || undefined,
                     paymentStatus: req.body.paymentStatus || 'PENDING',
                     companyId,
@@ -400,8 +403,8 @@ router.post("/invoices", async (req, res) => {
                 }
             });
 
-            // If it is a Credit Note and references an invoice, we cancel said invoice
-            if (type === 'NOTA_CREDITO' && relatedInvoiceId) {
+            // If it is a Credit Note and references an invoice, we cancel said invoice IF requested
+            if (type === 'NOTA_CREDITO' && relatedInvoiceId && annulInvoice !== false) {
                 await tx.invoice.update({
                     where: { id: relatedInvoiceId },
                     data: { status: 'CANCELLED' }
@@ -429,12 +432,16 @@ router.delete("/invoices/:id", async (req, res) => {
             if (!invoice) throw new Error("Invoice not found");
 
             if (invoice.type === 'NOTA_CREDITO' && invoice.relatedInvoiceId) {
-                // ...
-                await tx.invoice.update({
-                    where: { id: invoice.relatedInvoiceId }, // companyId check implicitly via relation but safer to check ownership if possible.
-                    // However, relatedInvoiceId MUST belong to same company. 
-                    data: { status: 'PENDING' }
-                });
+                // Check if the related invoice was cancelled. If so, revert it to PENDING.
+                // If it is NOT cancelled (meaning it was a partial credit note), do NOT touch the status.
+                const relatedInvoice = await tx.invoice.findUnique({ where: { id: invoice.relatedInvoiceId } });
+
+                if (relatedInvoice && relatedInvoice.status === 'CANCELLED') {
+                    await tx.invoice.update({
+                        where: { id: invoice.relatedInvoiceId },
+                        data: { status: 'PENDING' }
+                    });
+                }
             }
 
             await tx.invoice.delete({ where: { id } });
@@ -481,7 +488,8 @@ router.put("/invoices/:id", async (req, res) => {
                     purchaseOrderNumber,
                     dispatchGuideNumber,
                     isPaid: isPaid ?? false,
-                    paymentStatus: req.body.paymentStatus || (isPaid ? 'PAID' : 'PENDING') // Handle logic if not sent
+                    paymentStatus: req.body.paymentStatus || (isPaid ? 'PAID' : 'PENDING'), // Handle logic if not sent
+                    hesNumber: req.body.hesNumber || null
                 }
             });
 
@@ -497,7 +505,13 @@ router.put("/invoices/:id", async (req, res) => {
                 });
             }
 
-            return invoice;
+            // Fetch the complete invoice with relations to match GET structure
+            const completeInvoice = await tx.invoice.findUnique({
+                where: { id },
+                include: { client: true, project: true }
+            });
+
+            return completeInvoice;
         }, {
             maxWait: 5000, // default: 2000
             timeout: 20000 // default: 5000
@@ -1316,17 +1330,27 @@ router.get("/clients/:clientId/requirements", async (req, res) => {
 router.post("/clients/:clientId/requirements", async (req, res) => {
     try {
         const { clientId } = req.params;
-        const { name, description, month, year } = req.body;
+        const { name, description, month, year, categoryId } = req.body;
 
         if (!name) {
             return res.status(400).json({ error: "El nombre del requerimiento es obligatorio" });
         }
 
-        const companyId = (req as any).companyId;
+        let companyId = (req as any).companyId || req.headers['x-company-id'];
 
-        // Verify client belongs to company
-        const client = await prisma.client.findFirst({ where: { id: clientId, companyId } });
+        // Verify client belongs to company or get company from client
+        const client = await prisma.client.findUnique({ where: { id: clientId } });
         if (!client) return res.status(404).json({ error: "Cliente no encontrado" });
+
+        // If we have a companyId context, verify matches client
+        if (companyId && client.companyId !== companyId) {
+            return res.status(403).json({ error: "Cliente no pertenece a la empresa actual" });
+        }
+
+        // If no companyId context, use client's companyId
+        if (!companyId) {
+            companyId = client.companyId;
+        }
 
         const newReq = await prisma.documentRequirement.create({
             data: {
@@ -1335,7 +1359,8 @@ router.post("/clients/:clientId/requirements", async (req, res) => {
                 clientId,
                 month: month ? Number(month) : null,
                 year: year ? Number(year) : null,
-                companyId
+                companyId,
+                categoryId: categoryId || undefined
             }
         });
         res.json(newReq);
@@ -1592,6 +1617,50 @@ router.delete("/documents/:id", async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete document" });
+    }
+});
+
+// --- DOCUMENT CATEGORIES ---
+// --- DOCUMENT CATEGORIES ---
+router.get("/clients/:clientId/document-categories", async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const categories = await prisma.documentCategory.findMany({
+            where: { clientId },
+            orderBy: { name: 'asc' }
+        });
+        res.json(categories);
+    } catch (err) {
+        console.error("Error fetching categories:", err);
+        res.status(500).json({ error: "Failed to fetch categories" });
+    }
+});
+
+router.post("/clients/:clientId/document-categories", async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const { name, color } = req.body;
+        const newCat = await prisma.documentCategory.create({
+            data: { name, color, clientId }
+        });
+        res.json(newCat);
+    } catch (err) {
+        console.error("Error creating category:", err);
+        if (err.code === 'P2002') {
+            return res.status(409).json({ error: "Ya existe una categoría con este nombre para este cliente." });
+        }
+        res.status(500).json({ error: "Failed to create category" });
+    }
+});
+
+router.delete("/document-categories/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.documentCategory.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error deleting category:", err);
+        res.status(500).json({ error: "Failed to delete category" });
     }
 });
 
@@ -2094,6 +2163,50 @@ router.delete("/expenses/:id", async (req, res) => {
     } catch (err) {
         console.error("Error deleting expense:", err);
         res.status(500).json({ error: "Failed to delete expense" });
+    }
+});
+
+
+// --- BACKUPS ---
+router.get("/backups", async (req, res) => {
+    try {
+        const backups = await listBackups();
+        res.json(backups);
+    } catch (err: any) {
+        console.error("Error listing backups:", err);
+        res.status(500).json({ error: "Failed to list backups" });
+    }
+});
+
+router.post("/backups", async (req, res) => {
+    try {
+        const filename = await createBackup();
+        res.json({ filename });
+    } catch (err: any) {
+        console.error("Error creating backup:", err);
+        res.status(500).json({ error: "Failed to create backup", details: err.message });
+    }
+});
+
+router.get("/backups/:filename", (req, res) => {
+    try {
+        const { filename } = req.params;
+        const filepath = getBackupPath(filename);
+        res.download(filepath);
+    } catch (err: any) {
+        console.error("Error downloading backup:", err);
+        res.status(404).json({ error: "Backup not found" });
+    }
+});
+
+router.delete("/backups/:filename", async (req, res) => {
+    try {
+        const { filename } = req.params;
+        await deleteBackup(filename);
+        res.json({ success: true });
+    } catch (err: any) {
+        console.error("Error deleting backup:", err);
+        res.status(500).json({ error: "Failed to delete backup" });
     }
 });
 
