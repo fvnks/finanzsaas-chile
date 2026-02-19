@@ -457,7 +457,7 @@ router.delete("/invoices/:id", async (req, res) => {
 router.put("/invoices/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber, isPaid } = req.body;
+        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber, isPaid, relatedInvoiceId } = req.body;
 
         const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
         const validProjectId = projectId && projectId !== '' ? projectId : undefined;
@@ -489,7 +489,8 @@ router.put("/invoices/:id", async (req, res) => {
                     dispatchGuideNumber,
                     isPaid: isPaid ?? false,
                     paymentStatus: req.body.paymentStatus || (isPaid ? 'PAID' : 'PENDING'), // Handle logic if not sent
-                    hesNumber: req.body.hesNumber || null
+                    hesNumber: req.body.hesNumber || null,
+                    relatedInvoice: req.body.relatedInvoiceId ? { connect: { id: req.body.relatedInvoiceId } } : { disconnect: true }
                 }
             });
 
@@ -502,6 +503,14 @@ router.put("/invoices/:id", async (req, res) => {
                         total: Number(item.total),
                         invoiceId: id
                     }))
+                });
+            }
+
+            // If it is a Credit Note and references an invoice, we cancel said invoice IF requested
+            if (type === 'NOTA_CREDITO' && relatedInvoiceId && req.body.annulInvoice !== false) {
+                await tx.invoice.update({
+                    where: { id: relatedInvoiceId },
+                    data: { status: 'CANCELLED' }
                 });
             }
 

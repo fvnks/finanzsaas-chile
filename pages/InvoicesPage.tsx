@@ -33,7 +33,8 @@ import {
   ArrowUpDown, // Added for sorting
   ArrowUp,
   ArrowDown,
-  Truck // Added for Dispatch Guides
+  Truck, // Added for Dispatch Guides
+  RefreshCw // Added for Refacturación
 } from 'lucide-react';
 import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem, Supplier } from '../types';
 import { formatCLP, IVA_RATE } from '../constants';
@@ -193,36 +194,109 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
     });
   }, [invoices, searchTerm, filterType, advancedFilters, clients]);
 
-  // Grouping & Sorting Logic
+  // Grouping & Sorting Logic (Threaded History View)
   const groupedInvoices = useMemo(() => {
-    const idToNode = new Map<string, { invoice: Invoice, children: Invoice[] }>();
-    const roots: { invoice: Invoice, children: Invoice[] }[] = [];
+    // 1. Map all invoices for lookup
+    const idToInv = new Map<string, Invoice>();
+    invoices.forEach(inv => idToInv.set(inv.id, inv));
 
-    // 1. Initialize nodes
-    filteredInvoices.forEach(inv => {
-      idToNode.set(inv.id, { invoice: inv, children: [] });
-    });
+    // 2. Build adjacency for relationships (Bi-directional for clusters)
+    const adj = new Map<string, Set<string>>();
+    invoices.forEach(inv => {
+      if (inv.relatedInvoiceId && idToInv.has(inv.relatedInvoiceId)) {
+        if (!adj.has(inv.id)) adj.set(inv.id, new Set());
+        adj.get(inv.id)!.add(inv.relatedInvoiceId);
 
-    // 2. Build tree
-    filteredInvoices.forEach(inv => {
-      const node = idToNode.get(inv.id)!;
-      if (inv.relatedInvoiceId && idToNode.has(inv.relatedInvoiceId)) {
-        // It's a child of a visible parent
-        idToNode.get(inv.relatedInvoiceId)!.children.push(inv);
-      } else {
-        // It's a root (either no parent, or parent not visible)
-        roots.push(node);
+        if (!adj.has(inv.relatedInvoiceId)) adj.set(inv.relatedInvoiceId, new Set());
+        adj.get(inv.relatedInvoiceId)!.add(inv.id);
       }
     });
 
-    // 3. Sort roots
+    // 3. Find cluster Helper (BFS)
+    const getCluster = (startId: string): Invoice[] => {
+      const clusterIds = new Set<string>();
+      const queue = [startId];
+      clusterIds.add(startId);
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const neighbors = adj.get(current);
+        if (neighbors) {
+          neighbors.forEach(neighborId => {
+            if (!clusterIds.has(neighborId)) {
+              clusterIds.add(neighborId);
+              queue.push(neighborId);
+            }
+          });
+        }
+      }
+
+      return Array.from(clusterIds)
+        .map(id => idToInv.get(id)!)
+        .sort((a, b) => {
+          if (a.date !== b.date) return a.date.localeCompare(b.date);
+          const aNum = parseInt(a.number.replace(/\D/g, ''), 10) || 0;
+          const bNum = parseInt(b.number.replace(/\D/g, ''), 10) || 0;
+          return aNum - bNum;
+        }); // Chronological order (date + folio tie-breaker)
+    };
+
+    // 4. Identify the "Roots" to display in the main list
+    const rootIds = new Set<string>();
+    const matches = new Set<string>(filteredInvoices.map(inv => inv.id));
+
+    filteredInvoices.forEach(inv => {
+      const cluster = getCluster(inv.id);
+      const master = cluster[0]; // Earliest is Master
+
+      if (inv.type === InvoiceType.NOTA_CREDITO) {
+        // If an NC matches, redirect to the earliest document in its chain
+        if (master.id !== inv.id) {
+          rootIds.add(master.id);
+        } else if (matches.has(inv.id)) {
+          // Orphaned NC matching search
+          rootIds.add(inv.id);
+        }
+      } else {
+        // Sales/Purchases match themselves, but if they are part of a chain, 
+        // they should also ensure the Master is visible? 
+        // User dijo: "la factura asociada debe mostrarse en el listado mas que nada para saber que se volvio hacer"
+        // So we keep the flat entry for the search match.
+        rootIds.add(inv.id);
+      }
+    });
+
+    // 5. Map identified roots to their clusters
+    const roots = Array.from(rootIds)
+      .map(id => idToInv.get(id)!)
+      .filter(inv => {
+        // Filter out NCs from top level unless orphaned and matched
+        if (inv.type === InvoiceType.NOTA_CREDITO) {
+          return !inv.relatedInvoiceId && matches.has(inv.id);
+        }
+        return true;
+      })
+      .map(inv => {
+        const cluster = getCluster(inv.id);
+        const isMaster = cluster[0].id === inv.id;
+
+        return {
+          invoice: inv,
+          // Show history IF it's the "Master Root" (Oldest) OR if it is "Nula" (CANCELLED)
+          // The history is the rest of the cluster (excluding self)
+          children: (isMaster || inv.status === 'CANCELLED')
+            ? cluster.filter(c => c.id !== inv.id)
+            : []
+        };
+      });
+
+    // 5. Sort results
     roots.sort((a, b) => {
       const { key, direction } = sortConfig;
       const modifier = direction === 'asc' ? 1 : -1;
 
       switch (key) {
         case 'number':
-          // Attempt numeric sort if possible, else string
           const numA = parseInt(a.invoice.number.replace(/\D/g, ''), 10) || 0;
           const numB = parseInt(b.invoice.number.replace(/\D/g, ''), 10) || 0;
           return (numA - numB) * modifier;
@@ -239,9 +313,6 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
           return (a.invoice.total - b.invoice.total) * modifier;
 
         case 'status':
-          // Sort by paid status (unpaid first usually? or grouped)
-          // Let's sort: Cancelled last, then Unpaid, then Paid
-          // Or strictly by boolean isPaid
           if (a.invoice.isPaid === b.invoice.isPaid) return 0;
           return (a.invoice.isPaid ? 1 : -1) * modifier;
 
@@ -253,13 +324,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       }
     });
 
-    // 4. Sort children (always by date/number for consistency within group)
-    roots.forEach(root => {
-      root.children.sort((a, b) => a.date.localeCompare(b.date));
-    });
-
     return roots;
-  }, [filteredInvoices, sortConfig, clients]);
+  }, [invoices, filteredInvoices, sortConfig, clients]);
 
   const stats = useMemo(() => {
     // Exclude cancelled invoices from totals
@@ -283,6 +349,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
     dispatchGuideNumber: '',
     hesNumber: '',
     relatedInvoiceId: '', // Added for Credit Notes
+    status: 'ISSUED', // Added to persist status
     isPaid: false,
     paymentStatus: 'PENDING' as 'PENDING' | 'PAID' | 'FACTORING' | 'COLLECTION',
     items: [] as InvoiceItem[]
@@ -405,6 +472,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       iva,
       total,
       pdfUrl: '#',
+      status: formData.status, // Pass current status
       // Ensure annulInvoice is sent, default to true if it's a Credit Note and undefined
       annulInvoice: formData.type === InvoiceType.NOTA_CREDITO ? (formData.annulInvoice !== false) : undefined
     };
@@ -481,6 +549,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       dispatchGuideNumber: '',
       hesNumber: '',
       relatedInvoiceId: '',
+      status: 'ISSUED',
       isPaid: false,
       paymentStatus: 'PENDING',
       items: []
@@ -502,6 +571,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       dispatchGuideNumber: inv.dispatchGuideNumber || '',
       hesNumber: inv.hesNumber || '',
       relatedInvoiceId: inv.relatedInvoiceId || '',
+      status: inv.status || 'ISSUED',
       isPaid: inv.isPaid || false,
       paymentStatus: inv.paymentStatus || (inv.isPaid ? 'PAID' : 'PENDING'),
       items: inv.items ? inv.items.map(i => ({ ...i })) : []
@@ -1019,9 +1089,22 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                             <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter 
                                 ${child.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
                                 child.type === InvoiceType.GUIA_DESPACHO ? 'bg-indigo-100 text-indigo-700' :
-                                  'bg-purple-100 text-purple-700'
+                                  child.type === InvoiceType.VENTA ? 'bg-green-100 text-green-700' :
+                                    'bg-purple-100 text-purple-700'
                               }`}>
-                              {child.type.replace('_', ' ')}
+                              {child.type === InvoiceType.VENTA ? (
+                                <div className="flex items-center gap-1">
+                                  <RefreshCw size={10} className="animate-spin-slow" />
+                                  <span>{(() => {
+                                    if (child.date !== inv.date) return child.date < inv.date ? 'ANTECEDENTE' : 'REFACTURACIÓN';
+                                    const cNum = parseInt(child.number.replace(/\D/g, ''), 10) || 0;
+                                    const pNum = parseInt(inv.number.replace(/\D/g, ''), 10) || 0;
+                                    return cNum < pNum ? 'ANTECEDENTE' : 'REFACTURACIÓN';
+                                  })()}</span>
+                                </div>
+                              ) : (
+                                child.type.replace('_', ' ')
+                              )}
                             </span>
                           </div>
                         </td>
@@ -1030,7 +1113,15 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                         </td>
                         <td className="px-6 py-3 text-slate-400 text-xs">{child.date}</td>
                         <td className="px-6 py-3 text-xs text-slate-400 italic">
-                          Documento asociado
+                          {(() => {
+                            if (child.type === InvoiceType.NOTA_CREDITO) return 'Nota de Crédito';
+                            const isPast = child.date !== inv.date
+                              ? child.date < inv.date
+                              : (parseInt(child.number.replace(/\D/g, ''), 10) || 0) < (parseInt(inv.number.replace(/\D/g, ''), 10) || 0);
+
+                            if (isPast) return 'Antecedente / Origen';
+                            return 'Refacturación / Continuidad';
+                          })()}
                         </td>
                         <td className="px-6 py-3">
                           {/* Assignment Empty */}
@@ -1488,7 +1579,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                             ...formData,
                             type: newType,
                             number: getNextCorrelative(newType), // Auto-update number on type change
-                            relatedInvoiceId: (newType === InvoiceType.NOTA_CREDITO || newType === InvoiceType.NOTA_DEBITO) ? formData.relatedInvoiceId : undefined
+                            relatedInvoiceId: (newType === InvoiceType.NOTA_CREDITO || newType === InvoiceType.NOTA_DEBITO || newType === InvoiceType.VENTA) ? formData.relatedInvoiceId : undefined
                           });
                         }}
                       >
@@ -1499,12 +1590,12 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                       </select>
                     </div>
 
-                    {/* Related Invoice Selector for Credit/Debit Notes */}
-                    {(formData.type === InvoiceType.NOTA_CREDITO || formData.type === InvoiceType.NOTA_DEBITO) && (
+                    {/* Related Invoice Selector for Credit/Debit Notes & Refacturación */}
+                    {(formData.type === InvoiceType.NOTA_CREDITO || formData.type === InvoiceType.NOTA_DEBITO || formData.type === InvoiceType.VENTA) && (
                       <div className="col-span-2 space-y-1.5 animate-in slide-in-from-top-1">
                         <label className="text-xs font-bold text-slate-600 uppercase flex items-center text-blue-600">
                           <Target size={12} className="mr-1" />
-                          Referencia Factura {formData.type === InvoiceType.NOTA_CREDITO ? '(A Anular o Corregir)' : '(Asociada)'}
+                          {formData.type === InvoiceType.VENTA ? 'Refacturación de...' : `Referencia Factura ${formData.type === InvoiceType.NOTA_CREDITO ? '(A Anular o Corregir)' : '(Asociada)'}`}
                         </label>
                         <select
                           className="w-full p-2.5 bg-blue-50 border border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-slate-700"
@@ -1539,13 +1630,14 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                             .filter(inv => (
                               inv.type === InvoiceType.VENTA ||
                               inv.type === InvoiceType.NOTA_DEBITO ||
+                              inv.type === InvoiceType.NOTA_CREDITO ||
                               inv.type === InvoiceType.FACTURA_EXENTA
-                            ) && inv.status !== 'CANCELLED')
+                            ) && inv.id !== editingId)
                             .map(inv => {
                               const client = clients.find(c => c.id === inv.clientId);
                               return (
                                 <option key={inv.id} value={inv.id}>
-                                  Nº {inv.number} - {client?.razonSocial} - {formatCLP(inv.total)} ({inv.date})
+                                  Nº {inv.number} - {client?.razonSocial} - {formatCLP(inv.total)} ({inv.date}) {inv.status === 'CANCELLED' ? '(ANULADA)' : ''}
                                 </option>
                               );
                             })}
@@ -1608,8 +1700,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                       />
                     </div>
                   </div>
-                  {/* New Fields for PO, Dispatch Guide, and HES */}
-                  <div className="grid grid-cols-3 gap-4">
+                  {/* New Fields for PO, Dispatch Guide, HES and Document Status */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-600 uppercase">Nº Orden de Compra</label>
                       <input
@@ -1639,6 +1731,19 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                         placeholder="HES-12345"
                         onChange={(e) => setFormData({ ...formData, hesNumber: e.target.value })}
                       />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-red-600 uppercase">Estado Documento</label>
+                      <select
+                        className={`w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-black text-xs ${formData.status === 'CANCELLED' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-700'
+                          }`}
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      >
+                        <option value="ISSUED">✅ VIGENTE (Sumar)</option>
+                        <option value="CANCELLED">❌ ANULADA (No Sumar)</option>
+                        <option value="PAID">💰 PAGADA</option>
+                      </select>
                     </div>
                   </div>
                 </div>
