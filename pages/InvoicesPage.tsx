@@ -1227,17 +1227,16 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                     <div>
                       <div className="mb-2">
                         <div className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">
-                          Vertikal Finanzas
-                          <span className="text-blue-600">.SaaS</span>
+                          {activeCompany?.name || 'Vertikal Finanzas'}
                         </div>
                       </div>
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Soluciones Tecnológicas</p>
-                      <p className="text-[10px] text-slate-400">Av. Providencia 1234, Of. 601, Santiago</p>
-                      <p className="text-[10px] text-slate-400">contacto@vertikalfinanzas.cl</p>
+                      <p className="text-[10px] text-slate-400">{activeCompany?.address || 'Sin dirección registrada'}</p>
+                      <p className="text-[10px] text-slate-400">{activeCompany?.email || 'Sin contacto'}</p>
                     </div>
                     <div className="text-right">
                       <div className="border-[3px] border-red-600 p-3 inline-block mb-2 bg-white">
-                        <p className="text-red-600 font-bold text-sm uppercase tracking-widest leading-none text-center mb-1">R.U.T.: 76.123.456-7</p>
+                        <p className="text-red-600 font-bold text-sm uppercase tracking-widest leading-none text-center mb-1">R.U.T.: {activeCompany?.rut || 'Sin RUT'}</p>
                         <p className="text-slate-900 font-black text-lg uppercase tracking-tight my-1 text-center leading-none">
                           {selectedInvoice.type.replace('_', ' ')}
                         </p>
