@@ -1,0 +1,1 @@
+﻿pages/ToolsPage.tsx(115,13): error TS2322: Type 'Date' is not assignable to type 'string'.

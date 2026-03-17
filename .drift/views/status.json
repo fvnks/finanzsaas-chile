@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-01-23T14:47:53.329Z",
+  "health": {
+    "score": 31,
+    "trend": "stable",
+    "factors": [
+      {
+        "name": "Pattern Approval Rate",
+        "score": 0,
+        "weight": 0.3,
+        "trend": "stable"
+      },
+      {
+        "name": "High Confidence Patterns",
+        "score": 0.6298342541436464,
+        "weight": 0.3,
+        "trend": "stable"
+      },
+      {
+        "name": "Low Outlier Rate",
+        "score": 0.9932236205227493,
+        "weight": 0.4,
+        "trend": "stable"
+      }
+    ]
+  },
+  "patterns": {
+    "total": 362,
+    "approved": 0,
+    "discovered": 362,
+    "ignored": 0,
+    "byCategory": {
+      "api": 14,
+      "auth": 21,
+      "security": 23,
+      "errors": 27,
+      "structural": 34,
+      "components": 35,
+      "styling": 25,
+      "logging": 21,
+      "testing": 20,
+      "data-access": 48,
+      "config": 21,
+      "types": 34,
+      "accessibility": 15,
+      "documentation": 13,
+      "performance": 11
+    }
+  },
+  "issues": {
+    "critical": 2,
+    "warnings": 0,
+    "topIssues": [
+      {
+        "id": "outlier-a0a0f73395956d0c",
+        "type": "outlier",
+        "severity": "critical",
+        "message": "Response Envelope Detector has 43 outliers",
+        "patternId": "a0a0f73395956d0c"
+      },
+      {
+        "id": "outlier-00e3c53173a8359d",
+        "type": "outlier",
+        "severity": "critical",
+        "message": "HTTP Methods Detector has 20 outliers",
+        "patternId": "00e3c53173a8359d"
+      }
+    ]
+  },
+  "security": {
+    "riskLevel": "low",
+    "violations": 0,
+    "sensitiveExposures": 0
+  },
+  "lastScan": {
+    "timestamp": "2026-01-23T14:47:53.321Z",
+    "duration": 1644,
+    "filesScanned": 34,
+    "patternsFound": 362,
+    "errors": 0
+  }
+}

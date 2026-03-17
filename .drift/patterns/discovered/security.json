@@ -1,0 +1,2608 @@
+{
+  "version": "1.0.0",
+  "category": "security",
+  "patterns": [
+    {
+      "id": "462b5545e8a53e05",
+      "subcategory": "input-sanitization",
+      "name": "Input Sanitization Detector",
+      "description": "Learns input sanitization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/input-sanitization",
+          "patternId": "security/input-sanitization/property_access"
+        }
+      },
+      "confidence": {
+        "frequency": 0.65,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 14,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 210,
+          "column": 40
+        },
+        {
+          "file": "App.tsx",
+          "line": 259,
+          "column": 38
+        },
+        {
+          "file": "App.tsx",
+          "line": 303,
+          "column": 40
+        },
+        {
+          "file": "App.tsx",
+          "line": 335,
+          "column": 36
+        },
+        {
+          "file": "App.tsx",
+          "line": 362,
+          "column": 32
+        },
+        {
+          "file": "App.tsx",
+          "line": 396,
+          "column": 44
+        },
+        {
+          "file": "App.tsx",
+          "line": 427,
+          "column": 46
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 30,
+          "column": 37
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 98,
+          "column": 26
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 106,
+          "column": 9
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 123,
+          "column": 28
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 380,
+          "column": 88
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 79,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 180,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 181,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 182,
+          "column": 8
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 187,
+          "column": 19
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 187,
+          "column": 43
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 188,
+          "column": 23
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 188,
+          "column": 47
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 50,
+          "column": 9
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 50,
+          "column": 35
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 56,
+          "column": 8
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 63,
+          "column": 41
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 65,
+          "column": 8
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 68,
+          "column": 8
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 75,
+          "column": 37
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 105,
+          "column": 27
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 50,
+          "column": 24
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 25,
+          "column": 6
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 29,
+          "column": 6
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 53,
+          "column": 38
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 59,
+          "column": 8
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 63,
+          "column": 8
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 46,
+          "column": 36
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 85,
+          "column": 11
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 85,
+          "column": 41
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 65,
+          "column": 21
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 121,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 741,
+          "column": 28
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 44,
+          "column": 9
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 44,
+          "column": 37
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 88,
+          "column": 30
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 106,
+          "column": 25
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 130,
+          "column": 41
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 135,
+          "column": 38
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 136,
+          "column": 42
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 141,
+          "column": 8
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 148,
+          "column": 12
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 537,
+          "column": 34
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 557,
+          "column": 45
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 746,
+          "column": 88
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 97,
+          "column": 34
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 38,
+          "column": 11
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 38,
+          "column": 39
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 47,
+          "column": 25
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 47,
+          "column": 42
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 49,
+          "column": 10
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 52,
+          "column": 10
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 76,
+          "column": 9
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 76,
+          "column": 49
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 81,
+          "column": 9
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 81,
+          "column": 45
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 118,
+          "column": 31
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 427,
+          "column": 89
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "input-sanitization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "0d0e5d66cca68df0",
+      "subcategory": "input-sanitization",
+      "name": "Input Sanitization Detector",
+      "description": "Learns input sanitization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/input-sanitization",
+          "patternId": "security/input-sanitization/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 0.99,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 12,
+        "score": 0.72,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 127,
+          "column": 16
+        },
+        {
+          "file": "App.tsx",
+          "line": 131,
+          "column": 16
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 275,
+          "column": 38
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 333,
+          "column": 34
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 338,
+          "column": 34
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 348,
+          "column": 38
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 370,
+          "column": 50
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 122,
+          "column": 21
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 124,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 125,
+          "column": 18
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 143,
+          "column": 19
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 143,
+          "column": 64
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 29,
+          "column": 3
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 87,
+          "column": 32
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 90,
+          "column": 12
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 91,
+          "column": 7
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 190,
+          "column": 7
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 284,
+          "column": 108
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 284,
+          "column": 137
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 410,
+          "column": 22
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 430,
+          "column": 22
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 218,
+          "column": 12
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 351,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 524,
+          "column": 18
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 536,
+          "column": 18
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 542,
+          "column": 20
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 546,
+          "column": 20
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 152,
+          "column": 10
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 141,
+          "column": 12
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 367,
+          "column": 20
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 379,
+          "column": 20
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 393,
+          "column": 22
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 86,
+          "column": 18
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 75,
+          "column": 22
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 149,
+          "column": 34
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 192,
+          "column": 38
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 144,
+          "column": 34
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 166,
+          "column": 34
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 151,
+          "column": 26
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 133,
+          "column": 22
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 174,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 175,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 176,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 177,
+          "column": 30
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 201,
+          "column": 30
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 8,
+          "column": 3
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 54,
+          "column": 10
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 82,
+          "column": 29
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 85,
+          "column": 17
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 86,
+          "column": 17
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 87,
+          "column": 19
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 89,
+          "column": 7
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 276,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 291,
+          "column": 16
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 414,
+          "column": 16
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 484,
+          "column": 16
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 926,
+          "column": 26
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 264,
+          "column": 14
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 316,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 328,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 340,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 353,
+          "column": 20
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 758,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 769,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 779,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 793,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 803,
+          "column": 22
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 833,
+          "column": 26
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 842,
+          "column": 26
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 851,
+          "column": 26
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 216,
+          "column": 10
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 205,
+          "column": 12
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 609,
+          "column": 24
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 622,
+          "column": 26
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 639,
+          "column": 22
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 657,
+          "column": 24
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 697,
+          "column": 28
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 706,
+          "column": 28
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 719,
+          "column": 26
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 738,
+          "column": 34
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 229,
+          "column": 38
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 239,
+          "column": 38
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 249,
+          "column": 38
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 295,
+          "column": 46
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 301,
+          "column": 46
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 308,
+          "column": 46
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 8,
+          "column": 3
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 88,
+          "column": 16
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 95,
+          "column": 16
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 174,
+          "column": 16
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 211,
+          "column": 12
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 147,
+          "column": 12
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 338,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 343,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 368,
+          "column": 20
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 374,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 379,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 407,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 423,
+          "column": 24
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "input-sanitization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "ae3bf808cc1a47cf",
+      "subcategory": "xss-prevention",
+      "name": "XSS Prevention Detector",
+      "description": "Learns XSS prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/xss-prevention",
+          "patternId": "security/xss-prevention/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 0.07,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 3,
+        "score": 0.77,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 84,
+          "column": 30
+        },
+        {
+          "file": "App.tsx",
+          "line": 85,
+          "column": 31
+        },
+        {
+          "file": "App.tsx",
+          "line": 86,
+          "column": 34
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 120,
+          "column": 49
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 131,
+          "column": 51
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 138,
+          "column": 51
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 522,
+          "column": 22
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "xss-prevention"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "3eae70ab40ff5f1e",
+      "subcategory": "csp-headers",
+      "name": "CSP Headers Detector",
+      "description": "Learns Content Security Policy header patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/csp-headers",
+          "patternId": "security/csp-headers/assignment"
+        }
+      },
+      "confidence": {
+        "frequency": 0.39,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 10,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 91,
+          "column": 9
+        },
+        {
+          "file": "App.tsx",
+          "line": 159,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 191,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 227,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 246,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 277,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 290,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 315,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 326,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 342,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 353,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 374,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 387,
+          "column": 19
+        },
+        {
+          "file": "App.tsx",
+          "line": 412,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 94,
+          "column": 21
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 105,
+          "column": 21
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 135,
+          "column": 17
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 20,
+          "column": 9
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 25,
+          "column": 9
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 44,
+          "column": 13
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 181,
+          "column": 81
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 153,
+          "column": 19
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 57,
+          "column": 17
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 50,
+          "column": 17
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 69,
+          "column": 17
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 74,
+          "column": 17
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 175,
+          "column": 19
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 215,
+          "column": 19
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 16,
+          "column": 9
+        },
+        {
+          "file": "types.ts",
+          "line": 113,
+          "column": 3
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "csp-headers"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "703a13606ec71909",
+      "subcategory": "secret-management",
+      "name": "Secret Management Detector",
+      "description": "Learns secret management patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/secret-management",
+          "patternId": "security/secret-management/assignment"
+        }
+      },
+      "confidence": {
+        "frequency": 0.65,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 18,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 86,
+          "column": 11
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 122,
+          "column": 16
+        },
+        {
+          "file": "components\\Sidebar.tsx",
+          "line": 137,
+          "column": 19
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 240,
+          "column": 41
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 306,
+          "column": 42
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 369,
+          "column": 52
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 56,
+          "column": 9
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 164,
+          "column": 17
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 173,
+          "column": 17
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 230,
+          "column": 16
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 301,
+          "column": 19
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 362,
+          "column": 23
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 411,
+          "column": 27
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 155,
+          "column": 18
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 253,
+          "column": 30
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 272,
+          "column": 35
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 304,
+          "column": 37
+        },
+        {
+          "file": "pages\\CostCentersPage.tsx",
+          "line": 415,
+          "column": 25
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 91,
+          "column": 30
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 168,
+          "column": 49
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 43,
+          "column": 9
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 178,
+          "column": 27
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 99,
+          "column": 33
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 152,
+          "column": 33
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 195,
+          "column": 61
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 415,
+          "column": 21
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 620,
+          "column": 34
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 745,
+          "column": 39
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 831,
+          "column": 26
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 895,
+          "column": 31
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 922,
+          "column": 35
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 940,
+          "column": 29
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 219,
+          "column": 18
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 400,
+          "column": 38
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 426,
+          "column": 38
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 465,
+          "column": 41
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 508,
+          "column": 38
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 540,
+          "column": 40
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 675,
+          "column": 30
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 737,
+          "column": 38
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 773,
+          "column": 27
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 178,
+          "column": 30
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 266,
+          "column": 53
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 294,
+          "column": 46
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 220,
+          "column": 27
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 252,
+          "column": 27
+        },
+        {
+          "file": "pages\\ReportsPage.tsx",
+          "line": 287,
+          "column": 21
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 177,
+          "column": 23
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 212,
+          "column": 18
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 224,
+          "column": 24
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 280,
+          "column": 31
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 297,
+          "column": 33
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 356,
+          "column": 50
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 415,
+          "column": 46
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 422,
+          "column": 28
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 24,
+          "column": 17
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 508,
+          "column": 17
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 9,
+          "column": 11
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 16,
+          "column": 9
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 22,
+          "column": 9
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 29,
+          "column": 18
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 29,
+          "column": 30
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 6,
+          "column": 30
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 19,
+          "column": 9
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 6,
+          "column": 11
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "secret-management"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "937ef35853999191",
+      "subcategory": "secret-management",
+      "name": "Secret Management Detector",
+      "description": "Learns secret management patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/secret-management",
+          "patternId": "security/secret-management/conditional"
+        }
+      },
+      "confidence": {
+        "frequency": 0.03,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 2,
+        "score": 0.7546153846153846,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 92,
+          "column": 39
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 18,
+          "column": 66
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 22,
+          "column": 69
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "secret-management"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "34c6353784fc8b98",
+      "subcategory": "secret-management",
+      "name": "Secret Management Detector",
+      "description": "Learns secret management patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/secret-management",
+          "patternId": "security/secret-management/import"
+        }
+      },
+      "confidence": {
+        "frequency": 0.05,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 5,
+        "score": 0.8825,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "App.tsx",
+          "line": 18,
+          "column": 32
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 18,
+          "column": 33
+        },
+        {
+          "file": "pages\\DocumentsPage.tsx",
+          "line": 3,
+          "column": 33
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 3,
+          "column": 33
+        },
+        {
+          "file": "pages\\PurchaseOrdersPage.tsx",
+          "line": 3,
+          "column": 33
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.219Z",
+        "lastSeen": "2026-01-23T14:47:53.219Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "secret-management"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "82026e7a4a19bc6c",
+      "subcategory": "input-sanitization",
+      "name": "Input Sanitization Detector",
+      "description": "Learns input sanitization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/input-sanitization",
+          "patternId": "security/input-sanitization/assignment"
+        }
+      },
+      "confidence": {
+        "frequency": 0.09,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 4,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "constants.ts",
+          "line": 12,
+          "column": 14
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 121,
+          "column": 9
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 142,
+          "column": 11
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 78,
+          "column": 9
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 177,
+          "column": 9
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 49,
+          "column": 11
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 64,
+          "column": 9
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 67,
+          "column": 27
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 67,
+          "column": 64
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "input-sanitization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "eb9312e12d65b835",
+      "subcategory": "sql-injection",
+      "name": "SQL Injection Detector",
+      "description": "Learns SQL injection prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/sql-injection",
+          "patternId": "security/sql-injection/property_access"
+        }
+      },
+      "confidence": {
+        "frequency": 0.09,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 4,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 18,
+          "column": 20
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 23,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 17,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 30,
+          "column": 20
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 31,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 17,
+          "column": 39
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 24,
+          "column": 20
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 27,
+          "column": 20
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 8,
+          "column": 16
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "sql-injection"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "26c568ad3a7d4b65",
+      "subcategory": "sql-injection",
+      "name": "SQL Injection Detector",
+      "description": "Learns SQL injection prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/sql-injection",
+          "patternId": "security/sql-injection/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 0.03,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 3,
+        "score": 0.6824999999999999,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 35
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 35
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 35
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "sql-injection"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "32048dc7dcf9d196",
+      "subcategory": "secret-management",
+      "name": "Secret Management Detector",
+      "description": "Learns secret management patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/secret-management",
+          "patternId": "security/secret-management/property_access"
+        }
+      },
+      "confidence": {
+        "frequency": 0.29,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 14,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 10,
+          "column": 31
+        },
+        {
+          "file": "migration_add_workers_dates.js",
+          "line": 7,
+          "column": 8
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 9,
+          "column": 31
+        },
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 6,
+          "column": 8
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 9,
+          "column": 31
+        },
+        {
+          "file": "migration_temp.js",
+          "line": 6,
+          "column": 8
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 349,
+          "column": 57
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 349,
+          "column": 109
+        },
+        {
+          "file": "pages\\Dashboard.tsx",
+          "line": 55,
+          "column": 40
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 663,
+          "column": 45
+        },
+        {
+          "file": "README.md",
+          "line": 47,
+          "column": 30
+        },
+        {
+          "file": "README.md",
+          "line": 47,
+          "column": 26
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 20,
+          "column": 13
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 3,
+          "column": 22
+        },
+        {
+          "file": "server\\index.ts",
+          "line": 6,
+          "column": 60
+        },
+        {
+          "file": "server\\prisma.ts",
+          "line": 11,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 20,
+          "column": 46
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 20,
+          "column": 61
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 13
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 28
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 528,
+          "column": 57
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 6,
+          "column": 50
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 6,
+          "column": 46
+        },
+        {
+          "file": "src\\config.ts",
+          "line": 1,
+          "column": 36
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 22
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 18
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 14,
+          "column": 47
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 15,
+          "column": 18
+        },
+        {
+          "file": "vite.config.ts",
+          "line": 15,
+          "column": 54
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "secret-management"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "998d95d407f0187b",
+      "subcategory": "secret-management",
+      "name": "Secret Management Detector",
+      "description": "Learns secret management patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/secret-management",
+          "patternId": "security/secret-management/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 0.08,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 5,
+        "score": 0.7262500000000001,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "migration_fix_daily_report.js",
+          "line": 19,
+          "column": 27
+        },
+        {
+          "file": "pages\\AdminPage.tsx",
+          "line": 198,
+          "column": 97
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 127,
+          "column": 48
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 14,
+          "column": 20
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 501,
+          "column": 30
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 502,
+          "column": 50
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 524,
+          "column": 23
+        },
+        {
+          "file": "server\\seed.ts",
+          "line": 10,
+          "column": 46
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.222Z",
+        "lastSeen": "2026-01-23T14:47:53.222Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "secret-management"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "a5713534a339846a",
+      "subcategory": "input-sanitization",
+      "name": "Input Sanitization Detector",
+      "description": "Learns input sanitization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/input-sanitization",
+          "patternId": "security/input-sanitization/import"
+        }
+      },
+      "confidence": {
+        "frequency": 0.04,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 4,
+        "score": 0.865,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 34,
+          "column": 10
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 2,
+          "column": 50
+        },
+        {
+          "file": "pages\\InventoryPage.tsx",
+          "line": 2,
+          "column": 62
+        },
+        {
+          "file": "pages\\WorkersPage.tsx",
+          "line": 30,
+          "column": 10
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "input-sanitization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "5b362ec3e57e5a7b",
+      "subcategory": "input-sanitization",
+      "name": "Input Sanitization Detector",
+      "description": "Learns input sanitization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/input-sanitization",
+          "patternId": "security/input-sanitization/function_call"
+        }
+      },
+      "confidence": {
+        "frequency": 0.02,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.8144444444444444,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 148,
+          "column": 10
+        },
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 164,
+          "column": 34
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "input-sanitization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "2f3639ba3bc70543",
+      "subcategory": "input-sanitization",
+      "name": "Input Sanitization Detector",
+      "description": "Learns input sanitization patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/input-sanitization",
+          "patternId": "security/input-sanitization/conditional"
+        }
+      },
+      "confidence": {
+        "frequency": 0.01,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.8144444444444444,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 123,
+          "column": 9
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "input-sanitization"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "2e262e37d70b7266",
+      "subcategory": "rate-limiting",
+      "name": "Rate Limiting Detector",
+      "description": "Learns rate limiting patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/rate-limiting",
+          "patternId": "security/rate-limiting/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 0.01,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.77,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "pages\\ClientsPage.tsx",
+          "line": 195,
+          "column": 7
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "rate-limiting"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "32a4ffaf952d500b",
+      "subcategory": "csp-headers",
+      "name": "CSP Headers Detector",
+      "description": "Learns Content Security Policy header patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/csp-headers",
+          "patternId": "security/csp-headers/property_access"
+        }
+      },
+      "confidence": {
+        "frequency": 0.14,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 3,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 36,
+          "column": 13
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 36,
+          "column": 32
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 51,
+          "column": 15
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 110,
+          "column": 107
+        },
+        {
+          "file": "pages\\DailyReportsPage.tsx",
+          "line": 180,
+          "column": 54
+        },
+        {
+          "file": "pages\\ProjectsPage.tsx",
+          "line": 553,
+          "column": 47
+        },
+        {
+          "file": "services\\geminiService.ts",
+          "line": 27,
+          "column": 49
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.223Z",
+        "lastSeen": "2026-01-23T14:47:53.223Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "csp-headers"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "5ce951077d1af5ea",
+      "subcategory": "xss-prevention",
+      "name": "XSS Prevention Detector",
+      "description": "Learns XSS prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/xss-prevention",
+          "patternId": "security/xss-prevention/import"
+        }
+      },
+      "confidence": {
+        "frequency": 0.03,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 2,
+        "score": 0.8825,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 4,
+          "column": 8
+        },
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 4,
+          "column": 23
+        },
+        {
+          "file": "README.md",
+          "line": 15,
+          "column": 39
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "xss-prevention"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "d985683a595167ef",
+      "subcategory": "xss-prevention",
+      "name": "XSS Prevention Detector",
+      "description": "Learns XSS prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/xss-prevention",
+          "patternId": "security/xss-prevention/assignment"
+        }
+      },
+      "confidence": {
+        "frequency": 0.01,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.7366666666666666,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 163,
+          "column": 7
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "xss-prevention"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "f2025d1fc05f824c",
+      "subcategory": "xss-prevention",
+      "name": "XSS Prevention Detector",
+      "description": "Learns XSS prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/xss-prevention",
+          "patternId": "security/xss-prevention/function_call"
+        }
+      },
+      "confidence": {
+        "frequency": 0.01,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.7366666666666666,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 167,
+          "column": 5
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "xss-prevention"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "e7611f428f682e3e",
+      "subcategory": "xss-prevention",
+      "name": "XSS Prevention Detector",
+      "description": "Learns XSS prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/xss-prevention",
+          "patternId": "security/xss-prevention/conditional"
+        }
+      },
+      "confidence": {
+        "frequency": 0.01,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.7366666666666666,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "pages\\InvoicesPage.tsx",
+          "line": 659,
+          "column": 118
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "xss-prevention"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "340bc441a7b05227",
+      "subcategory": "xss-prevention",
+      "name": "XSS Prevention Detector",
+      "description": "Learns XSS prevention patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/xss-prevention",
+          "patternId": "security/xss-prevention/property_access"
+        }
+      },
+      "confidence": {
+        "frequency": 0.04,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 2,
+        "score": 0.95,
+        "level": "high"
+      },
+      "locations": [
+        {
+          "file": "README.md",
+          "line": 14,
+          "column": 64
+        },
+        {
+          "file": "README.md",
+          "line": 16,
+          "column": 56
+        },
+        {
+          "file": "README.md",
+          "line": 46,
+          "column": 41
+        },
+        {
+          "file": "server\\app.ts",
+          "line": 24,
+          "column": 61
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "xss-prevention"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    },
+    {
+      "id": "e3aa4549867c6c5c",
+      "subcategory": "csp-headers",
+      "name": "CSP Headers Detector",
+      "description": "Learns Content Security Policy header patterns from your codebase",
+      "detector": {
+        "type": "regex",
+        "config": {
+          "detectorId": "security/csp-headers",
+          "patternId": "security/csp-headers/unknown"
+        }
+      },
+      "confidence": {
+        "frequency": 0.04,
+        "consistency": 0.9,
+        "age": 0,
+        "spread": 1,
+        "score": 0.77,
+        "level": "medium"
+      },
+      "locations": [
+        {
+          "file": "server\\routes.ts",
+          "line": 616,
+          "column": 31
+        },
+        {
+          "file": "server\\routes.ts",
+          "line": 624,
+          "column": 21
+        }
+      ],
+      "outliers": [],
+      "metadata": {
+        "firstSeen": "2026-01-23T14:47:53.224Z",
+        "lastSeen": "2026-01-23T14:47:53.224Z",
+        "source": "auto-detected",
+        "tags": [
+          "security",
+          "csp-headers"
+        ]
+      },
+      "severity": "info",
+      "autoFixable": false
+    }
+  ],
+  "lastUpdated": "2026-01-23T14:47:53.241Z",
+  "checksum": "84be33b63560de34"
+}

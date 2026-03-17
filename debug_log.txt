@@ -1,0 +1,20 @@
+[dotenv@17.2.3] injecting env (4) from .env -- tip: Ô£à audit secrets and track compliance: https://dotenvx.com/ops
+--- Starting OneDrive Connection Debug ---
+Environment Variables Check:
+AZURE_TENANT_ID: Set
+AZURE_CLIENT_ID: Set
+AZURE_CLIENT_SECRET: Set
+
+--- Test 1: Fetching /sites/root ---
+ÔØî Failed to fetch /sites/root
+
+--- Test 2: Fetching /drives (Organization Drives) ---
+Status: 401
+Code: generalException
+Message: General exception while processing
+-> Hint: 'Sites.Read.All' or 'Sites.ReadWrite.All' (Application) might be missing.
+ÔØî Failed to fetch /sites/root/drives
+Status: 401
+Code: generalException
+Message: General exception while processing
+-> Hint: 'Files.Read.All' or 'Files.ReadWrite.All' (Application) might be missing.
