@@ -10,6 +10,55 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
+const INVOICE_TYPE_ALIASES: Record<string, string> = {
+    SALE: "SALE",
+    VENTA: "SALE",
+    PURCHASE: "PURCHASE",
+    COMPRA: "PURCHASE",
+    CREDIT_NOTE: "CREDIT_NOTE",
+    NOTA_CREDITO: "CREDIT_NOTE"
+};
+
+const normalizeInvoiceType = (value?: string) => {
+    if (!value) return "SALE";
+    return INVOICE_TYPE_ALIASES[value] || value;
+};
+
+const getInvoiceTypeLabel = (value?: string) => {
+    switch (normalizeInvoiceType(value)) {
+        case "PURCHASE":
+            return "Compra";
+        case "SALE":
+            return "Venta";
+        case "CREDIT_NOTE":
+            return "Nota de Credito";
+        default:
+            return "Documento";
+    }
+};
+
+const findOwnedRecord = async (delegate: any, id: string, companyId: string) => {
+    return delegate.findFirst({ where: { id, companyId } });
+};
+
+const updateOwnedRecord = async (
+    delegate: any,
+    id: string,
+    companyId: string,
+    data: Record<string, unknown>
+) => {
+    const existing = await findOwnedRecord(delegate, id, companyId);
+    if (!existing) return null;
+    return delegate.update({ where: { id }, data });
+};
+
+const deleteOwnedRecord = async (delegate: any, id: string, companyId: string) => {
+    const existing = await findOwnedRecord(delegate, id, companyId);
+    if (!existing) return false;
+    await delegate.delete({ where: { id } });
+    return true;
+};
+
 // --- DIAGNOSTIC ENDPOINT FOR RAILWAY ---
 router.get("/debug-db", async (req, res) => {
     try {
@@ -268,7 +317,7 @@ router.post("/cost-centers", async (req, res) => {
     } catch (err: any) {
         console.error(err);
         if (err.code === 'P2002') {
-            return res.status(409).json({ error: "Ya existe un centro de costo con este código." });
+            return res.status(409).json({ error: "Ya existe un centro de costo con este codigo." });
         }
         res.status(500).json({ error: "Failed to create cost center" });
     }
@@ -281,10 +330,12 @@ router.put("/cost-centers/:id", async (req, res) => {
 
         const { id } = req.params;
         const { code, name, budget } = req.body;
-        const updated = await prisma.costCenter.update({
-            where: { id, companyId }, // Ensure ownership
-            data: { code, name, budget: Number(budget) }
+        const updated = await updateOwnedRecord(prisma.costCenter, id, companyId, {
+            code,
+            name,
+            budget: Number(budget)
         });
+        if (!updated) return res.status(404).json({ error: "Cost center not found" });
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: "Failed to update cost center" });
@@ -297,7 +348,8 @@ router.delete("/cost-centers/:id", async (req, res) => {
         if (!companyId) return res.status(400).json({ error: "Company ID required" });
 
         const { id } = req.params;
-        await prisma.costCenter.delete({ where: { id, companyId } });
+        const deleted = await deleteOwnedRecord(prisma.costCenter, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Cost center not found" });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete cost center" });
@@ -312,17 +364,20 @@ router.put("/clients/:id", async (req, res) => {
         const { id } = req.params;
         const { rut, razonSocial, email, telefono, address } = req.body;
 
-        await prisma.client.update({
-            where: { id, companyId },
-            data: {
-                rut,
-                name: razonSocial,
-                email,
-                phone: telefono,
-                address
-            }
+        const updated = await updateOwnedRecord(prisma.client, id, companyId, {
+            rut,
+            name: razonSocial,
+            email,
+            phone: telefono,
+            address
         });
-        res.json({ success: true });
+        if (!updated) return res.status(404).json({ error: "Client not found" });
+        res.json({
+            ...updated,
+            razonSocial: updated.name,
+            nombreComercial: updated.name,
+            telefono: updated.phone
+        });
     } catch (err) {
         res.status(500).json({ error: "Failed to update client" });
     }
@@ -334,7 +389,8 @@ router.delete("/clients/:id", async (req, res) => {
         if (!companyId) return res.status(400).json({ error: "Company ID required" });
 
         const { id } = req.params;
-        await prisma.client.delete({ where: { id, companyId } });
+        const deleted = await deleteOwnedRecord(prisma.client, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Client not found" });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete client" });
@@ -393,19 +449,17 @@ router.put("/projects/:id", async (req, res) => {
         const { id } = req.params;
         const { name, budget, address, status, progress, startDate, endDate, workerIds } = req.body;
 
-        const updated = await prisma.project.update({
-            where: { id, companyId },
-            data: {
-                name,
-                budget: budget !== undefined ? Number(budget) : undefined,
-                address,
-                status,
-                progress: progress !== undefined ? Number(progress) : undefined,
-                startDate: startDate ? new Date(startDate) : undefined,
-                endDate: endDate ? new Date(endDate) : undefined,
-                workerIds // Note: Consider moving to Crew relations
-            }
+        const updated = await updateOwnedRecord(prisma.project, id, companyId, {
+            name,
+            budget: budget !== undefined ? Number(budget) : undefined,
+            address,
+            status,
+            progress: progress !== undefined ? Number(progress) : undefined,
+            startDate: startDate ? new Date(startDate) : undefined,
+            endDate: endDate ? new Date(endDate) : undefined,
+            workerIds
         });
+        if (!updated) return res.status(404).json({ error: "Project not found" });
         res.json(updated);
     } catch (err) {
         console.error("Failed to update project", err);
@@ -419,7 +473,8 @@ router.delete("/projects/:id", async (req, res) => {
         if (!companyId) return res.status(400).json({ error: "Company ID required" });
 
         const { id } = req.params;
-        await prisma.project.delete({ where: { id, companyId } });
+        const deleted = await deleteOwnedRecord(prisma.project, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Project not found" });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete project" });
@@ -454,11 +509,12 @@ router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
         // VALIDATION: Check for duplicates
         // 1. Calculate check criteria
         const checkType = type || 'SALE';
+        const normalizedType = normalizeInvoiceType(type);
 
         // Build where clause
         const duplicateWhere: any = {
             number: number,
-            type: checkType,
+            type: normalizedType,
             companyId,
             status: { not: 'CANCELLED' } // We might allow re-using folio if previous was cancelled? Or strictly never?
             // Usually efficient tax systems don't allow re-use even if cancelled. 
@@ -469,7 +525,7 @@ router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
         delete duplicateWhere.status;
 
         // 2. If it is a PURCHASE (COMPRA), it is unique per Client.
-        if (checkType === 'COMPRA') {
+        if (normalizedType === 'PURCHASE') {
             if (!clientId) {
                 return res.status(400).json({ error: "Debe especificar un cliente para facturas de compra." });
             }
@@ -484,12 +540,9 @@ router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
         });
 
         if (existing) {
-            const typeName = checkType === 'COMPRA' ? 'Compra' :
-                checkType === 'VENTA' ? 'Venta' :
-                    checkType === 'NOTA_CREDITO' ? 'Nota de Crédito' : 'Documento';
-
+            const duplicateTypeName = getInvoiceTypeLabel(checkType);
             return res.status(409).json({
-                error: `El folio ${number} ya existe para ${typeName}.`
+                error: `El folio ${number} ya existe para ${duplicateTypeName}.`
             });
         }
 
@@ -505,7 +558,7 @@ router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
                     clientId,
                     projectId: validProjectId,
                     costCenterId: validCostCenterId,
-                    type: type || 'SALE',
+                    type: normalizedType,
                     emissionType: 'MANUAL',
                     purchaseOrderNumber: req.body.purchaseOrderNumber,
                     dispatchGuideNumber: req.body.dispatchGuideNumber,
@@ -529,7 +582,7 @@ router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
             });
 
             // If it is a Credit Note and references an invoice, we cancel said invoice IF requested
-            if (type === 'NOTA_CREDITO' && relatedInvoiceId && annulInvoice !== false) {
+            if (normalizedType === 'CREDIT_NOTE' && relatedInvoiceId && annulInvoice !== false) {
                 await tx.invoice.update({
                     where: { id: relatedInvoiceId },
                     data: { status: 'CANCELLED' }
@@ -556,7 +609,7 @@ router.delete("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) 
             const invoice = await tx.invoice.findFirst({ where: { id, companyId } });
             if (!invoice) throw new Error("Invoice not found");
 
-            if (invoice.type === 'NOTA_CREDITO' && invoice.relatedInvoiceId) {
+            if (normalizeInvoiceType(invoice.type) === 'CREDIT_NOTE' && invoice.relatedInvoiceId) {
                 // Check if the related invoice was cancelled. If so, revert it to PENDING.
                 // If it is NOT cancelled (meaning it was a partial credit note), do NOT touch the status.
                 const relatedInvoice = await tx.invoice.findUnique({ where: { id: invoice.relatedInvoiceId } });
@@ -587,6 +640,7 @@ router.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => 
         const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
         const validProjectId = projectId && projectId !== '' ? projectId : undefined;
         const companyId = (req as any).companyId;
+        const normalizedType = normalizeInvoiceType(type);
 
         const updatedInvoice = await prisma.$transaction(async (tx) => {
             // Delete existing items
@@ -609,7 +663,7 @@ router.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => 
                     client: clientId ? { connect: { id: clientId } } : { disconnect: true },
                     project: validProjectId ? { connect: { id: validProjectId } } : { disconnect: true },
                     costCenter: validCostCenterId ? { connect: { id: validCostCenterId } } : { disconnect: true },
-                    type,
+                    type: normalizedType,
                     purchaseOrderNumber,
                     dispatchGuideNumber,
                     isPaid: isPaid ?? false,
@@ -633,7 +687,7 @@ router.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => 
             }
 
             // If it is a Credit Note and references an invoice, we cancel said invoice IF requested
-            if (type === 'NOTA_CREDITO' && relatedInvoiceId && req.body.annulInvoice !== false) {
+            if (normalizedType === 'CREDIT_NOTE' && relatedInvoiceId && req.body.annulInvoice !== false) {
                 await tx.invoice.update({
                     where: { id: relatedInvoiceId },
                     data: { status: 'CANCELLED' }
@@ -847,22 +901,16 @@ router.put("/suppliers/:id", async (req, res) => {
         const companyId = (req as any).companyId;
         const { rut, razonSocial, fantasyName, email, phone, address, category } = req.body;
 
-        // Ensure ownership
-        const existing = await prisma.supplier.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Supplier not found" });
-
-        const updated = await prisma.supplier.update({
-            where: { id },
-            data: {
-                rut,
-                razonSocial,
-                fantasyName,
-                email,
-                phone,
-                address,
-                category
-            }
+        const updated = await updateOwnedRecord(prisma.supplier, id, companyId, {
+            rut,
+            razonSocial,
+            fantasyName,
+            email,
+            phone,
+            address,
+            category
         });
+        if (!updated) return res.status(404).json({ error: "Supplier not found" });
         res.json(updated);
     } catch (err) {
         console.error("Error updating supplier:", err);
@@ -875,10 +923,8 @@ router.delete("/suppliers/:id", async (req, res) => {
         const { id } = req.params;
         const companyId = (req as any).companyId;
 
-        const existing = await prisma.supplier.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Supplier not found" });
-
-        await prisma.supplier.delete({ where: { id } });
+        const deleted = await deleteOwnedRecord(prisma.supplier, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Supplier not found" });
         res.json({ success: true });
     } catch (err) {
         console.error("Error deleting supplier:", err);
@@ -921,13 +967,15 @@ router.put("/workers/:id", async (req, res) => {
         const { rut, name, role, specialty, email, phone } = req.body;
         const companyId = (req as any).companyId;
 
-        const existing = await prisma.worker.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Worker not found" });
-
-        const updated = await prisma.worker.update({
-            where: { id },
-            data: { rut, name, role, specialty, email, phone }
+        const updated = await updateOwnedRecord(prisma.worker, id, companyId, {
+            rut,
+            name,
+            role,
+            specialty,
+            email,
+            phone
         });
+        if (!updated) return res.status(404).json({ error: "Worker not found" });
         res.json(updated);
     } catch (err) {
         console.error(err);
@@ -939,10 +987,8 @@ router.delete("/workers/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
-        const existing = await prisma.worker.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Worker not found" });
-
-        await prisma.worker.delete({ where: { id } });
+        const deleted = await deleteOwnedRecord(prisma.worker, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Worker not found" });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete worker" });
@@ -1326,10 +1372,8 @@ router.delete("/daily-reports/:id", async (req, res) => {
         const { id } = req.params;
         const companyId = (req as any).companyId;
 
-        const existing = await prisma.dailyReport.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Daily Report not found" });
-
-        await prisma.dailyReport.delete({ where: { id } });
+        const deleted = await deleteOwnedRecord(prisma.dailyReport, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Daily Report not found" });
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -1393,7 +1437,7 @@ router.put("/purchase-orders/:id", async (req, res) => {
         const companyId = (req as any).companyId;
 
         // Ensure PO belongs to company
-        const existing = await prisma.purchaseOrder.findFirst({ where: { id, companyId } });
+        const existing = await findOwnedRecord(prisma.purchaseOrder, id, companyId);
         if (!existing) return res.status(404).json({ error: "Purchase Order not found" });
 
         const updated = await prisma.$transaction(async (tx) => {
@@ -1432,10 +1476,8 @@ router.delete("/purchase-orders/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
-        const existing = await prisma.purchaseOrder.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Purchase Order not found" });
-
-        await prisma.purchaseOrder.delete({ where: { id } });
+        const deleted = await deleteOwnedRecord(prisma.purchaseOrder, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Purchase Order not found" });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete purchase order" });
@@ -1519,14 +1561,11 @@ router.put("/requirements/:id", async (req, res) => {
         const { status, dueDate } = req.body;
         const companyId = (req as any).companyId;
 
-        const updated = await prisma.documentRequirement.update({
-            where: { id }, // Validate ownership
-            data: {
-                status,
-                dueDate: dueDate ? new Date(dueDate) : undefined
-            }
+        const updated = await updateOwnedRecord(prisma.documentRequirement, id, companyId, {
+            status,
+            dueDate: dueDate ? new Date(dueDate) : undefined
         });
-        // We should verify ownership (omitted for brevity in past steps but crucial)
+        if (!updated) return res.status(404).json({ error: "Requirement not found" });
         res.json(updated);
     } catch (err: any) {
         console.error("Error updating requirement:", err);
@@ -1538,10 +1577,8 @@ router.delete("/requirements/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
-        const existing = await prisma.documentRequirement.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Requirement not found" });
-
-        await prisma.documentRequirement.delete({ where: { id } });
+        const deleted = await deleteOwnedRecord(prisma.documentRequirement, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Requirement not found" });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete requirement" });
@@ -1874,10 +1911,8 @@ router.delete("/plans/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
-        const existing = await prisma.plan.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Plan not found" });
-
-        await prisma.plan.delete({ where: { id } });
+        const deleted = await deleteOwnedRecord(prisma.plan, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Plan not found" });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete plan" });
@@ -1890,7 +1925,7 @@ router.get("/plans/:id/marks", async (req, res) => {
         const companyId = (req as any).companyId;
 
         // Verify plan belongs to company
-        const plan = await prisma.plan.findFirst({ where: { id, companyId } });
+        const plan = await findOwnedRecord(prisma.plan, id, companyId);
         if (!plan) return res.status(404).json({ error: "Plan not found" });
 
         const marks = await prisma.planMark.findMany({
@@ -1934,11 +1969,12 @@ router.post("/plans/:id/marks", upload.single('file'), async (req: any, res: any
         // VALDATION: Check if user is assigned to the project of this Plan
         // 1. Get Plan with ProjectId
         const companyId = (req as any).companyId;
-        const plan = await prisma.plan.findFirst({
-            where: { id, companyId },
+        const plan = await findOwnedRecord(prisma.plan, id, companyId);
+        const planWithProject = plan ? await prisma.plan.findUnique({
+            where: { id },
             include: { project: true }
-        });
-        if (!plan) return res.status(404).json({ error: "Plano no encontrado" });
+        }) : null;
+        if (!planWithProject) return res.status(404).json({ error: "Plano no encontrado" });
 
         // 2. Get User
         const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -1947,11 +1983,11 @@ router.post("/plans/:id/marks", upload.single('file'), async (req: any, res: any
         // 3. Check permissions (Skip for ADMIN)
         if (user.role !== 'ADMIN') {
             // If plan belongs to a project...
-            if (plan.projectId) {
+            if (planWithProject.projectId) {
                 const assigned = user.assignedProjectIds || [];
                 // Check if project ID is in assigned list
-                if (!assigned.includes(plan.projectId)) {
-                    return res.status(403).json({ error: "No estás asignado a este proyecto. No puedes reportar cuelgues." });
+                if (!assigned.includes(planWithProject.projectId)) {
+                    return res.status(403).json({ error: "No estas asignado a este proyecto. No puedes reportar cuelgues." });
                 }
             }
         }
@@ -1959,7 +1995,7 @@ router.post("/plans/:id/marks", upload.single('file'), async (req: any, res: any
         // Handle File Upload
         if (req.file) {
             try {
-                const projectName = plan.project?.name || 'General';
+                const projectName = planWithProject.project?.name || 'General';
                 const d = new Date(date || new Date());
                 const folder = `${projectName}/${d.getFullYear()}-${d.getMonth() + 1}`;
                 // Sanitize path
@@ -2005,6 +2041,13 @@ router.post("/plans/:id/marks", upload.single('file'), async (req: any, res: any
 router.delete("/plans/marks/:id", async (req, res) => {
     try {
         const { id } = req.params;
+        const mark = await prisma.planMark.findUnique({
+            where: { id },
+            include: { plan: { select: { companyId: true } } }
+        });
+        if (!mark || mark.plan.companyId !== (req as any).companyId) {
+            return res.status(404).json({ error: "Mark not found" });
+        }
         await prisma.planMark.delete({ where: { id } });
         res.json({ success: true });
     } catch (err) {
@@ -2451,10 +2494,12 @@ router.put("/epp/:id", async (req, res) => {
         const companyId = (req as any).companyId;
         const { id } = req.params;
         const { name, description, stock } = req.body;
-        const epp = await prisma.epp.updateMany({
-            where: { id, companyId },
-            data: { name, description, stock: Number(stock) }
+        const epp = await updateOwnedRecord(prisma.epp, id, companyId, {
+            name,
+            description,
+            stock: Number(stock)
         });
+        if (!epp) return res.status(404).json({ error: "EPP not found" });
         res.json(epp);
     } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -2465,7 +2510,8 @@ router.delete("/epp/:id", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
-        await prisma.epp.deleteMany({ where: { id, companyId } });
+        const deleted = await deleteOwnedRecord(prisma.epp, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "EPP not found" });
         res.json({ success: true });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -2705,10 +2751,16 @@ router.put("/leads/:id", async (req, res) => {
         const { id } = req.params;
         const { name, companyName, email, phone, status, source, notes } = req.body;
         
-        const lead = await prisma.lead.update({
-            where: { id, companyId },
-            data: { name, companyName, email, phone, status, source, notes }
+        const lead = await updateOwnedRecord(prisma.lead, id, companyId, {
+            name,
+            companyName,
+            email,
+            phone,
+            status,
+            source,
+            notes
         });
+        if (!lead) return res.status(404).json({ error: "Lead not found" });
         res.json(lead);
     } catch (err: any) {
         res.status(500).json({ error: "Failed to update lead", details: err.message });
@@ -2719,9 +2771,8 @@ router.delete("/leads/:id", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
-        await prisma.lead.delete({
-            where: { id, companyId }
-        });
+        const deleted = await deleteOwnedRecord(prisma.lead, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Lead not found" });
         res.json({ success: true });
     } catch (err: any) {
         res.status(500).json({ error: "Failed to delete lead", details: err.message });
@@ -2869,9 +2920,8 @@ router.delete("/quotes/:id", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
-        await prisma.quote.delete({
-            where: { id, companyId }
-        });
+        const deleted = await deleteOwnedRecord(prisma.quote, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Quote not found" });
         res.json({ success: true });
     } catch (err: any) {
         res.status(500).json({ error: "Failed to delete quote", details: err.message });
@@ -2923,21 +2973,16 @@ router.put("/products/:id", checkModuleAccess("INVENTORY"), async (req, res) => 
         const { code, name, description, type, category, unit, price } = req.body;
         
         // Find explicitly instead of updateMany to return object properly
-        const existing = await prisma.product.findFirst({ where: { id, companyId }});
-        if (!existing) return res.status(404).json({ error: 'Product not found' });
-
-        const product = await prisma.product.update({
-            where: { id },
-            data: {
-                code,
-                name,
-                description,
-                type,
-                category,
-                unit,
-                price: Number(price)
-            }
+        const product = await updateOwnedRecord(prisma.product, id, companyId, {
+            code,
+            name,
+            description,
+            type,
+            category,
+            unit,
+            price: Number(price)
         });
+        if (!product) return res.status(404).json({ error: 'Product not found' });
         res.json(product);
     } catch (err: any) {
         res.status(500).json({ error: "Failed to update product", details: err.message });
@@ -2948,9 +2993,8 @@ router.delete("/products/:id", checkModuleAccess("INVENTORY"), async (req, res) 
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
-        await prisma.product.deleteMany({
-            where: { id, companyId }
-        });
+        const deleted = await deleteOwnedRecord(prisma.product, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Product not found" });
         res.json({ success: true });
     } catch (err: any) {
         res.status(500).json({ error: "Failed to delete product", details: err.message });
@@ -2991,13 +3035,12 @@ router.put("/warehouses/:id", checkModuleAccess("INVENTORY"), async (req, res) =
         const { id } = req.params;
         const { name, location, manager } = req.body;
 
-        const existing = await prisma.warehouse.findFirst({ where: { id, companyId }});
-        if (!existing) return res.status(404).json({ error: 'Warehouse not found' });
-
-        const warehouse = await prisma.warehouse.update({
-            where: { id },
-            data: { name, location, manager }
+        const warehouse = await updateOwnedRecord(prisma.warehouse, id, companyId, {
+            name,
+            location,
+            manager
         });
+        if (!warehouse) return res.status(404).json({ error: 'Warehouse not found' });
         res.json(warehouse);
     } catch (err: any) {
         res.status(500).json({ error: "Failed to update warehouse", details: err.message });
@@ -3008,9 +3051,8 @@ router.delete("/warehouses/:id", checkModuleAccess("INVENTORY"), async (req, res
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
-        await prisma.warehouse.deleteMany({
-            where: { id, companyId }
-        });
+        const deleted = await deleteOwnedRecord(prisma.warehouse, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Warehouse not found" });
         res.json({ success: true });
     } catch (err: any) {
         res.status(500).json({ error: "Failed to delete warehouse", details: err.message });
@@ -3022,6 +3064,18 @@ router.post("/inventory-movements", checkModuleAccess("INVENTORY"), async (req, 
     try {
         const companyId = (req as any).companyId;
         const { type, quantity, date, description, productId, fromWarehouseId, toWarehouseId, projectId } = req.body;
+
+        const [product, fromWarehouse, toWarehouse, project] = await Promise.all([
+            productId ? findOwnedRecord(prisma.product, productId, companyId) : Promise.resolve(null),
+            fromWarehouseId ? findOwnedRecord(prisma.warehouse, fromWarehouseId, companyId) : Promise.resolve(null),
+            toWarehouseId ? findOwnedRecord(prisma.warehouse, toWarehouseId, companyId) : Promise.resolve(null),
+            projectId ? findOwnedRecord(prisma.project, projectId, companyId) : Promise.resolve(null)
+        ]);
+
+        if (!product) return res.status(404).json({ error: "Product not found" });
+        if (fromWarehouseId && !fromWarehouse) return res.status(404).json({ error: "Source warehouse not found" });
+        if (toWarehouseId && !toWarehouse) return res.status(404).json({ error: "Destination warehouse not found" });
+        if (projectId && !project) return res.status(404).json({ error: "Project not found" });
 
         const result = await prisma.$transaction(async (tx) => {
              // 1. Create movement record
@@ -3047,8 +3101,12 @@ router.post("/inventory-movements", checkModuleAccess("INVENTORY"), async (req, 
 
                  if (currentStock) {
                      await tx.stock.update({
-                         where: { id: currentStock.id },
-                         data: { quantity: currentStock.quantity + qtyChange }
+                         where: { productId_warehouseId: { productId, warehouseId } },
+                         data: {
+                             quantity: {
+                                 increment: qtyChange
+                             }
+                         }
                      });
                  } else {
                      await tx.stock.create({
@@ -3123,13 +3181,13 @@ router.put("/bank-accounts/:id", async (req, res) => {
         const { id } = req.params;
         const { name, number, currency, balance } = req.body;
 
-        const existing = await prisma.bankAccount.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: 'Bank account not found' });
-
-        const account = await prisma.bankAccount.update({
-            where: { id },
-            data: { name, number, currency, balance: Number(balance) }
+        const account = await updateOwnedRecord(prisma.bankAccount, id, companyId, {
+            name,
+            number,
+            currency,
+            balance: Number(balance)
         });
+        if (!account) return res.status(404).json({ error: 'Bank account not found' });
         res.json(account);
     } catch (err: any) {
         res.status(500).json({ error: "Failed to update bank account", details: err.message });
@@ -3140,9 +3198,8 @@ router.delete("/bank-accounts/:id", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
-        await prisma.bankAccount.deleteMany({
-            where: { id, companyId }
-        });
+        const deleted = await deleteOwnedRecord(prisma.bankAccount, id, companyId);
+        if (!deleted) return res.status(404).json({ error: "Bank account not found" });
         res.json({ success: true });
     } catch (err: any) {
         res.status(500).json({ error: "Failed to delete bank account", details: err.message });
@@ -3174,9 +3231,7 @@ router.post("/bank-transactions", async (req, res) => {
         const companyId = (req as any).companyId;
         const { bankAccountId, type, amount, description, reference, category, date } = req.body;
 
-        const account = await prisma.bankAccount.findFirst({
-            where: { id: bankAccountId, companyId }
-        });
+        const account = await findOwnedRecord(prisma.bankAccount, bankAccountId, companyId);
         if (!account) return res.status(404).json({ error: "Bank account not found" });
 
         const result = await prisma.$transaction(async (tx) => {
@@ -3195,7 +3250,11 @@ router.post("/bank-transactions", async (req, res) => {
             const balanceChange = type === 'IN' ? Number(amount) : -Number(amount);
             await tx.bankAccount.update({
                 where: { id: bankAccountId },
-                data: { balance: account.balance + balanceChange }
+                data: {
+                    balance: {
+                        increment: balanceChange
+                    }
+                }
             });
 
             return transaction;
