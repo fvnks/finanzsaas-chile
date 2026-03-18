@@ -8,15 +8,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const configuredOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(origin => origin.trim())
+    .filter(Boolean);
 
 // Manual CORS Middleware
 app.use((req, res, next) => {
-    const allowedOrigin = 'https://finanzsaas-chile-production.up.railway.app';
-
-    // Check if the incoming origin matches our allowed origin
-    // OR if we are in development (localhost)
     const origin = req.headers.origin;
-    if (origin && (origin === allowedOrigin || origin.includes('localhost'))) {
+    const isLocalhost = !!origin && origin.includes("localhost");
+    const isConfiguredOrigin = !!origin && configuredOrigins.includes(origin);
+    const isSameRailwayOrigin = !!origin && origin === "https://finanzsaas-chile-production.up.railway.app";
+
+    if (origin && (isLocalhost || isConfiguredOrigin || isSameRailwayOrigin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
     }
 

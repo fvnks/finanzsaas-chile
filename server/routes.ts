@@ -83,8 +83,8 @@ const checkModuleAccess = (requiredModule: string) => {
             }
 
             // If modules array is empty/null, perhaps it's a legacy company with all access?
-            // For strict SaaS, we enforce the check.
-            if (!company.modules || !company.modules.includes(requiredModule)) {
+            // Allow access if modules list is empty to support legacy companies.
+            if (company.modules && company.modules.length > 0 && !company.modules.includes(requiredModule)) {
                 return res.status(403).json({ error: `No tiene acceso al módulo: ${requiredModule}. Requerido cambiar de plan.` });
             }
 
