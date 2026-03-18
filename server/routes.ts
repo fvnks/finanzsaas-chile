@@ -10,6 +10,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
+// --- GLOBAL MIDDLEWARE TO SET COMPANY ID ---
+router.use((req: Request, res: Response, next: NextFunction) => {
+    const companyId = req.headers['x-company-id'];
+    if (companyId) {
+        (req as any).companyId = companyId as string;
+    }
+    next();
+});
+
 // --- AUTHORIZATION MIDDLEWARE ---
 const checkModuleAccess = (requiredModule: string) => {
     return async (req: Request, res: Response, next: NextFunction) => {
