@@ -20,6 +20,11 @@ import { PlanosPage } from '../pages/PlanosPage';
 import SuppliersPage from '../pages/SuppliersPage';
 import ToolsPage from '../pages/ToolsPage';
 import DeliveriesPage from '../pages/DeliveriesPage';
+import CrmPage from '../pages/CrmPage.tsx';
+import ProductsPage from '../pages/ProductsPage.tsx';
+import WarehousesPage from '../pages/WarehousesPage.tsx';
+import BankAccountsPage from '../pages/BankAccountsPage.tsx';
+import CashFlowPage from '../pages/CashFlowPage.tsx';
 
 import { API_URL } from '../src/config.ts';
 import { useCompany } from './CompanyContext';
@@ -33,6 +38,14 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const { activeCompany } = useCompany();
+
+    React.useEffect(() => {
+        if (activeCompany?.primaryColor) {
+            document.documentElement.style.setProperty('--primary-color', activeCompany.primaryColor);
+        } else {
+            document.documentElement.style.setProperty('--primary-color', '#2563eb');
+        }
+    }, [activeCompany]);
 
     // Estados iniciales de datos
     const [clients, setClients] = useState<Client[]>([]);
@@ -608,6 +621,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 {activeTab === 'financialReports' && (
                     <ReportsPage invoices={invoices} projects={projects} costCenters={costCenters} clients={clients} />
                 )}
+                {activeTab === 'crm' && <CrmPage currentUser={user} />}
+                {activeTab === 'products' && <ProductsPage />}
+                {activeTab === 'warehouses' && <WarehousesPage />}
+                {activeTab === 'bankAccounts' && <BankAccountsPage />}
+                {activeTab === 'cashFlow' && <CashFlowPage />}
                 {activeTab === 'admin' && <AdminPage currentUser={user} projects={projects} onRefreshUser={onRefreshUser} />}
             </main>
         </div>

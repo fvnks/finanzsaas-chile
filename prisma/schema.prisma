@@ -38,6 +38,12 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  planId     String?
+  plan       SubscriptionPlan? @relation(fields: [planId], references: [id])
+  planStatus String            @default("ACTIVE") // ACTIVE, SUSPENDED, TRIAL
+  modules    String[]          // e.g. ["INVOICING", "PROJECTS", "INVENTORY", "HR"]
+  primaryColor String?          @default("#2563eb")
+
   users User[] @relation("UserCompanies")
 
   // Relations to other models
@@ -54,7 +60,8 @@ model Company {
   inventoryMovements InventoryMovement[]
   costCenters        CostCenter[]
   DailyReport        DailyReport[]
-  Material           Material[]
+  Product            Product[]
+  Warehouse          Warehouse[]
   Plan               Plan[]
   jobTitles          JobTitle[]
   payments           Payment[]
@@ -64,6 +71,13 @@ model Company {
 
   paidExpenses     Expense[] @relation("PaidExpenses")
   receivedExpenses Expense[] @relation("ReceivedExpenses")
+
+  // CRM
+  leads              Lead[]
+  quotes             Quote[]
+
+  // Finance
+  bankAccounts       BankAccount[]
 }
 
 model Client {
@@ -83,6 +97,7 @@ model Client {
   monthlyInfo  ClientMonthlyInfo[]
   documentCategories DocumentCategory[]
 
+  portalToken String?  @unique @default(uuid())
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
 
@@ -214,6 +229,9 @@ model Invoice {
   netAmount   Float
   taxAmount   Float // IVA
   totalAmount Float
+
+  currency     String    @default("CLP") // CLP, UF, USD
+  exchangeRate Float     @default(1)     // Valor de la moneda en CLP
 
   clientId  String?
   client    Client? @relation(fields: [clientId], references: [id])
@@ -402,36 +420,78 @@ model DocumentCategory {
   @@unique([name, clientId])
 }
 
-model Material {
+model Product {
   id           String  @id @default(uuid())
   code         String?
   name         String
-  unit         String // kg, m, unit
-  minStock     Float   @default(0)
-  currentStock Float   @default(0)
+  description  String?
+  type         String  @default("GOOD") // GOOD, SERVICE
+  category     String?
+  unit         String  @default("UN") // unit, kg, m, hr
+  price        Float   @default(0) // Reference price
+  
+  stocks       Stock[]
+  movements    InventoryMovement[]
 
-  price Float @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  movements InventoryMovement[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id])
 
   @@unique([code, companyId])
 }
 
+model Warehouse {
+  id           String  @id @default(uuid())
+  name         String
+  location     String?
+  manager      String? // Could be a text or a relation to Worker/User
+
+  stocks       Stock[]
+  movementsFrom InventoryMovement[] @relation("MovementFromWarehouse")
+  movementsTo   InventoryMovement[] @relation("MovementToWarehouse")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id])
+}
+
+model Stock {
+  id           String  @id @default(uuid())
+  quantity     Float   @default(0)
+  minStock     Float   @default(0)
+
+  productId    String
+  product      Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  warehouseId  String
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  updatedAt    DateTime @updatedAt
+
+  @@unique([productId, warehouseId])
+}
+
 model InventoryMovement {
   id          String   @id @default(uuid())
-  type        String // IN, OUT
+  type        String   // IN, OUT, TRANSFER, ADJUSTMENT
   quantity    Float
   date        DateTime @default(now())
   description String?
 
-  materialId String
-  material   Material @relation(fields: [materialId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+
+  // If type is IN or OUT, it might only use 'toWarehouseId' or 'fromWarehouseId'
+  // If type is TRANSFER, it uses both.
+  fromWarehouseId String?
+  fromWarehouse   Warehouse? @relation("MovementFromWarehouse", fields: [fromWarehouseId], references: [id])
+
+  toWarehouseId   String?
+  toWarehouse     Warehouse? @relation("MovementToWarehouse", fields: [toWarehouseId], references: [id])
 
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id])
@@ -521,6 +581,9 @@ model Expense {
   amount      Float
   category    String? // New field for classification
   date        DateTime
+
+  currency     String @default("CLP")
+  exchangeRate Float  @default(1)
 
   originCompanyId String
   originCompany   Company @relation("PaidExpenses", fields: [originCompanyId], references: [id])
@@ -636,3 +699,123 @@ model ToolAssignment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model SubscriptionPlan {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float    @default(0)
+  maxUsers    Int      @default(1)
+  maxStorageGB Int?     @default(5)
+  features    String[] 
+  modules     String[] // Default modules for this plan
+
+  companies   Company[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// --- CRM MODULE ---
+
+model Lead {
+  id          String   @id @default(uuid())
+  name        String
+  companyName String?
+  email       String?
+  phone       String?
+  status      String   @default("NEW") // NEW, CONTACTED, QUALIFIED, LOST
+  source      String?
+  notes       String?
+
+  quotes      Quote[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+}
+
+model Quote {
+  id          String   @id @default(uuid())
+  number      String
+  date        DateTime @default(now())
+  validUntil  DateTime?
+  status      String   @default("DRAFT") // DRAFT, SENT, ACCEPTED, REJECTED
+  
+  netAmount   Float    @default(0)
+  taxAmount   Float    @default(0)
+  totalAmount Float    @default(0)
+  
+  notes       String?
+
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  items       QuoteItem[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+}
+
+model QuoteItem {
+  id          String   @id @default(uuid())
+  description String
+  quantity    Float    @default(1)
+  unitPrice   Float    @default(0)
+  total       Float    @default(0)
+
+  quoteId     String
+  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+}
+
+// --- FINANCE MODULE ---
+
+model BankAccount {
+  id        String   @id @default(uuid())
+  name      String   // Ej: Banco de Chile Corriente
+  number    String?
+  currency  String   @default("CLP") // CLP, UF, USD
+  balance   Float    @default(0)
+  
+  transactions BankTransaction[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+}
+
+model BankTransaction {
+  id            String   @id @default(uuid())
+  date          DateTime @default(now())
+  type          String   // IN, OUT
+  amount        Float
+  description   String?
+  reference     String?  // Ej: Número de transferencia
+  category      String?  // Ej: Pago Proveedor, Venta, etc.
+  
+  bankAccountId String
+  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ExchangeRate {
+  id        String   @id @default(uuid())
+  date      DateTime @default(now())
+  currency  String   // UF, USD
+  value     Float    // Valor en CLP
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date, currency])
+}
+

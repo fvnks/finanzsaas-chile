@@ -6,9 +6,14 @@ import { API_URL } from './src/config.ts';
 import MainLayout from './components/MainLayout.tsx';
 import { CompanyProvider } from './components/CompanyContext.tsx';
 
+import ClientPortal from './components/ClientPortal.tsx';
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState('');
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const portalToken = urlParams.get('portal');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +65,10 @@ const App: React.FC = () => {
       console.error("Failed to refresh user:", err);
     }
   };
+
+  if (portalToken) {
+    return <ClientPortal token={portalToken} />;
+  }
 
   if (!user) {
     return (

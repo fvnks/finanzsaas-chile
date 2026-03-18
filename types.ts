@@ -20,10 +20,14 @@ export interface Company {
   name: string;
   rut: string;
   logoUrl?: string;
+  primaryColor?: string;
   address?: string;
   email?: string;
   phone?: string;
   website?: string;
+  planId?: string;
+  planStatus?: string;
+  modules?: string[];
 }
 
 export interface User {
@@ -105,6 +109,7 @@ export interface Invoice {
   type: InvoiceType;
   number: string;
   date: string;
+  dueDate?: string; // Added for Cash Flow
   net: number;
   iva: number;
   total: number;
@@ -121,9 +126,11 @@ export interface Invoice {
   hesNumber?: string;
   status?: 'CANCELLED' | 'PENDING' | 'PAID';
   isPaid: boolean;
-  paymentStatus: 'PENDING' | 'PAID' | 'PARTIAL' | 'FACTORING' | 'COLLECTION';
   paymentDate?: string;
+  currency?: 'CLP' | 'UF' | 'USD';
+  exchangeRate?: number;
   companyId: string;
+  paymentStatus?: string;
 }
 
 export interface Payment {
@@ -220,6 +227,11 @@ export type AppState = {
   epps: Epp[];
   eppDeliveries: EppDelivery[];
   toolAssignments: ToolAssignment[];
+  products: Product[];
+  warehouses: Warehouse[];
+  inventoryMovements: InventoryMovement[];
+  bankAccounts?: BankAccount[];
+  exchangeRates?: ExchangeRate[];
 }
 
 export interface Plan {
@@ -280,6 +292,8 @@ export interface Expense {
   invoiceNumber?: string;
   status: 'PENDING' | 'SETTLED';
   distributions?: ExpenseDistribution[];
+  currency?: 'CLP' | 'UF' | 'USD';
+  exchangeRate?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -294,33 +308,7 @@ export interface ExpenseDistribution {
   costCenter?: CostCenter;
 }
 
-export interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-  originCompanyId: string;
-  originCompany?: Company;
-  targetCompanyId: string;
-  targetCompany?: Company;
-  workerId?: string;
-  worker?: Worker;
-  invoiceNumber?: string;
-  status: 'PENDING' | 'SETTLED';
-  distributions?: ExpenseDistribution[];
-  createdAt: string;
-  updatedAt: string;
-}
 
-export interface ExpenseDistribution {
-  id: string;
-  amount: number;
-  expenseId: string;
-  projectId?: string;
-  project?: Project;
-  costCenterId?: string;
-  costCenter?: CostCenter;
-}
 
 export interface ToolMaintenance {
   id: string;
@@ -376,4 +364,156 @@ export interface ToolAssignment {
   worker?: Worker;
   toolId: string;
   tool?: Tool;
+}
+
+// --- CRM MODULE ---
+
+export interface Lead {
+  id: string;
+  name: string;
+  companyName?: string;
+  email?: string;
+  phone?: string;
+  status: 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'LOST';
+  source?: string;
+  notes?: string;
+  quotes?: Quote[];
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  companyId: string;
+}
+
+export interface Quote {
+  id: string;
+  number: string;
+  date: string | Date;
+  validUntil?: string | Date;
+  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED';
+  netAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  notes?: string;
+  leadId?: string;
+  lead?: Lead;
+  items?: QuoteItem[];
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  companyId: string;
+}
+
+export interface QuoteItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  quoteId: string;
+  quote?: Quote;
+}
+
+// --- NEW INVENTORY MODULE ---
+export interface Product {
+    id: string;
+    code?: string;
+    name: string;
+    description?: string;
+    type: 'GOOD' | 'SERVICE';
+    category?: string;
+    unit: string;
+    price: number;
+    stocks?: Stock[];
+    movements?: InventoryMovement[];
+    createdAt: string;
+    updatedAt: string;
+    companyId: string;
+}
+
+export interface Warehouse {
+    id: string;
+    name: string;
+    location?: string;
+    manager?: string;
+    stocks?: Stock[];
+    movementsFrom?: InventoryMovement[];
+    movementsTo?: InventoryMovement[];
+    createdAt: string;
+    updatedAt: string;
+    companyId: string;
+}
+
+export interface Stock {
+    id: string;
+    quantity: number;
+    minStock: number;
+    productId: string;
+    product?: Product;
+    warehouseId: string;
+    warehouse?: Warehouse;
+    updatedAt: string;
+}
+
+export interface InventoryMovement {
+    id: string;
+    type: 'IN' | 'OUT' | 'TRANSFER' | 'ADJUSTMENT';
+    quantity: number;
+    date: string;
+    description?: string;
+    productId: string;
+    product?: Product;
+    fromWarehouseId?: string;
+    fromWarehouse?: Warehouse;
+    toWarehouseId?: string;
+    toWarehouse?: Warehouse;
+    projectId?: string;
+    project?: Project;
+    createdAt: string;
+    companyId: string;
+}
+
+// --- FINANCE MODULE ---
+
+export interface BankAccount {
+    id: string;
+    name: string;
+    number?: string;
+    currency: 'CLP' | 'UF' | 'USD';
+    balance: number;
+    transactions?: BankTransaction[];
+    createdAt: string;
+    updatedAt: string;
+    companyId: string;
+}
+
+export interface BankTransaction {
+    id: string;
+    date: string;
+    type: 'IN' | 'OUT';
+    amount: number;
+    description?: string;
+    reference?: string;
+    category?: string;
+    bankAccountId: string;
+    bankAccount?: BankAccount;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ExchangeRate {
+    id: string;
+    date: string;
+    currency: 'UF' | 'USD';
+    value: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  features: string[];
+  modules: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }

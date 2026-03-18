@@ -346,6 +346,11 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
     type: InvoiceType.VENTA,
     number: '',
     date: new Date().toISOString().split('T')[0],
+    dueDate: (() => {
+      const d = new Date();
+      d.setDate(d.getDate() + 30);
+      return d.toISOString().split('T')[0];
+    })(), // Added for Cash Flow
     net: 0,
     clientId: '',
     costCenterId: '',
@@ -546,6 +551,11 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       type: initialType,
       number: getNextCorrelative(initialType),
       date: new Date().toISOString().split('T')[0],
+      dueDate: (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 30);
+        return d.toISOString().split('T')[0];
+      })(), // Added for Cash flow
       net: 0,
       clientId: '',
       costCenterId: '',
@@ -568,6 +578,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       type: inv.type,
       number: inv.number,
       date: inv.date.split('T')[0],
+      dueDate: inv.dueDate ? inv.dueDate.split('T')[0] : '', // Added for Cash Flow
       net: inv.net,
       clientId: inv.clientId,
       costCenterId: inv.costCenterId || '',
@@ -1698,7 +1709,22 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                         type="date"
                         className="w-full p-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
                         value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        onChange={(e) => {
+                          const newDate = e.target.value;
+                          const d = new Date(newDate + 'T00:00:00Z');
+                          d.setDate(d.getDate() + 30);
+                          const calcDueDate = d.toISOString().split('T')[0];
+                          setFormData({ ...formData, date: newDate, dueDate: calcDueDate });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 uppercase">Fecha Vencimiento</label>
+                      <input
+                        type="date"
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                        value={formData.dueDate}
+                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                       />
                     </div>
                     <div className="space-y-1.5">

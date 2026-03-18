@@ -14,9 +14,11 @@ import {
     AlertCircle,
     Building,
     Database,
-    Download
+    Download,
+    CreditCard,
+    Check
 } from 'lucide-react';
-import { User, UserRole, Company } from '../types';
+import { User, UserRole, Company, SubscriptionPlan } from '../types';
 
 import { API_URL } from '../src/config.ts';
 
@@ -33,11 +35,12 @@ interface AdminPageProps {
 }
 
 const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshUser }) => {
-    const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES' | 'COMPANIES' | 'BACKUPS'>('USERS');
+    const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES' | 'COMPANIES' | 'BACKUPS' | 'PLANS'>('USERS');
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<JobTitle[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
     const [backups, setBackups] = useState<any[]>([]);
+    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(false);
 
     // Define available sections for permissions
@@ -69,8 +72,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     });
 
     // Company Form State
-    const [companyForm, setCompanyForm] = useState({ name: '', rut: '', logoUrl: '' });
+    const [companyForm, setCompanyForm] = useState({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
     const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+
+    // Plan Form State
+    const [planForm, setPlanForm] = useState({ name: '', price: 0, description: '', features: [] as string[], modules: [] as string[] });
+    const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
+    const availableModules = ['INVOICING', 'PROJECTS', 'INVENTORY', 'TOOLS', 'HR'];
 
     // Role Form State
     const [roleForm, setRoleForm] = useState({ name: '', description: '' });
@@ -98,13 +106,23 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                 const res = await fetch(`${API_URL}/backups`);
                 const data = await res.json();
                 setBackups(Array.isArray(data) ? data : []);
+            } else if (activeTab === 'PLANS') {
+                const res = await fetch(`${API_URL}/plans`);
+                const data = await res.json();
+                setPlans(Array.isArray(data) ? data : []);
             }
 
             // Always fetch companies for User modal if not already fetched
-            if (activeTab === 'USERS' && companies.length === 0) {
+            if ((activeTab === 'USERS' || activeTab === 'COMPANIES') && companies.length === 0) {
                 const res = await fetch(`${API_URL}/companies`);
                 const data = await res.json();
                 setCompanies(Array.isArray(data) ? data : []);
+            }
+            // Always fetch plans for Companies if needed
+            if (activeTab === 'COMPANIES' && plans.length === 0) {
+                const res = await fetch(`${API_URL}/plans`);
+                const data = await res.json();
+                setPlans(Array.isArray(data) ? data : []);
             }
         } catch (error) {
             console.error("Error fetching admin data:", error);
@@ -197,7 +215,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                     const updated = await res.json();
                     setCompanies(companies.map(c => c.id === updated.id ? updated : c));
                     setEditingCompany(null);
-                    setCompanyForm({ name: '', rut: '', logoUrl: '' });
+                    setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
                 }
             } else {
                 const res = await fetch(`${API_URL}/companies`, {
@@ -211,7 +229,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                 if (res.ok) {
                     const created = await res.json();
                     setCompanies([...companies, created]);
-                    setCompanyForm({ name: '', rut: '', logoUrl: '' });
+                    setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
                     if (onRefreshUser) onRefreshUser();
                 }
             }
@@ -232,12 +250,18 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
 
     const startEditCompany = (company: Company) => {
         setEditingCompany(company);
-        setCompanyForm({ name: company.name, rut: company.rut, logoUrl: company.logoUrl || '' });
+        setCompanyForm({ 
+            name: company.name, 
+            rut: company.rut, 
+            logoUrl: company.logoUrl || '', 
+            planId: company.planId || '', 
+            primaryColor: company.primaryColor || '' 
+        });
     };
 
     const cancelEditCompany = () => {
         setEditingCompany(null);
-        setCompanyForm({ name: '', rut: '', logoUrl: '' });
+        setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
     };
 
     const openUserModal = (user?: User) => {
@@ -294,6 +318,59 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
         }
     };
 
+    const handlePlanSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (editingPlan) {
+                const res = await fetch(`${API_URL}/plans/${editingPlan.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...planForm, price: Number(planForm.price) })
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    setPlans(plans.map(p => p.id === updated.id ? updated : p));
+                    setEditingPlan(null);
+                    setPlanForm({ name: '', price: 0, description: '', features: [], modules: [] });
+                }
+            } else {
+                const res = await fetch(`${API_URL}/plans`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...planForm, price: Number(planForm.price) })
+                });
+                if (res.ok) {
+                    const created = await res.json();
+                    setPlans([...plans, created]);
+                    setPlanForm({ name: '', price: 0, description: '', features: [], modules: [] });
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDeletePlan = async (id: string) => {
+        if (!confirm('¿Estás seguro de eliminar este plan?')) return;
+        try {
+            await fetch(`${API_URL}/plans/${id}`, { method: 'DELETE' });
+            setPlans(plans.filter(p => p.id !== id));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const startEditPlan = (plan: SubscriptionPlan) => {
+        setEditingPlan(plan);
+        setPlanForm({
+            name: plan.name,
+            price: plan.price,
+            description: plan.description || '',
+            features: plan.features as string[] || [],
+            modules: plan.modules || []
+        });
+    };
+
     if (currentUser?.role !== UserRole.ADMIN) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
@@ -331,6 +408,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                         className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'COMPANIES' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         <Building size={14} /> EMPRESAS
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('PLANS')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'PLANS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <CreditCard size={14} /> PLANES SAAS
                     </button>
                     <button
                         onClick={() => setActiveTab('BACKUPS')}
@@ -487,6 +570,37 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                         onChange={e => setCompanyForm({ ...companyForm, logoUrl: e.target.value })}
                                     />
                                 </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Color Primario (Hex)</label>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <input
+                                            type="color"
+                                            className="h-12 w-12 p-1 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer"
+                                            value={companyForm.primaryColor || '#2563eb'}
+                                            onChange={e => setCompanyForm({ ...companyForm, primaryColor: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="#2563eb"
+                                            className="flex-1 p-4 bg-slate-800 border border-slate-700 rounded-2xl text-white font-medium placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            value={companyForm.primaryColor}
+                                            onChange={e => setCompanyForm({ ...companyForm, primaryColor: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan Suscripción</label>
+                                    <select
+                                        className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 rounded-2xl text-white font-medium placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={companyForm.planId}
+                                        onChange={e => setCompanyForm({ ...companyForm, planId: e.target.value })}
+                                    >
+                                        <option value="">(Sin Plan)</option>
+                                        {plans.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
                                 <div className="flex space-x-2">
                                     <button type="submit" className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-lg transition-all active:scale-95">
                                         {editingCompany ? 'Actualizar' : 'Guardar'}
@@ -606,6 +720,116 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'PLANS' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="md:col-span-1">
+                        <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl">
+                            <h3 className="text-xl font-black mb-6 flex items-center">
+                                <Plus className="mr-2" /> {editingPlan ? 'Editar Plan' : 'Nuevo Plan'}
+                            </h3>
+                            <form onSubmit={handlePlanSubmit} className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre Plan</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Ej: Plan Pro"
+                                        className="w-full mt-2 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white font-bold placeholder-slate-600 outline-none"
+                                        value={planForm.name}
+                                        onChange={e => setPlanForm({ ...planForm, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Precio</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        placeholder="0"
+                                        className="w-full mt-2 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white font-bold placeholder-slate-600 outline-none"
+                                        value={planForm.price}
+                                        onChange={e => setPlanForm({ ...planForm, price: Number(e.target.value) })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descripción</label>
+                                    <input
+                                        type="text"
+                                        className="w-full mt-2 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-600 outline-none"
+                                        value={planForm.description}
+                                        onChange={e => setPlanForm({ ...planForm, description: e.target.value })}
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Módulos Activos</label>
+                                    <div className="space-y-2">
+                                        {availableModules.map(mod => (
+                                            <label key={mod} className="flex items-center space-x-2 text-sm text-slate-300">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="rounded border-slate-600 bg-slate-800"
+                                                    checked={planForm.modules.includes(mod)}
+                                                    onChange={e => {
+                                                        const checked = e.target.checked;
+                                                        setPlanForm(prev => ({
+                                                            ...prev,
+                                                            modules: checked ? [...prev.modules, mod] : prev.modules.filter(m => m !== mod)
+                                                        }));
+                                                    }}
+                                                />
+                                                <span>{mod}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex space-x-2 pt-4">
+                                    <button type="submit" className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all">
+                                        {editingPlan ? 'Actualizar' : 'Guardar'}
+                                    </button>
+                                    {editingPlan && (
+                                        <button type="button" onClick={() => {
+                                            setEditingPlan(null);
+                                            setPlanForm({ name: '', price: 0, description: '', features: [], modules: [] });
+                                        }} className="px-4 py-3 bg-slate-700 text-white rounded-xl">Cancelar</button>
+                                    )}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div className="md:col-span-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {plans.map(plan => (
+                                <div key={plan.id} className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h4 className="text-xl font-black text-slate-800">{plan.name}</h4>
+                                            <p className="text-indigo-600 font-bold text-2xl mt-1">${plan.price.toLocaleString()}</p>
+                                        </div>
+                                        <div className="flex space-x-1">
+                                            <button onClick={() => startEditPlan(plan)} className="p-2 text-slate-400 hover:text-blue-500"><Edit2 size={16} /></button>
+                                            <button onClick={() => handleDeletePlan(plan.id)} className="p-2 text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4">{plan.description}</p>
+                                    <div className="space-y-2 mb-4">
+                                        <p className="text-xs font-bold text-slate-400 uppercase">Módulos</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {plan.modules.map(m => (
+                                                <span key={m} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">{m}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center text-xs font-bold text-slate-400">
+                                        <Users size={14} className="mr-1" /> Usuarios: {plan.maxUsers || 'Ilimitado'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}

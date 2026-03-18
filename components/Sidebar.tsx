@@ -17,6 +17,11 @@ import {
   TrendingUp,
   Wrench,
   Package,
+  PhoneCall,
+  Box,
+  Layers,
+  CreditCard,
+  BarChart3
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 import CompanySwitcher from './CompanySwitcher.tsx';
@@ -57,14 +62,29 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
       ]
     },
     {
+      id: 'ventas',
+      label: 'Ventas y CRM',
+      items: [
+        { id: 'crm', label: 'CRM / Cotizaciones', icon: PhoneCall },
+      ]
+    },
+    {
       id: 'finanzas',
       label: 'Finanzas y Compras',
       items: [
-        { id: 'invoices', label: 'Facturas', icon: FileText }, // Could differentiate icon
-
+        { id: 'invoices', label: 'Facturas', icon: FileText },
         { id: 'costCenters', label: 'Centros de Costo', icon: Target },
-        { id: 'financialReports', label: 'Reportes Financieros', icon: PieChart },
         { id: 'expenses', label: 'Gastos', icon: TrendingUp },
+        { id: 'bankAccounts', label: 'Cuentas Bancarias', icon: CreditCard },
+        { id: 'cashFlow', label: 'Flujo de Caja', icon: BarChart3 },
+      ]
+    },
+    {
+      id: 'inventario',
+      label: 'Inventario',
+      items: [
+        { id: 'products', label: 'Catálogo de Prod.', icon: Layers },
+        { id: 'warehouses', label: 'Bodegas y Stock', icon: Box },
       ]
     },
 
@@ -94,22 +114,36 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
   // Filter Logic
   const getAllowedGroups = () => {
     if (!user) return [];
+    
+    // Check company modules
+    const activeCompany = user.companies?.find(c => c.id === user.activeCompanyId);
+    // Determine active modules, default to all if none specified (legacy data)
+    const activeModules = activeCompany?.modules || ['INVOICING', 'PROJECTS', 'INVENTORY', 'TOOLS', 'HR'];
 
-    // Admin sees everything
-    if (user.role === UserRole.ADMIN) return groups;
-
-    // Filter for others
-    const allowed = user.allowedSections || ['dashboard']; // Ensure dashboard access by default if needed
+    // Admin sees everything within the company's active modules
+    // Other users are filtered by both their role permissions AND company modules
+    const allowed = user.role === UserRole.ADMIN ? null : (user.allowedSections || ['dashboard']);
 
     return groups.map(group => ({
       ...group,
       items: group.items.filter(item => {
-        // Always allow dashboard if it's in the list and user has basic access? 
-        // Or strictly follow allowedSections. 
-        // Let's strictly follow allowedSections, assuming 'dashboard' is in the allowed list.
-        // We added logic in previous step to force 'dashboard' if empty sidebar, but let's rely on allowed list.
-        // If 'dashboard' is not in allowed list, they won't see it.
-        return allowed.includes(item.id);
+        // Module check
+        if (item.id === 'crm' && !(activeModules.includes('INVOICING') || activeModules.includes('CRM'))) return false;
+        if (item.id === 'invoices' && !activeModules.includes('INVOICING')) return false;
+        if (item.id === 'projects' && !activeModules.includes('PROJECTS')) return false;
+        if (item.id === 'tools' && !activeModules.includes('TOOLS')) return false;
+        if (item.id === 'deliveries' && !activeModules.includes('HR')) return false;
+        if (item.id === 'workers' && !activeModules.includes('HR')) return false;
+        
+        if (item.id === 'products' && !activeModules.includes('INVENTORY')) return false;
+        if (item.id === 'warehouses' && !activeModules.includes('INVENTORY')) return false;
+        // Assume costCenters and others maybe tied to INVOICING or PROJECTS. We'll leave them open or tied to INVOICING.
+        if (item.id === 'costCenters' && !activeModules.includes('INVOICING')) return false;
+
+        // User permission check
+        if (allowed && !allowed.includes(item.id)) return false;
+        
+        return true;
       })
     })).filter(group => group.items.length > 0);
   };
@@ -129,7 +163,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
             <CompanySwitcher />
           </div>
         ) : (
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shrink-0 mx-auto mb-2">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold shrink-0 mx-auto mb-2">
             V
           </div>
         )}
@@ -156,7 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
                   onClick={() => setActiveTab(item.id)}
                   title={isCollapsed ? item.label : undefined}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'space-x-3 px-3'} py-2.5 rounded-lg transition-all ${activeTab === item.id
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                    ? 'bg-primary text-white shadow-lg shadow-slate-900/30'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                     }`}
                 >

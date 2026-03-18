@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
 import multer from "multer";
@@ -10,11 +10,42 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
-// --- HEALTH ---
-router.get("/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
+// --- AUTHORIZATION MIDDLEWARE ---
+const checkModuleAccess = (requiredModule: string) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const companyId = (req as any).companyId || req.headers['x-company-id'];
+        
+        if (!companyId) {
+            return res.status(400).json({ error: "Company ID required for this action." });
+        }
 
+        try {
+            const company = await prisma.company.findUnique({
+                where: { id: companyId },
+                select: { modules: true, planStatus: true }
+            });
+
+            if (!company) {
+                return res.status(404).json({ error: "Company not found." });
+            }
+
+            if (company.planStatus !== 'ACTIVE' && company.planStatus !== 'TRIAL') {
+                return res.status(402).json({ error: "Su suscripción no se encuentra activa." });
+            }
+
+            // If modules array is empty/null, perhaps it's a legacy company with all access?
+            // For strict SaaS, we enforce the check.
+            if (!company.modules || !company.modules.includes(requiredModule)) {
+                return res.status(403).json({ error: `No tiene acceso al módulo: ${requiredModule}. Requerido cambiar de plan.` });
+            }
+
+            next();
+        } catch (error) {
+            console.error("Module Check Error:", error);
+            res.status(500).json({ error: "Failed to verify module access." });
+        }
+    };
+};
 // --- AUTH ---
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
@@ -33,7 +64,26 @@ router.post("/login", async (req, res) => {
         // @ts-ignore
         const userWithCompanies = await prisma.user.findUnique({
             where: { id: user.id },
-            include: { companies: true }
+            include: { 
+                companies: {
+                    select: {
+                        id: true,
+                        name: true,
+                        rut: true,
+                        email: true,
+                        phone: true,
+                        address: true,
+                        website: true,
+                        logoUrl: true,
+                        primaryColor: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        planId: true,
+                        planStatus: true,
+                        modules: true
+                    }
+                } 
+            }
         });
 
         // Ensure allowedSections is returned, defaulting to empty if null (though Prisma handles it)
@@ -46,6 +96,31 @@ router.post("/login", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Login failed" });
+    }
+});
+
+// --- COMPANIES ---
+router.put("/companies/:id", async (req, res) => {
+    const { id } = req.params;
+    const { primaryColor, logoUrl, name, address, email, phone, website } = req.body;
+    
+    try {
+        const updated = await prisma.company.update({
+            where: { id },
+            data: {
+                primaryColor: primaryColor !== undefined ? primaryColor : undefined,
+                logoUrl: logoUrl !== undefined ? logoUrl : undefined,
+                name: name || undefined,
+                address: address !== undefined ? address : undefined,
+                email: email !== undefined ? email : undefined,
+                phone: phone !== undefined ? phone : undefined,
+                website: website !== undefined ? website : undefined
+            }
+        });
+        res.json(updated);
+    } catch (error) {
+        console.error("Error updating company:", error);
+        res.status(500).json({ error: "Failed to update company" });
     }
 });
 
@@ -218,7 +293,7 @@ router.delete("/clients/:id", async (req, res) => {
 });
 
 // --- PROJECTS ---
-router.get("/projects", async (req, res) => {
+router.get("/projects", checkModuleAccess("PROJECTS"), async (req, res) => {
     try {
         const companyId = req.headers['x-company-id'] as string;
         if (!companyId) return res.status(400).json({ error: "Company ID required" });
@@ -234,7 +309,7 @@ router.get("/projects", async (req, res) => {
     }
 });
 
-router.post("/projects", async (req, res) => {
+router.post("/projects", checkModuleAccess("PROJECTS"), async (req, res) => {
     try {
         const companyId = req.headers['x-company-id'] as string;
         if (!companyId) return res.status(400).json({ error: "Company ID required" });
@@ -303,7 +378,7 @@ router.delete("/projects/:id", async (req, res) => {
 });
 
 // --- INVOICES ---
-router.get("/invoices", async (req, res) => {
+router.get("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const invoices = await prisma.invoice.findMany({
@@ -318,7 +393,7 @@ router.get("/invoices", async (req, res) => {
     }
 });
 
-router.post("/invoices", async (req, res) => {
+router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
     try {
         const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, relatedInvoiceId, annulInvoice, paymentDate } = req.body;
         // Validate costCenterId handles empty strings or 'none' if sent by frontend
@@ -422,7 +497,7 @@ router.post("/invoices", async (req, res) => {
     }
 });
 
-router.delete("/invoices/:id", async (req, res) => {
+router.delete("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -455,7 +530,7 @@ router.delete("/invoices/:id", async (req, res) => {
     }
 });
 
-router.put("/invoices/:id", async (req, res) => {
+router.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => {
     try {
         const { id } = req.params;
         const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber, isPaid, relatedInvoiceId, paymentDate } = req.body;
@@ -1679,68 +1754,6 @@ router.delete("/document-categories/:id", async (req, res) => {
     }
 });
 
-// --- NEW MODULES: INVENTORY ---
-router.get("/inventory/materials", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const mats = await prisma.material.findMany({
-            where: { companyId },
-            orderBy: { name: 'asc' }
-        });
-        res.json(mats);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to fetch materials" });
-    }
-});
-
-router.post("/inventory/materials", async (req, res) => {
-    try {
-        const { name, code, unit, minStock } = req.body;
-        const companyId = (req as any).companyId;
-        const newMat = await prisma.material.create({
-            data: { name, code, unit, minStock: Number(minStock), companyId }
-        });
-        res.json(newMat);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to create material" });
-    }
-});
-
-router.post("/inventory/movements", async (req, res) => {
-    try {
-        const { materialId, type, quantity, notes } = req.body; // type: 'IN' | 'OUT'
-
-        const companyId = (req as any).companyId;
-        // Transaction to update stock and create record
-        const result = await prisma.$transaction(async (tx) => {
-            const movement = await tx.inventoryMovement.create({
-                data: {
-                    materialId,
-                    type,
-                    quantity: Number(quantity),
-                    description: notes, // notes mapped to description
-                    companyId
-                }
-            });
-
-            // Update Material stock
-            const adjustment = type === 'IN' ? Number(quantity) : -Number(quantity);
-
-            await tx.material.update({
-                where: { id: materialId },
-                data: { currentStock: { increment: adjustment } }
-            });
-
-            return movement;
-        });
-
-        res.json(result);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to create movement" });
-    }
-});
-
 // --- NEW MODULES: PLANOS ---
 
 router.get("/plans", async (req, res) => {
@@ -2226,7 +2239,7 @@ router.delete("/backups/:filename", async (req, res) => {
 });
 
 // --- TOOLS ---
-router.get("/tools", async (req, res) => {
+router.get("/tools", checkModuleAccess("TOOLS"), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const tools = await prisma.tool.findMany({
@@ -2243,7 +2256,7 @@ router.get("/tools", async (req, res) => {
     }
 });
 
-router.post("/tools", async (req, res) => {
+router.post("/tools", checkModuleAccess("TOOLS"), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { name, brand, model, serialNumber, status, lastMaintenanceDate, nextMaintenanceDate } = req.body;
@@ -2357,7 +2370,7 @@ router.delete("/tools/maintenance/:id", async (req, res) => {
 });
 
 // --- EPP (Equipos de Protección Personal) ---
-router.get("/epp", async (req, res) => {
+router.get("/epp", checkModuleAccess("HR"), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         if (!companyId) return res.status(403).json({ error: "No company ID" });
@@ -2531,6 +2544,742 @@ router.put("/tool-assignments/:id/return", async (req, res) => {
         res.json(result);
     } catch (err: any) {
         res.status(500).json({ error: "Failed to return tool", details: err.message });
+    }
+});
+
+
+// --- SUBSCRIPTION PLANS ---
+router.get("/plans", async (req, res) => {
+    try {
+        const plans = await prisma.subscriptionPlan.findMany({
+            orderBy: { price: 'asc' }
+        });
+        res.json(plans);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch subscription plans" });
+    }
+});
+
+router.post("/plans", async (req, res) => {
+    try {
+        const { name, price, description, features, modules, maxUsers, maxStorageGB } = req.body;
+        const plan = await prisma.subscriptionPlan.create({
+            data: {
+                name,
+                price: Number(price),
+                description,
+                features,
+                modules,
+                maxUsers: maxUsers ? Number(maxUsers) : null,
+                maxStorageGB: maxStorageGB ? Number(maxStorageGB) : null
+            }
+        });
+        res.json(plan);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create subscription plan" });
+    }
+});
+
+router.put("/plans/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, price, description, features, modules, maxUsers, maxStorageGB } = req.body;
+        const plan = await prisma.subscriptionPlan.update({
+            where: { id },
+            data: {
+                name,
+                price: Number(price),
+                description,
+                features,
+                modules,
+                maxUsers: maxUsers ? Number(maxUsers) : null,
+                maxStorageGB: maxStorageGB ? Number(maxStorageGB) : null
+            }
+        });
+        res.json(plan);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update subscription plan" });
+    }
+});
+
+router.delete("/plans/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.subscriptionPlan.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to delete subscription plan" });
+    }
+});
+
+
+// --- CRM: LEADS ---
+router.get("/leads", checkModuleAccess('INVOICING'), async (req, res) => { // Reusing INVOICING module for now or assume CRM module, using INVOICING since CRM module string not strictly defined yet in plan, let's just make it check companyId
+    try {
+        const companyId = (req as any).companyId;
+        const leads = await prisma.lead.findMany({
+            where: { companyId },
+            orderBy: { createdAt: 'desc' },
+            include: { quotes: true }
+        });
+        res.json(leads);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch leads", details: err.message });
+    }
+});
+
+router.post("/leads", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { name, companyName, email, phone, status, source, notes } = req.body;
+        const lead = await prisma.lead.create({
+            data: {
+                name,
+                companyName,
+                email,
+                phone,
+                status: status || 'NEW',
+                source,
+                notes,
+                companyId
+            }
+        });
+        res.json(lead);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create lead", details: err.message });
+    }
+});
+
+router.put("/leads/:id", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        const { name, companyName, email, phone, status, source, notes } = req.body;
+        
+        const lead = await prisma.lead.update({
+            where: { id, companyId },
+            data: { name, companyName, email, phone, status, source, notes }
+        });
+        res.json(lead);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update lead", details: err.message });
+    }
+});
+
+router.delete("/leads/:id", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        await prisma.lead.delete({
+            where: { id, companyId }
+        });
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to delete lead", details: err.message });
+    }
+});
+
+// --- CRM: QUOTES ---
+router.get("/quotes", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const quotes = await prisma.quote.findMany({
+            where: { companyId },
+            orderBy: { createdAt: 'desc' },
+            include: { lead: true, items: true }
+        });
+        res.json(quotes);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch quotes", details: err.message });
+    }
+});
+
+router.get("/quotes/:id", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        const quote = await prisma.quote.findFirst({
+            where: { id, companyId },
+            include: { lead: true, items: true }
+        });
+        if (!quote) return res.status(404).json({ error: "Quote not found" });
+        res.json(quote);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch quote", details: err.message });
+    }
+});
+
+router.post("/quotes", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { number, date, validUntil, status, notes, leadId, items } = req.body;
+        
+        const quote = await prisma.$transaction(async (tx) => {
+            let totalAmount = 0;
+            const quoteItemsData = items?.map((item: any) => {
+                const total = Number(item.quantity) * Number(item.unitPrice);
+                totalAmount += total;
+                return {
+                    description: item.description,
+                    quantity: Number(item.quantity),
+                    unitPrice: Number(item.unitPrice),
+                    total
+                };
+            }) || [];
+
+            const netAmount = totalAmount; // Or apply discounts
+            const taxAmount = netAmount * 0.19; // standard VAT
+            const finalTotal = netAmount + taxAmount;
+
+            const newQuote = await tx.quote.create({
+                data: {
+                    number,
+                    date: new Date(date),
+                    validUntil: validUntil ? new Date(validUntil) : null,
+                    status: status || 'DRAFT',
+                    notes,
+                    leadId,
+                    companyId,
+                    netAmount,
+                    taxAmount,
+                    totalAmount: finalTotal,
+                    items: {
+                        create: quoteItemsData
+                    }
+                },
+                include: { items: true, lead: true }
+            });
+            return newQuote;
+        });
+
+        res.json(quote);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create quote", details: err.message });
+    }
+});
+
+router.put("/quotes/:id", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        const { number, date, validUntil, status, notes, leadId, items } = req.body;
+        
+        const updatedQuote = await prisma.$transaction(async (tx) => {
+            // Check if exists
+            const existing = await tx.quote.findFirst({ where: { id, companyId } });
+            if (!existing) throw new Error("Quote not found");
+
+            // Delete current items
+            await tx.quoteItem.deleteMany({ where: { quoteId: id } });
+
+            let totalAmount = 0;
+            const quoteItemsData = items?.map((item: any) => {
+                const total = Number(item.quantity) * Number(item.unitPrice);
+                totalAmount += total;
+                return {
+                    description: item.description,
+                    quantity: Number(item.quantity),
+                    unitPrice: Number(item.unitPrice),
+                    total
+                };
+            }) || [];
+
+            const netAmount = totalAmount;
+            const taxAmount = netAmount * 0.19;
+            const finalTotal = netAmount + taxAmount;
+
+            const result = await tx.quote.update({
+                where: { id },
+                data: {
+                    number,
+                    date: new Date(date),
+                    validUntil: validUntil ? new Date(validUntil) : null,
+                    status,
+                    notes,
+                    leadId,
+                    netAmount,
+                    taxAmount,
+                    totalAmount: finalTotal,
+                    items: {
+                        create: quoteItemsData
+                    }
+                },
+                include: { items: true, lead: true }
+            });
+
+            return result;
+        });
+
+        res.json(updatedQuote);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update quote", details: err.message });
+    }
+});
+
+router.delete("/quotes/:id", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        await prisma.quote.delete({
+            where: { id, companyId }
+        });
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to delete quote", details: err.message });
+    }
+});
+
+
+// --- PRODUCTS ---
+router.get("/products", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const products = await prisma.product.findMany({
+            where: { companyId },
+            include: { stocks: { include: { warehouse: true } } },
+            orderBy: { name: 'asc' }
+        });
+        res.json(products);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch products", details: err.message });
+    }
+});
+
+router.post("/products", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { code, name, description, type, category, unit, price } = req.body;
+        const product = await prisma.product.create({
+            data: {
+                companyId,
+                code,
+                name,
+                description,
+                type: type || 'GOOD',
+                category,
+                unit: unit || 'UN',
+                price: Number(price) || 0
+            }
+        });
+        res.json(product);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create product", details: err.message });
+    }
+});
+
+router.put("/products/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        const { code, name, description, type, category, unit, price } = req.body;
+        
+        // Find explicitly instead of updateMany to return object properly
+        const existing = await prisma.product.findFirst({ where: { id, companyId }});
+        if (!existing) return res.status(404).json({ error: 'Product not found' });
+
+        const product = await prisma.product.update({
+            where: { id },
+            data: {
+                code,
+                name,
+                description,
+                type,
+                category,
+                unit,
+                price: Number(price)
+            }
+        });
+        res.json(product);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update product", details: err.message });
+    }
+});
+
+router.delete("/products/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        await prisma.product.deleteMany({
+            where: { id, companyId }
+        });
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to delete product", details: err.message });
+    }
+});
+
+// --- WAREHOUSES & STOCK ---
+router.get("/warehouses", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const warehouses = await prisma.warehouse.findMany({
+            where: { companyId },
+            include: { stocks: { include: { product: true } } },
+            orderBy: { name: 'asc' }
+        });
+        res.json(warehouses);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch warehouses", details: err.message });
+    }
+});
+
+router.post("/warehouses", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { name, location, manager } = req.body;
+        const warehouse = await prisma.warehouse.create({
+            data: { companyId, name, location, manager }
+        });
+        res.json(warehouse);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create warehouse", details: err.message });
+    }
+});
+
+router.put("/warehouses/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        const { name, location, manager } = req.body;
+
+        const existing = await prisma.warehouse.findFirst({ where: { id, companyId }});
+        if (!existing) return res.status(404).json({ error: 'Warehouse not found' });
+
+        const warehouse = await prisma.warehouse.update({
+            where: { id },
+            data: { name, location, manager }
+        });
+        res.json(warehouse);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update warehouse", details: err.message });
+    }
+});
+
+router.delete("/warehouses/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        await prisma.warehouse.deleteMany({
+            where: { id, companyId }
+        });
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to delete warehouse", details: err.message });
+    }
+});
+
+// --- INVENTORY MOVEMENTS ---
+router.post("/inventory-movements", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { type, quantity, date, description, productId, fromWarehouseId, toWarehouseId, projectId } = req.body;
+
+        const result = await prisma.$transaction(async (tx) => {
+             // 1. Create movement record
+             const movement = await tx.inventoryMovement.create({
+                 data: {
+                     companyId,
+                     type,
+                     quantity: Number(quantity),
+                     date: date ? new Date(date) : new Date(),
+                     description,
+                     productId,
+                     fromWarehouseId,
+                     toWarehouseId,
+                     projectId
+                 }
+             });
+
+             // Helper to update stock
+             const updateStock = async (warehouseId: string, qtyChange: number) => {
+                 const currentStock = await tx.stock.findUnique({
+                     where: { productId_warehouseId: { productId, warehouseId } }
+                 });
+
+                 if (currentStock) {
+                     await tx.stock.update({
+                         where: { id: currentStock.id },
+                         data: { quantity: currentStock.quantity + qtyChange }
+                     });
+                 } else {
+                     await tx.stock.create({
+                         data: {
+                             productId,
+                             warehouseId,
+                             quantity: qtyChange
+                         }
+                     });
+                 }
+             };
+
+             // 2. Adjust stocks depending on type
+             const qty = Number(quantity);
+             if (type === 'IN' && toWarehouseId) {
+                 await updateStock(toWarehouseId, qty);
+             } else if (type === 'OUT' && fromWarehouseId) {
+                 await updateStock(fromWarehouseId, -qty);
+             } else if (type === 'TRANSFER' && fromWarehouseId && toWarehouseId) {
+                 await updateStock(fromWarehouseId, -qty);
+                 await updateStock(toWarehouseId, qty);
+             } else if (type === 'ADJUSTMENT' && toWarehouseId) {
+                 await updateStock(toWarehouseId, qty);
+             }
+
+             return movement;
+        });
+
+        res.json(result);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to process inventory movement", details: err.message });
+    }
+});
+
+// --- BANK ACCOUNTS ---
+router.get("/bank-accounts", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const accounts = await prisma.bankAccount.findMany({
+            where: { companyId },
+            include: { transactions: { orderBy: { date: 'desc' }, take: 5 } },
+            orderBy: { name: 'asc' }
+        });
+        res.json(accounts);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch bank accounts", details: err.message });
+    }
+});
+
+router.post("/bank-accounts", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { name, number, currency, balance } = req.body;
+        const account = await prisma.bankAccount.create({
+            data: {
+                companyId,
+                name,
+                number,
+                currency: currency || 'CLP',
+                balance: Number(balance) || 0
+            }
+        });
+        res.json(account);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create bank account", details: err.message });
+    }
+});
+
+router.put("/bank-accounts/:id", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        const { name, number, currency, balance } = req.body;
+
+        const existing = await prisma.bankAccount.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: 'Bank account not found' });
+
+        const account = await prisma.bankAccount.update({
+            where: { id },
+            data: { name, number, currency, balance: Number(balance) }
+        });
+        res.json(account);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update bank account", details: err.message });
+    }
+});
+
+router.delete("/bank-accounts/:id", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { id } = req.params;
+        await prisma.bankAccount.deleteMany({
+            where: { id, companyId }
+        });
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to delete bank account", details: err.message });
+    }
+});
+
+// --- BANK TRANSACTIONS ---
+router.get("/bank-transactions", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { bankAccountId } = req.query;
+
+        const transactions = await prisma.bankTransaction.findMany({
+            where: {
+                bankAccount: { companyId },
+                ...(bankAccountId ? { bankAccountId: bankAccountId as string } : {})
+            },
+            include: { bankAccount: true },
+            orderBy: { date: 'desc' }
+        });
+        res.json(transactions);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch transactions", details: err.message });
+    }
+});
+
+router.post("/bank-transactions", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { bankAccountId, type, amount, description, reference, category, date } = req.body;
+
+        const account = await prisma.bankAccount.findFirst({
+            where: { id: bankAccountId, companyId }
+        });
+        if (!account) return res.status(404).json({ error: "Bank account not found" });
+
+        const result = await prisma.$transaction(async (tx) => {
+            const transaction = await tx.bankTransaction.create({
+                data: {
+                    bankAccountId,
+                    type,
+                    amount: Number(amount),
+                    description,
+                    reference,
+                    category,
+                    date: date ? new Date(date) : new Date()
+                }
+            });
+
+            const balanceChange = type === 'IN' ? Number(amount) : -Number(amount);
+            await tx.bankAccount.update({
+                where: { id: bankAccountId },
+                data: { balance: account.balance + balanceChange }
+            });
+
+            return transaction;
+        });
+
+        res.json(result);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to process transaction", details: err.message });
+    }
+});
+
+// --- EXCHANGE RATES ---
+router.get("/exchange-rates", async (req, res) => {
+    try {
+        const rates = await prisma.exchangeRate.findMany({
+            orderBy: { date: 'desc' },
+            take: 30
+        });
+        res.json(rates);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch exchange rates", details: err.message });
+    }
+});
+
+router.post("/exchange-rates", async (req, res) => {
+    try {
+        const { currency, value, date } = req.body;
+        const rate = await prisma.exchangeRate.upsert({
+            where: {
+                date_currency: {
+                    date: date ? new Date(date) : new Date(),
+                    currency
+                }
+            },
+            update: { value: Number(value) },
+            create: {
+                date: date ? new Date(date) : new Date(),
+                currency,
+                value: Number(value)
+            }
+        });
+        res.json(rate);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to save exchange rate", details: err.message });
+    }
+});
+
+// --- CASH FLOW projection ---
+router.get("/cash-flow", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+
+        const accountsPayable = await prisma.invoice.findMany({
+            where: { companyId, type: "PURCHASE", isPaid: false, status: { not: "CANCELLED" } },
+            select: { dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
+        });
+
+        const accountsReceivable = await prisma.invoice.findMany({
+            where: { companyId, type: "SALE", isPaid: false, status: { not: "CANCELLED" } },
+            select: { dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
+        });
+
+        const accounts = await prisma.bankAccount.findMany({
+            where: { companyId },
+            select: { currency: true, balance: true }
+        });
+
+        const latestRates = await prisma.exchangeRate.findMany({
+            orderBy: { date: 'desc' },
+            take: 10
+        });
+
+        const getRate = (currency: string) => {
+             if (currency === 'CLP') return 1;
+             const rate = latestRates.find(r => r.currency === currency);
+             return rate ? rate.value : 1; 
+        };
+
+        const totalBalanceCLP = accounts.reduce((sum, acc) => {
+             const rate = getRate(acc.currency);
+             return sum + (acc.balance * rate);
+        }, 0);
+
+        res.json({
+            currentBalanceCLP: totalBalanceCLP,
+            accountsPayable,
+            accountsReceivable
+        });
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to calculate cash flow", details: err.message });
+    }
+});
+
+// --- CLIENT PORTAL MODULE ---
+router.get("/portal/:token/dashboard", async (req, res) => {
+    try {
+        const { token } = req.params;
+        const client = await prisma.client.findUnique({
+            where: { portalToken: token },
+            include: {
+                company: true,
+                invoices: {
+                    orderBy: { date: 'desc' },
+                    take: 20
+                },
+                documents: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 20
+                }
+            }
+        });
+
+        if (!client) {
+            return res.status(404).json({ error: "Portal no encontrado o Token inválido" });
+        }
+
+        res.json({
+            client: {
+                id: client.id,
+                name: client.name,
+                email: client.email,
+                phone: client.phone
+            },
+            company: {
+                name: client.company.name,
+                primaryColor: client.company.primaryColor || "#2563eb",
+                logoUrl: client.company.logoUrl
+            },
+            invoices: client.invoices,
+            documents: client.documents
+        });
+    } catch (err: any) {
+        res.status(500).json({ error: "Error al cargar el dashboard del portal", details: err.message });
     }
 });
 
