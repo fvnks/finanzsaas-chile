@@ -1,0 +1,21 @@
+﻿--- Git Status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_info.ps1
+	git_info.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+--- Git Branch ---
+* main
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/main
+--- Git Log ---
+0ae55f3 (HEAD -> main, origin/main, origin/HEAD) feat: Implement core application features including Cash Flow, CRM, Invoices, Banking, Admin, Warehousing, and Products pages with new server routes, services, and UI components.
+b089119 feat: Add InvoicesPage component and remove various debug log files.
+fd91c52 update changes
+--- Git Remote ---
+origin	https://github.com/fvnks/finanzsaas-chile (fetch)
+origin	https://github.com/fvnks/finanzsaas-chile (push)
