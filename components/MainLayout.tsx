@@ -98,6 +98,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             ]);
             setClients(Array.isArray(resClients) ? resClients : []);
             setProjects(Array.isArray(resProjs) ? resProjs : []);
+            
+            if (!Array.isArray(resInvoices)) {
+                console.warn("[MainLayout] resInvoices is not an array. Response:", resInvoices);
+            }
+
             const normalizedInvoices: Invoice[] = Array.isArray(resInvoices) ? resInvoices.map((inv: any) => ({
                 ...inv,
                 net: inv.netAmount !== undefined ? inv.netAmount : inv.net,

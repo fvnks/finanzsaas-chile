@@ -10,13 +10,38 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
-// --- GLOBAL MIDDLEWARE TO SET COMPANY ID ---
-router.use((req: Request, res: Response, next: NextFunction) => {
-    const companyId = req.headers['x-company-id'];
-    if (companyId) {
-        (req as any).companyId = companyId as string;
+// --- DIAGNOSTIC ENDPOINT FOR RAILWAY ---
+router.get("/debug-db", async (req, res) => {
+    try {
+        const invoicesCount = await prisma.invoice.count();
+        const clientsCount = await prisma.client.count();
+        const companiesCount = await prisma.company.count();
+        const companyId = (req as any).companyId;
+        
+        let companyModules: string[] = [];
+        if (companyId) {
+            const company = await prisma.company.findUnique({
+                where: { id: companyId },
+                select: { modules: true }
+            });
+            companyModules = company?.modules || [];
+        }
+
+        res.json({
+            status: "ok",
+            counts: {
+                invoices: invoicesCount,
+                clients: clientsCount,
+                companies: companiesCount
+            },
+            context: {
+                companyId,
+                companyModules: companyModules || []
+            }
+        });
+    } catch (err: any) {
+        res.status(500).json({ status: "error", message: err.message });
     }
-    next();
 });
 
 // --- AUTHORIZATION MIDDLEWARE ---
