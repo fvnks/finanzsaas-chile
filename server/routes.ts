@@ -499,7 +499,7 @@ router.get("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
 
 router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
     try {
-        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, relatedInvoiceId, annulInvoice, paymentDate } = req.body;
+        const { number, net, iva, total, date, dueDate, status, clientId, projectId, costCenterId, type, items, relatedInvoiceId, annulInvoice, paymentDate } = req.body;
         // Validate costCenterId handles empty strings or 'none' if sent by frontend
         const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
         // Validate projectId handles empty strings
@@ -554,6 +554,7 @@ router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
                     taxAmount: iva,
                     totalAmount: total,
                     date: date ? new Date(date) : new Date(),
+                    dueDate: dueDate ? new Date(dueDate) : null,
                     status: status || 'ISSUED',
                     clientId,
                     projectId: validProjectId,
@@ -635,7 +636,7 @@ router.delete("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) 
 router.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => {
     try {
         const { id } = req.params;
-        const { number, net, iva, total, date, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber, isPaid, relatedInvoiceId, paymentDate } = req.body;
+        const { number, net, iva, total, date, dueDate, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber, isPaid, relatedInvoiceId, paymentDate } = req.body;
 
         const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
         const validProjectId = projectId && projectId !== '' ? projectId : undefined;
@@ -659,6 +660,7 @@ router.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => 
                     taxAmount: iva,
                     totalAmount: total,
                     date: new Date(date),
+                    dueDate: dueDate ? new Date(dueDate) : null,
                     status: status || 'DRAFT',
                     client: clientId ? { connect: { id: clientId } } : { disconnect: true },
                     project: validProjectId ? { connect: { id: validProjectId } } : { disconnect: true },
@@ -3309,12 +3311,12 @@ router.get("/cash-flow", async (req, res) => {
 
         const accountsPayable = await prisma.invoice.findMany({
             where: { companyId, type: "PURCHASE", isPaid: false, status: { not: "CANCELLED" } },
-            select: { dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
+            select: { date: true, dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
         });
 
         const accountsReceivable = await prisma.invoice.findMany({
             where: { companyId, type: "SALE", isPaid: false, status: { not: "CANCELLED" } },
-            select: { dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
+            select: { date: true, dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
         });
 
         const accounts = await prisma.bankAccount.findMany({
