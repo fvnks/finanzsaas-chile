@@ -18,22 +18,37 @@ router.get("/debug-db", async (req, res) => {
         const companiesCount = await prisma.company.count();
         const companyId = (req as any).companyId;
         
+        // Breakdown by Company
+        const invoicesByCompany = await prisma.invoice.groupBy({
+            by: ['companyId'],
+            _count: true
+        });
+        const clientsByCompany = await prisma.client.groupBy({
+            by: ['companyId'],
+            _count: true
+        });
+
+        // List Companies
+        const companies = await prisma.company.findMany({
+            select: { id: true, name: true, modules: true }
+        });
+
         let companyModules: string[] = [];
         if (companyId) {
-            const company = await prisma.company.findUnique({
-                where: { id: companyId },
-                select: { modules: true }
-            });
+            const company = companies.find(c => c.id === companyId);
             companyModules = company?.modules || [];
         }
 
         res.json({
             status: "ok",
             counts: {
-                invoices: invoicesCount,
-                clients: clientsCount,
-                companies: companiesCount
+                totalInvoices: invoicesCount,
+                totalClients: clientsCount,
+                totalCompanies: companiesCount,
+                invoicesByCompany,
+                clientsByCompany
             },
+            companies: companies.map(c => ({ id: c.id, name: c.name, modules: c.modules })),
             context: {
                 companyId,
                 companyModules: companyModules || []
