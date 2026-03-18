@@ -1,0 +1,11 @@
+﻿Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "railway", schema "public" at "shortline.proxy.rlwy.net:37857"
+
+5 migrations found in prisma/migrations
+Following migrations have not yet been applied:
+20260129120000_add_missing_tables
+20260129130000_add_month_year_to_requirements
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.

@@ -1,0 +1,37 @@
+﻿[
+  {
+    "id": "fdd835d7-5201-479e-9c30-69ff519225fc",
+    "migration_name": "20260120200219_init",
+    "applied_steps_count": 0,
+    "rolled_back_at": null,
+    "finished_at": "2026-03-18T15:36:49.687Z"
+  },
+  {
+    "id": "26d745ba-3b6a-4c77-89a5-26d7b0eeb0c1",
+    "migration_name": "20260120202719_add_invoice_details",
+    "applied_steps_count": 0,
+    "rolled_back_at": null,
+    "finished_at": "2026-03-18T15:37:00.998Z"
+  },
+  {
+    "id": "291537eb-ac3d-4bd7-aa61-1d256a32c4d1",
+    "migration_name": "20260129133000_add_document_status",
+    "applied_steps_count": 0,
+    "rolled_back_at": null,
+    "finished_at": "2026-03-18T15:37:34.062Z"
+  },
+  {
+    "id": "df9a1620-c0ca-4ee5-b8cf-7dd606c5d1d0",
+    "migration_name": "20260129120000_add_missing_tables",
+    "applied_steps_count": 0,
+    "rolled_back_at": null,
+    "finished_at": "2026-03-18T15:52:20.340Z"
+  },
+  {
+    "id": "68f4c7ba-9a09-4628-a458-a5933ecab503",
+    "migration_name": "20260129130000_add_month_year_to_requirements",
+    "applied_steps_count": 0,
+    "rolled_back_at": null,
+    "finished_at": "2026-03-18T15:52:31.550Z"
+  }
+]
