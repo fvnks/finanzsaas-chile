@@ -3308,15 +3308,41 @@ router.post("/exchange-rates", async (req, res) => {
 router.get("/cash-flow", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
+        const receivableTypes = ["SALE", "VENTA"];
+        const payableTypes = ["PURCHASE", "COMPRA"];
 
         const accountsPayable = await prisma.invoice.findMany({
-            where: { companyId, type: "PURCHASE", isPaid: false, status: { not: "CANCELLED" } },
+            where: {
+                companyId,
+                type: { in: payableTypes },
+                isPaid: false,
+                status: { not: "CANCELLED" }
+            },
             select: { date: true, dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
         });
 
         const accountsReceivable = await prisma.invoice.findMany({
-            where: { companyId, type: "SALE", isPaid: false, status: { not: "CANCELLED" } },
+            where: {
+                companyId,
+                type: { in: receivableTypes },
+                isPaid: false,
+                status: { not: "CANCELLED" }
+            },
             select: { date: true, dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
+        });
+
+        const forecastSourceInvoices = await prisma.invoice.findMany({
+            where: {
+                companyId,
+                type: { in: [...receivableTypes, ...payableTypes] }
+            },
+            select: {
+                type: true,
+                date: true,
+                dueDate: true,
+                isPaid: true,
+                status: true
+            }
         });
 
         const accounts = await prisma.bankAccount.findMany({
@@ -3340,10 +3366,61 @@ router.get("/cash-flow", async (req, res) => {
              return sum + (acc.balance * rate);
         }, 0);
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const diagnostics = forecastSourceInvoices.reduce((summary, invoice) => {
+            const referenceDate = invoice.dueDate || invoice.date;
+            const isReceivable = receivableTypes.includes(invoice.type);
+
+            if (invoice.status === "CANCELLED") {
+                if (isReceivable) summary.cancelledReceivable += 1;
+                else summary.cancelledPayable += 1;
+                return summary;
+            }
+
+            if (invoice.isPaid) {
+                if (isReceivable) summary.paidReceivable += 1;
+                else summary.paidPayable += 1;
+                return summary;
+            }
+
+            if (!referenceDate) {
+                if (isReceivable) summary.missingDateReceivable += 1;
+                else summary.missingDatePayable += 1;
+                return summary;
+            }
+
+            const normalizedDate = new Date(referenceDate);
+            normalizedDate.setHours(0, 0, 0, 0);
+
+            if (normalizedDate < today) {
+                if (isReceivable) summary.overdueReceivable += 1;
+                else summary.overduePayable += 1;
+                return summary;
+            }
+
+            if (isReceivable) summary.includedReceivable += 1;
+            else summary.includedPayable += 1;
+            return summary;
+        }, {
+            includedReceivable: 0,
+            includedPayable: 0,
+            paidReceivable: 0,
+            paidPayable: 0,
+            cancelledReceivable: 0,
+            cancelledPayable: 0,
+            missingDateReceivable: 0,
+            missingDatePayable: 0,
+            overdueReceivable: 0,
+            overduePayable: 0
+        });
+
         res.json({
             currentBalanceCLP: totalBalanceCLP,
             accountsPayable,
-            accountsReceivable
+            accountsReceivable,
+            diagnostics
         });
     } catch (err: any) {
         res.status(500).json({ error: "Failed to calculate cash flow", details: err.message });

@@ -34,6 +34,18 @@ interface CashFlowData {
     currentBalanceCLP: number;
     accountsPayable: CashFlowInvoice[];
     accountsReceivable: CashFlowInvoice[];
+    diagnostics: {
+        includedReceivable: number;
+        includedPayable: number;
+        paidReceivable: number;
+        paidPayable: number;
+        cancelledReceivable: number;
+        cancelledPayable: number;
+        missingDateReceivable: number;
+        missingDatePayable: number;
+        overdueReceivable: number;
+        overduePayable: number;
+    };
 }
 
 interface ForecastEntry {
@@ -263,6 +275,34 @@ export default function CashFlowPage() {
         }
     ];
 
+    const diagnosticsRows = data ? [
+        {
+            label: 'Incluidas en forecast',
+            receivable: data.diagnostics.includedReceivable,
+            payable: data.diagnostics.includedPayable
+        },
+        {
+            label: 'Pagadas',
+            receivable: data.diagnostics.paidReceivable,
+            payable: data.diagnostics.paidPayable
+        },
+        {
+            label: 'Canceladas',
+            receivable: data.diagnostics.cancelledReceivable,
+            payable: data.diagnostics.cancelledPayable
+        },
+        {
+            label: 'Sin fecha util',
+            receivable: data.diagnostics.missingDateReceivable,
+            payable: data.diagnostics.missingDatePayable
+        },
+        {
+            label: 'Con fecha pasada',
+            receivable: data.diagnostics.overdueReceivable,
+            payable: data.diagnostics.overduePayable
+        }
+    ] : [];
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -469,6 +509,34 @@ export default function CashFlowPage() {
                                 </table>
                             </div>
                         )}
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <h2 className="mb-4 font-bold text-slate-800">Diagnostico de inclusion</h2>
+                        <p className="mb-4 text-sm text-slate-500">
+                            Esta tabla muestra por que ciertas facturas no entran al forecast futuro.
+                        </p>
+
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-slate-200 text-left text-slate-500">
+                                        <th className="pb-3 pr-4 font-medium">Estado</th>
+                                        <th className="pb-3 pr-4 font-medium">Ventas</th>
+                                        <th className="pb-3 font-medium">Compras</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {diagnosticsRows.map((row) => (
+                                        <tr key={row.label} className="border-b border-slate-100">
+                                            <td className="py-3 pr-4 font-medium text-slate-700">{row.label}</td>
+                                            <td className="py-3 pr-4 text-slate-900">{row.receivable}</td>
+                                            <td className="py-3 text-slate-900">{row.payable}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </>
             )}
