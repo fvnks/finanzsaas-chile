@@ -129,6 +129,37 @@ export default function CashFlowPage() {
             .sort((a, b) => a.referenceDate.getTime() - b.referenceDate.getTime());
     }, [data, today]);
 
+    const overdueEntries = useMemo<ForecastEntry[]>(() => {
+        if (!data) return [];
+
+        const normalize = (
+            invoices: CashFlowInvoice[],
+            kind: 'INGRESO' | 'EGRESO'
+        ) => invoices
+            .map((invoice) => {
+                const rawDate = invoice.dueDate || invoice.date;
+                if (!rawDate) return null;
+
+                const referenceDate = new Date(rawDate);
+                if (Number.isNaN(referenceDate.getTime())) return null;
+
+                return {
+                    kind,
+                    referenceDate,
+                    amountCLP: (invoice.totalAmount || 0) * (invoice.exchangeRate || 1)
+                } satisfies ForecastEntry;
+            })
+            .filter((entry): entry is ForecastEntry => !!entry);
+
+        return [
+            ...normalize(data.accountsReceivable, 'INGRESO'),
+            ...normalize(data.accountsPayable, 'EGRESO')
+        ]
+            .filter((entry) => entry.referenceDate < today)
+            .sort((a, b) => b.referenceDate.getTime() - a.referenceDate.getTime())
+            .slice(0, 8);
+    }, [data, today]);
+
     const forecastBuckets = useMemo<ForecastBucket[]>(() => {
         const monthMap: Record<string, ForecastBucket> = {};
         let accumulated = 0;
@@ -317,6 +348,10 @@ export default function CashFlowPage() {
                         </p>
                     </div>
                 </div>
+                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
+                    <div className="text-slate-500">Empresa activa</div>
+                    <div className="font-semibold text-slate-800">{activeCompany?.name || 'Sin empresa seleccionada'}</div>
+                </div>
             </div>
 
             {loading ? (
@@ -335,6 +370,10 @@ export default function CashFlowPage() {
                         ))}
                     </div>
 
+                    <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                        Forecast futuro detectado: {data?.diagnostics.includedReceivable || 0} ventas y {data?.diagnostics.includedPayable || 0} compras pendientes con fecha futura.
+                    </div>
+
                     <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm xl:col-span-2">
                             <h2 className="mb-4 flex items-center space-x-2 font-bold text-slate-800">
@@ -344,7 +383,7 @@ export default function CashFlowPage() {
 
                             {forecastBuckets.length === 0 ? (
                                 <div className="flex h-80 items-center justify-center text-slate-500">
-                                    No hay vencimientos futuros para proyectar.
+                                    No hay vencimientos futuros para proyectar. Revisa el diagnostico inferior para ver si las facturas quedaron vencidas, pagadas o sin fecha.
                                 </div>
                             ) : (
                                 <div className="h-80">
@@ -472,6 +511,32 @@ export default function CashFlowPage() {
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <h2 className="mb-4 font-bold text-slate-800">Backlog vencido reciente</h2>
+
+                        {overdueEntries.length === 0 ? (
+                            <div className="text-sm text-slate-500">
+                                No hay movimientos vencidos pendientes en las cuentas consideradas.
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {overdueEntries.map((entry, index) => (
+                                    <div key={`${entry.kind}-${entry.referenceDate.toISOString()}-${index}`} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+                                        <div>
+                                            <div className="font-semibold text-slate-800">
+                                                {entry.kind === 'INGRESO' ? 'Cobro vencido' : 'Pago vencido'}
+                                            </div>
+                                            <div className="text-sm text-slate-500">{formatDate(entry.referenceDate)}</div>
+                                        </div>
+                                        <div className={`font-bold ${entry.kind === 'INGRESO' ? 'text-amber-700' : 'text-red-700'}`}>
+                                            {entry.kind === 'INGRESO' ? '+' : '-'}{formatCLP(entry.amountCLP)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
