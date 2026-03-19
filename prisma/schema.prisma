@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -9,160 +9,136 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @default(uuid())
-  email              String   @unique
+  id                 String        @id @default(uuid())
+  email              String        @unique
   password           String
   name               String
-  role               String   @default("USER") // ADMIN, USER
-  allowedSections    String[] // Array of section IDs (e.g. 'invoices', 'projects')
-  assignedProjectIds String[] // IDs of projects this user is assigned to
-
-  companies       Company[] @relation("UserCompanies")
-  activeCompanyId String? // The ID of the company the user is currently "viewing"
-
-  dailyReports DailyReport[]
-  planMarks    PlanMark[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  role               String        @default("USER")
+  allowedSections    String[]
+  assignedProjectIds String[]
+  activeCompanyId    String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  dailyReports       DailyReport[]
+  planMarks          PlanMark[]
+  companies          Company[]     @relation("UserCompanies")
 }
 
 model Company {
-  id        String   @id @default(uuid())
-  rut       String   @unique
-  name      String
-  logoUrl   String?
-  address   String?
-  email     String?
-  phone     String?
-  website   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  planId     String?
-  plan       SubscriptionPlan? @relation(fields: [planId], references: [id])
-  planStatus String            @default("ACTIVE") // ACTIVE, SUSPENDED, TRIAL
-  modules    String[]          // e.g. ["INVOICING", "PROJECTS", "INVENTORY", "HR"]
-  primaryColor String?         @default("#2563eb")
+  id                    String                @id @default(uuid())
+  rut                   String                @unique
+  name                  String
+  logoUrl               String?
+  address               String?
+  email                 String?
+  phone                 String?
+  website               String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  modules               String[]
+  planId                String?
+  planStatus            String                @default("ACTIVE")
+  primaryColor          String?               @default("#2563eb")
   subscriptionStartedAt DateTime?
   subscriptionEndsAt    DateTime?
   lastPaymentAt         DateTime?
-  billingCycleMonths    Int      @default(1)
-
-  users User[] @relation("UserCompanies")
-
-  // Relations to other models
-  clients            Client[]
-  projects           Project[]
-  invoices           Invoice[]
-  documents          Document[]
-  requirements       DocumentRequirement[]
-
-  monthlyInfo        ClientMonthlyInfo[]
-  workers            Worker[]
-  crews              Crew[]
-  purchaseOrders     PurchaseOrder[]
-  inventoryMovements InventoryMovement[]
-  costCenters        CostCenter[]
-  DailyReport        DailyReport[]
-  Product            Product[]
-  Warehouse          Warehouse[]
-  Plan               Plan[]
-  jobTitles          JobTitle[]
-  payments           Payment[]
-  suppliers          Supplier[]
-  tools              Tool[]
-  epps               Epp[]
-
-  paidExpenses     Expense[] @relation("PaidExpenses")
-  receivedExpenses Expense[] @relation("ReceivedExpenses")
-
-  // CRM
-  leads              Lead[]
-  quotes             Quote[]
-
-  // Finance
-  bankAccounts       BankAccount[]
+  billingCycleMonths    Int                   @default(1)
+  bankAccounts          BankAccount[]
+  clients               Client[]
+  monthlyInfo           ClientMonthlyInfo[]
+  plan                  SubscriptionPlan?     @relation(fields: [planId], references: [id])
+  costCenters           CostCenter[]
+  crews                 Crew[]
+  DailyReport           DailyReport[]
+  documents             Document[]
+  requirements          DocumentRequirement[]
+  epps                  Epp[]
+  paidExpenses          Expense[]             @relation("PaidExpenses")
+  receivedExpenses      Expense[]             @relation("ReceivedExpenses")
+  inventoryMovements    InventoryMovement[]
+  invoices              Invoice[]
+  jobTitles             JobTitle[]
+  leads                 Lead[]
+  payments              Payment[]
+  Plan                  Plan[]
+  Product               Product[]
+  projects              Project[]
+  purchaseOrders        PurchaseOrder[]
+  quotes                Quote[]
+  suppliers             Supplier[]
+  tools                 Tool[]
+  Warehouse             Warehouse[]
+  workers               Worker[]
+  users                 User[]                @relation("UserCompanies")
 }
 
 model Client {
-  id        String   @id @default(uuid())
-  rut       String
-  name      String
-  email     String?
-  phone     String?
-  address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  projects     Project[]
-  invoices     Invoice[]
-  documents    Document[]
-  requirements DocumentRequirement[]
-  monthlyInfo  ClientMonthlyInfo[]
+  id                 String                @id @default(uuid())
+  rut                String
+  name               String
+  email              String?
+  phone              String?
+  address            String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  companyId          String
+  portalToken        String?               @unique @default(uuid())
+  company            Company               @relation(fields: [companyId], references: [id])
+  monthlyInfo        ClientMonthlyInfo[]
+  documents          Document[]
   documentCategories DocumentCategory[]
-
-  portalToken String?  @unique @default(uuid())
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  requirements       DocumentRequirement[]
+  invoices           Invoice[]
+  projects           Project[]
 
   @@unique([rut, companyId])
 }
 
 model Project {
-  id          String  @id @default(uuid())
-  name        String
-  description String?
-  status      String  @default("ACTIVE") // ACTIVE, COMPLETED, ARCHIVED
-  clientId    String?
-  client      Client? @relation(fields: [clientId], references: [id])
-
-  crews              Crew[]
-  invoices           Invoice[]
-  dailyReports       DailyReport[]
-  documents          Document[]
-  purchaseOrders     PurchaseOrder[]
-  inventoryMovements InventoryMovement[]
-
-  progress  Int       @default(0)
-  budget    Float     @default(0)
-  address   String?
-  startDate DateTime?
-  endDate   DateTime?
-  workerIds String[] // Legacy field, prefer using Crew relations if possible
-
-  plans Plan[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
+  id                   String                @id @default(uuid())
+  name                 String
+  description          String?
+  status               String                @default("ACTIVE")
+  clientId             String?
+  progress             Int                   @default(0)
+  budget               Float                 @default(0)
+  address              String?
+  startDate            DateTime?
+  endDate              DateTime?
+  workerIds            String[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  companyId            String
+  crews                Crew[]
+  dailyReports         DailyReport[]
+  documents            Document[]
   expenseDistributions ExpenseDistribution[]
+  inventoryMovements   InventoryMovement[]
+  invoices             Invoice[]
+  plans                Plan[]
+  client               Client?               @relation(fields: [clientId], references: [id])
+  company              Company               @relation(fields: [companyId], references: [id])
+  purchaseOrders       PurchaseOrder[]
 }
 
 model CostCenter {
-  id     String @id @default(uuid())
-  code   String
-  name   String
-  budget Float  @default(0)
-
-  createAt  DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  invoices Invoice[]
-  plans    Plan[]
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  id                   String                @id @default(uuid())
+  code                 String
+  name                 String
+  budget               Float                 @default(0)
+  createAt             DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  companyId            String
+  company              Company               @relation(fields: [companyId], references: [id])
+  expenseDistributions ExpenseDistribution[]
+  invoices             Invoice[]
+  plans                Plan[]
 
   @@unique([code, companyId])
-
-  expenseDistributions ExpenseDistribution[]
 }
 
 model Worker {
-  id              String   @id @default(uuid())
+  id              String           @id @default(uuid())
   rut             String
   name            String
   role            String?
@@ -170,22 +146,18 @@ model Worker {
   email           String?
   phone           String?
   experienceYears Int?
-  certifications  String[] // Array of strings
-
-  crews     Crew[]     @relation("CrewWorkers")
-  planMarks PlanMark[] @relation("PlanMarkWorkers")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  certifications  String[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  companyId       String
+  eppDeliveries   EppDelivery[]
+  expenses        Expense[]
+  toolAssignments ToolAssignment[]
+  company         Company          @relation(fields: [companyId], references: [id])
+  crews           Crew[]           @relation("CrewWorkers")
+  planMarks       PlanMark[]       @relation("PlanMarkWorkers")
 
   @@unique([rut, companyId])
-
-  expenses Expense[]
-  eppDeliveries EppDelivery[]
-  toolAssignments ToolAssignment[]
 }
 
 model Crew {
@@ -193,15 +165,12 @@ model Crew {
   name      String
   role      String?
   projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-
-  workers Worker[] @relation("CrewWorkers")
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id])
+  project   Project? @relation(fields: [projectId], references: [id])
+  workers   Worker[] @relation("CrewWorkers")
 }
 
 model JobTitle {
@@ -210,7 +179,6 @@ model JobTitle {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id])
 
@@ -218,68 +186,54 @@ model JobTitle {
 }
 
 model Invoice {
-  id           String    @id @default(uuid())
-  number       String
-  date         DateTime
-  dueDate      DateTime?
-  status       String    @default("DRAFT") // DRAFT, ISSUED, PAID, CANCELLED
-  type         String // SALE, PURCHASE
-  emissionType String // ELECTRONIC, MANUAL
-
+  id                  String        @id @default(uuid())
+  number              String
+  date                DateTime
+  dueDate             DateTime?
+  status              String        @default("DRAFT")
+  type                String
+  emissionType        String
   purchaseOrderNumber String?
   dispatchGuideNumber String?
-  hesNumber           String? // Hoja de Entrada de Servicios
-
-  netAmount   Float
-  taxAmount   Float // IVA
-  totalAmount Float
-
-  currency     String    @default("CLP") // CLP, UF, USD
-  exchangeRate Float     @default(1)     // Valor de la moneda en CLP
-
-  clientId  String?
-  client    Client? @relation(fields: [clientId], references: [id])
-  projectId String?
-
-  project      Project?    @relation(fields: [projectId], references: [id])
-  costCenterId String?
-  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
-
-  items InvoiceItem[]
-  payments Payment[]
-
-  // Relations for Credit Notes
-  relatedInvoiceId  String?
-  relatedInvoice    Invoice?  @relation("InvoiceRelation", fields: [relatedInvoiceId], references: [id])
-  relatedByInvoices Invoice[] @relation("InvoiceRelation")
-
-  isPaid Boolean @default(false)
-  paymentStatus String @default("PENDING") // PENDING, PAID, PARTIAL, FACTORING, COLLECTION
-  paymentDate DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  netAmount           Float
+  taxAmount           Float
+  totalAmount         Float
+  clientId            String?
+  projectId           String?
+  costCenterId        String?
+  relatedInvoiceId    String?
+  isPaid              Boolean       @default(false)
+  paymentStatus       String        @default("PENDING")
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  companyId           String
+  hesNumber           String?
+  paymentDate         DateTime?
+  currency            String        @default("CLP")
+  exchangeRate        Float         @default(1)
+  client              Client?       @relation(fields: [clientId], references: [id])
+  company             Company       @relation(fields: [companyId], references: [id])
+  costCenter          CostCenter?   @relation(fields: [costCenterId], references: [id])
+  project             Project?      @relation(fields: [projectId], references: [id])
+  relatedInvoice      Invoice?      @relation("InvoiceRelation", fields: [relatedInvoiceId], references: [id])
+  relatedByInvoices   Invoice[]     @relation("InvoiceRelation")
+  items               InvoiceItem[]
+  payments            Payment[]
 }
 
 model Payment {
-  id          String   @id @default(uuid())
-  amount      Float
-  date        DateTime @default(now())
-  method      String   @default("TRANSFER") // TRANSFER, CASH, CHECK, WEBPAY
-  reference   String?  // Transaction ID
-  comment     String?
-  
-  invoiceId   String
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
+  id        String   @id @default(uuid())
+  amount    Float
+  date      DateTime @default(now())
+  method    String   @default("TRANSFER")
+  reference String?
+  comment   String?
+  invoiceId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
 
 model Supplier {
@@ -290,357 +244,279 @@ model Supplier {
   email       String?
   phone       String?
   address     String?
-  category    String?  // e.g., "Materiales", "Servicios"
-
+  category    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id])
 }
 
 model InvoiceItem {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   description String
   quantity    Float
   unitPrice   Float
   total       Float
-
-  invoiceId String
-  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
 
 model DailyReport {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
+  id        String   @id @default(uuid())
+  userId    String
   date      DateTime
   content   String
   projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id])
+  project   Project? @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-// --- NEW MODULES ---
-
 model PurchaseOrder {
-  id       String   @id @default(uuid())
-  number   String
-  provider String
-  date     DateTime
-  status   String   @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
-
+  id        String              @id @default(uuid())
+  number    String
+  provider  String
+  date      DateTime
+  status    String              @default("PENDING")
   projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-
-  items PurchaseOrderItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
   companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  company   Company             @relation(fields: [companyId], references: [id])
+  project   Project?            @relation(fields: [projectId], references: [id])
+  items     PurchaseOrderItem[]
 
   @@unique([number, companyId])
 }
 
 model PurchaseOrderItem {
-  id          String @id @default(uuid())
-  description String
-  quantity    Float
-  unitPrice   Float
-  total       Float
-
+  id              String        @id @default(uuid())
+  description     String
+  quantity        Float
+  unitPrice       Float
+  total           Float
   purchaseOrderId String
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 }
 
 model Document {
-  id   String @id @default(uuid())
-  name String
-  url  String // Path or URL
-  type String // PDF, IMAGE, ETC
-
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-  clientId  String?
-  client    Client?  @relation(fields: [clientId], references: [id])
-
-  createdAt DateTime @default(now())
-
+  id            String               @id @default(uuid())
+  name          String
+  url           String
+  type          String
+  projectId     String?
+  clientId      String?
+  createdAt     DateTime             @default(now())
   requirementId String?
+  status        String               @default("PENDING")
+  companyId     String
+  client        Client?              @relation(fields: [clientId], references: [id])
+  company       Company              @relation(fields: [companyId], references: [id])
+  project       Project?             @relation(fields: [projectId], references: [id])
   requirement   DocumentRequirement? @relation(fields: [requirementId], references: [id])
-
-  status String @default("PENDING") // PENDING, APPROVED, REJECTED
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
 }
 
 model DocumentRequirement {
-  id          String  @id @default(uuid())
+  id          String            @id @default(uuid())
   name        String
   description String?
-
-  month Int?
-  year  Int?
-
-  status  String    @default("PENDING") // PENDING, OK
-  dueDate DateTime?
-
-  clientId String
-  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-  documents Document[]
-
-  categoryId String?
-  category   DocumentCategory? @relation(fields: [categoryId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  month       Int?
+  year        Int?
+  status      String            @default("PENDING")
+  dueDate     DateTime?
+  clientId    String
+  categoryId  String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  companyId   String
+  documents   Document[]
+  category    DocumentCategory? @relation(fields: [categoryId], references: [id])
+  client      Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company     Company           @relation(fields: [companyId], references: [id])
 }
 
 model DocumentCategory {
-  id        String   @id @default(uuid())
-  name      String
-  color     String?  // Optional for UI
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  clientId String
-  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+  id           String                @id @default(uuid())
+  name         String
+  color        String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  clientId     String
+  client       Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
   requirements DocumentRequirement[]
-  
+
   @@unique([name, clientId])
 }
 
 model Product {
-  id           String  @id @default(uuid())
-  code         String?
-  name         String
-  description  String?
-  type         String  @default("GOOD") // GOOD, SERVICE
-  category     String?
-  unit         String  @default("UN") // unit, kg, m, hr
-  price        Float   @default(0) // Reference price
-  
-  stocks       Stock[]
-  movements    InventoryMovement[]
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  companyId    String
-  company      Company  @relation(fields: [companyId], references: [id])
+  id          String              @id @default(uuid())
+  code        String?
+  name        String
+  description String?
+  type        String              @default("GOOD")
+  category    String?
+  unit        String              @default("UN")
+  price       Float               @default(0)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  companyId   String
+  movements   InventoryMovement[]
+  company     Company             @relation(fields: [companyId], references: [id])
+  stocks      Stock[]
 
   @@unique([code, companyId])
 }
 
 model Warehouse {
-  id           String  @id @default(uuid())
-  name         String
-  location     String?
-  manager      String? // Could be a text or a relation to Worker/User
-
-  stocks       Stock[]
+  id            String              @id @default(uuid())
+  name          String
+  location      String?
+  manager       String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  companyId     String
   movementsFrom InventoryMovement[] @relation("MovementFromWarehouse")
   movementsTo   InventoryMovement[] @relation("MovementToWarehouse")
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  companyId    String
-  company      Company  @relation(fields: [companyId], references: [id])
+  stocks        Stock[]
+  company       Company             @relation(fields: [companyId], references: [id])
 }
 
 model Stock {
-  id           String  @id @default(uuid())
-  quantity     Float   @default(0)
-  minStock     Float   @default(0)
-
-  productId    String
-  product      Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  warehouseId  String
-  warehouse    Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-
-  updatedAt    DateTime @updatedAt
+  id          String    @id @default(uuid())
+  quantity    Float     @default(0)
+  minStock    Float     @default(0)
+  productId   String
+  warehouseId String
+  updatedAt   DateTime  @updatedAt
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 
   @@unique([productId, warehouseId])
 }
 
 model InventoryMovement {
-  id          String   @id @default(uuid())
-  type        String   // IN, OUT, TRANSFER, ADJUSTMENT
-  quantity    Float
-  date        DateTime @default(now())
-  description String?
-
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-
-  // If type is IN or OUT, it might only use 'toWarehouseId' or 'fromWarehouseId'
-  // If type is TRANSFER, it uses both.
+  id              String     @id @default(uuid())
+  type            String
+  quantity        Float
+  date            DateTime   @default(now())
+  description     String?
+  projectId       String?
+  createdAt       DateTime   @default(now())
+  companyId       String
   fromWarehouseId String?
-  fromWarehouse   Warehouse? @relation("MovementFromWarehouse", fields: [fromWarehouseId], references: [id])
-
+  productId       String
   toWarehouseId   String?
+  company         Company    @relation(fields: [companyId], references: [id])
+  fromWarehouse   Warehouse? @relation("MovementFromWarehouse", fields: [fromWarehouseId], references: [id])
+  product         Product    @relation(fields: [productId], references: [id])
+  project         Project?   @relation(fields: [projectId], references: [id])
   toWarehouse     Warehouse? @relation("MovementToWarehouse", fields: [toWarehouseId], references: [id])
-
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
 }
 
 model ClientMonthlyInfo {
-  id String @id @default(uuid())
-
-  clientId String
-  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-  month Int
-  year  Int
-
-  edpDate DateTime? // Fecha hoja de ruta EDP
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id        String    @id @default(uuid())
+  clientId  String
+  month     Int
+  year      Int
+  edpDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company   Company   @relation(fields: [companyId], references: [id])
 
   @@unique([clientId, month, year])
 }
 
 model Plan {
-  id       String @id @default(uuid())
-  name     String
-  imageUrl String
-
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-
-  costCenterId String?
-  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
-
-  stages Int @default(1)
-
+  id                 String      @id @default(uuid())
+  name               String
+  imageUrl           String
+  projectId          String?
+  costCenterId       String?
+  stages             Int         @default(1)
   systemType         String?
   installationType   String?
   installationDetail String?
-
-  marks PlanMark[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  companyId          String
+  company            Company     @relation(fields: [companyId], references: [id])
+  costCenter         CostCenter? @relation(fields: [costCenterId], references: [id])
+  project            Project?    @relation(fields: [projectId], references: [id])
+  marks              PlanMark[]
 }
 
 model PlanMark {
-  id String @id @default(uuid())
-
-  planId String
-  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  x Float // Percentage (Start point if type is PATH)
-  y Float // Percentage (Start point if type is PATH)
-
-  points Json? // Array of {x, y} for paths
-  type   String @default("POINT") // POINT, PATH
-
-  date     DateTime @default(now())
-  meters   Float    @default(0)
-  comment  String?
-  imageUrl String?
-
-  stage   Int      @default(1)
-  workers Worker[] @relation("PlanMarkWorkers")
-
+  id        String   @id @default(uuid())
+  planId    String
+  userId    String
+  x         Float
+  y         Float
+  points    Json?
+  type      String   @default("POINT")
+  date      DateTime @default(now())
+  meters    Float    @default(0)
+  comment   String?
+  imageUrl  String?
+  stage     Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  workers   Worker[] @relation("PlanMarkWorkers")
 }
 
 model Expense {
-  id          String   @id @default(uuid())
-  description String
-  amount      Float
-  category    String? // New field for classification
-  date        DateTime
-
-  currency     String @default("CLP")
-  exchangeRate Float  @default(1)
-
+  id              String                @id @default(uuid())
+  description     String
+  amount          Float
+  category        String?
+  date            DateTime
   originCompanyId String
-  originCompany   Company @relation("PaidExpenses", fields: [originCompanyId], references: [id])
-
   targetCompanyId String
-  targetCompany   Company @relation("ReceivedExpenses", fields: [targetCompanyId], references: [id])
-
-  // Optional reference to a worker (e.g., for reimbursements)
-  workerId String?
-  worker   Worker? @relation(fields: [workerId], references: [id])
-
-  invoiceNumber String? // Optional: If it replaces a formal document or is a receipt
-
-  status String @default("PENDING") // PENDING, SETTLED
-
-  distributions ExpenseDistribution[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  workerId        String?
+  invoiceNumber   String?
+  status          String                @default("PENDING")
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  currency        String                @default("CLP")
+  exchangeRate    Float                 @default(1)
+  originCompany   Company               @relation("PaidExpenses", fields: [originCompanyId], references: [id])
+  targetCompany   Company               @relation("ReceivedExpenses", fields: [targetCompanyId], references: [id])
+  worker          Worker?               @relation(fields: [workerId], references: [id])
+  distributions   ExpenseDistribution[]
 }
 
 model ExpenseDistribution {
-  id     String @id @default(uuid())
-  amount Float
-
-  expenseId String
-  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-
+  id           String      @id @default(uuid())
+  amount       Float
+  expenseId    String
+  projectId    String?
   costCenterId String?
   costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
+  expense      Expense     @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  project      Project?    @relation(fields: [projectId], references: [id])
 }
 
 model Tool {
-  id                  String   @id @default(uuid())
+  id                  String            @id @default(uuid())
   name                String
   brand               String?
   model               String?
   serialNumber        String?
-  status              String   @default("AVAILABLE") // AVAILABLE, IN_USE, IN_MAINTENANCE, RETIRED
+  status              String            @default("AVAILABLE")
   lastMaintenanceDate DateTime?
   nextMaintenanceDate DateTime?
-
-  maintenances        ToolMaintenance[]
-  assignments         ToolAssignment[]
-
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
   companyId           String
-  company             Company  @relation(fields: [companyId], references: [id])
+  company             Company           @relation(fields: [companyId], references: [id])
+  assignments         ToolAssignment[]
+  maintenances        ToolMaintenance[]
 }
 
 model ToolMaintenance {
@@ -649,78 +525,63 @@ model ToolMaintenance {
   description String
   cost        Float    @default(0)
   provider    String?
-
   toolId      String
-  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
 }
 
 model Epp {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   description String?
-  stock       Float    @default(0)
-
-  deliveries  EppDelivery[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  stock       Float         @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
+  company     Company       @relation(fields: [companyId], references: [id])
+  deliveries  EppDelivery[]
 }
 
 model EppDelivery {
-  id          String   @id @default(uuid())
-  quantity    Float    @default(1)
-  date        DateTime @default(now())
-  notes       String?
-
-  workerId    String
-  worker      Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
-
-  eppId       String
-  epp         Epp      @relation(fields: [eppId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  quantity  Float    @default(1)
+  date      DateTime @default(now())
+  notes     String?
+  workerId  String
+  eppId     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  epp       Epp      @relation(fields: [eppId], references: [id], onDelete: Cascade)
+  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
 }
 
 model ToolAssignment {
-  id          String   @id @default(uuid())
-  assignedAt  DateTime @default(now())
-  returnedAt  DateTime?
-  notes       String?
-
-  workerId    String
-  worker      Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
-
-  toolId      String
-  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String    @id @default(uuid())
+  assignedAt DateTime  @default(now())
+  returnedAt DateTime?
+  notes      String?
+  workerId   String
+  toolId     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  tool       Tool      @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  worker     Worker    @relation(fields: [workerId], references: [id], onDelete: Cascade)
 }
 
 model SubscriptionPlan {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Float    @default(0)
-  maxUsers    Int      @default(1)
-  maxStorageGB Int?     @default(5)
-  features    String[] 
-  modules     String[] // Default modules for this plan
-
-  companies   Company[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String    @id @default(uuid())
+  name         String
+  description  String?
+  price        Float     @default(0)
+  maxUsers     Int       @default(1)
+  modules      String[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  features     String[]
+  maxStorageGB Int?      @default(5)
+  companies    Company[]
 }
-
-// --- CRM MODULE ---
 
 model Lead {
   id          String   @id @default(uuid())
@@ -728,98 +589,79 @@ model Lead {
   companyName String?
   email       String?
   phone       String?
-  status      String   @default("NEW") // NEW, CONTACTED, QUALIFIED, LOST
+  status      String   @default("NEW")
   source      String?
   notes       String?
-
-  quotes      Quote[]
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id])
+  quotes      Quote[]
 }
 
 model Quote {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   number      String
-  date        DateTime @default(now())
+  date        DateTime    @default(now())
   validUntil  DateTime?
-  status      String   @default("DRAFT") // DRAFT, SENT, ACCEPTED, REJECTED
-  
-  netAmount   Float    @default(0)
-  taxAmount   Float    @default(0)
-  totalAmount Float    @default(0)
-  
+  status      String      @default("DRAFT")
+  netAmount   Float       @default(0)
+  taxAmount   Float       @default(0)
+  totalAmount Float       @default(0)
   notes       String?
-
   leadId      String?
-  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
-
-  items       QuoteItem[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
+  company     Company     @relation(fields: [companyId], references: [id])
+  lead        Lead?       @relation(fields: [leadId], references: [id])
+  items       QuoteItem[]
 }
 
 model QuoteItem {
-  id          String   @id @default(uuid())
+  id          String @id @default(uuid())
   description String
-  quantity    Float    @default(1)
-  unitPrice   Float    @default(0)
-  total       Float    @default(0)
-
+  quantity    Float  @default(1)
+  unitPrice   Float  @default(0)
+  total       Float  @default(0)
   quoteId     String
-  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quote       Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 }
 
-// --- FINANCE MODULE ---
-
 model BankAccount {
-  id        String   @id @default(uuid())
-  name      String   // Ej: Banco de Chile Corriente
-  number    String?
-  currency  String   @default("CLP") // CLP, UF, USD
-  balance   Float    @default(0)
-  
+  id           String            @id @default(uuid())
+  name         String
+  number       String?
+  currency     String            @default("CLP")
+  balance      Float             @default(0)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  companyId    String
+  company      Company           @relation(fields: [companyId], references: [id])
   transactions BankTransaction[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  companyId String
-  company   Company  @relation(fields: [companyId], references: [id])
 }
 
 model BankTransaction {
-  id            String   @id @default(uuid())
-  date          DateTime @default(now())
-  type          String   // IN, OUT
+  id            String      @id @default(uuid())
+  date          DateTime    @default(now())
+  type          String
   amount        Float
   description   String?
-  reference     String?  // Ej: Número de transferencia
-  category      String?  // Ej: Pago Proveedor, Venta, etc.
-  
+  reference     String?
+  category      String?
   bankAccountId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
 }
 
 model ExchangeRate {
   id        String   @id @default(uuid())
   date      DateTime @default(now())
-  currency  String   // UF, USD
-  value     Float    // Valor en CLP
-  
+  currency  String
+  value     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([date, currency])
 }
-

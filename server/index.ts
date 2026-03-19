@@ -1,5 +1,6 @@
 import app from "./app";
 import { startExchangeRateCron } from "./services/exchangeRateService";
+import { startSubscriptionCron } from "./services/subscriptionService";
 import { logger } from "./lib/logger";
 
 const PORT = process.env.PORT || 3001;
@@ -13,6 +14,7 @@ app.listen(Number(PORT), '0.0.0.0', () => {
   
   // Iniciar servicio de Tipo de Cambio (UF/USD)
   startExchangeRateCron();
+  startSubscriptionCron();
 });
 
 process.on("unhandledRejection", (reason) => {

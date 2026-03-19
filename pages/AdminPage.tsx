@@ -138,6 +138,18 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
         return MODULE_OPTIONS.find(option => option.id === moduleId)?.label || moduleId;
     };
 
+    const now = new Date();
+    const expiringSoonCompanies = companies.filter(company => {
+        if (!company.subscriptionEndsAt) return false;
+        const endDate = new Date(company.subscriptionEndsAt);
+        const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays >= 0 && diffDays <= 7 && company.planStatus !== 'SUSPENDED';
+    });
+    const expiredCompanies = companies.filter(company => {
+        if (!company.subscriptionEndsAt) return false;
+        return new Date(company.subscriptionEndsAt) < now || company.planStatus === 'SUSPENDED';
+    });
+
     const handleRenewCompany = async (companyId: string, months = 1) => {
         try {
             const res = await fetch(`${API_URL}/companies/${companyId}/renew`, {
@@ -730,6 +742,22 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                     <div className="md:col-span-2">
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-200">
                             <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center"><Building className="mr-2 text-slate-400" /> Empresas Registradas</h3>
+                            <div className="mb-6 grid gap-3 md:grid-cols-3">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Empresas activas</div>
+                                    <div className="mt-1 text-2xl font-semibold text-slate-900">
+                                        {companies.filter(company => company.planStatus === 'ACTIVE' || company.planStatus === 'TRIAL').length}
+                                    </div>
+                                </div>
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700">Vencen en 7 días</div>
+                                    <div className="mt-1 text-2xl font-semibold text-amber-800">{expiringSoonCompanies.length}</div>
+                                </div>
+                                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
+                                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-rose-700">Suspendidas o vencidas</div>
+                                    <div className="mt-1 text-2xl font-semibold text-rose-800">{expiredCompanies.length}</div>
+                                </div>
+                            </div>
                             <div className="space-y-3">
                                 {companies.length === 0 && <p className="text-slate-400 italic font-medium">No hay empresas registradas.</p>}
                                 {companies.map(company => (
