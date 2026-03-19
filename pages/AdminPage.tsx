@@ -83,6 +83,11 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     // Role Form State
     const [roleForm, setRoleForm] = useState({ name: '', description: '' });
 
+    const getHeaders = () => ({
+        'Content-Type': 'application/json',
+        'x-user-id': currentUser?.id || ''
+    });
+
     useEffect(() => {
         fetchData();
     }, [activeTab]);
@@ -91,36 +96,36 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
         setLoading(true);
         try {
             if (activeTab === 'USERS') {
-                const res = await fetch(`${API_URL}/users`);
+                const res = await fetch(`${API_URL}/users`, { headers: getHeaders() });
                 const data = await res.json();
                 setUsers(Array.isArray(data) ? data : []);
             } else if (activeTab === 'ROLES') {
-                const res = await fetch(`${API_URL}/job-titles`);
+                const res = await fetch(`${API_URL}/job-titles`, { headers: getHeaders() });
                 const data = await res.json();
                 setRoles(Array.isArray(data) ? data : []);
             } else if (activeTab === 'COMPANIES') {
-                const res = await fetch(`${API_URL}/companies`);
+                const res = await fetch(`${API_URL}/companies`, { headers: getHeaders() });
                 const data = await res.json();
                 setCompanies(Array.isArray(data) ? data : []);
             } else if (activeTab === 'BACKUPS') {
-                const res = await fetch(`${API_URL}/backups`);
+                const res = await fetch(`${API_URL}/backups`, { headers: getHeaders() });
                 const data = await res.json();
                 setBackups(Array.isArray(data) ? data : []);
             } else if (activeTab === 'PLANS') {
-                const res = await fetch(`${API_URL}/plans`);
+                const res = await fetch(`${API_URL}/plans`, { headers: getHeaders() });
                 const data = await res.json();
                 setPlans(Array.isArray(data) ? data : []);
             }
 
             // Always fetch companies for User modal if not already fetched
             if ((activeTab === 'USERS' || activeTab === 'COMPANIES') && companies.length === 0) {
-                const res = await fetch(`${API_URL}/companies`);
+                const res = await fetch(`${API_URL}/companies`, { headers: getHeaders() });
                 const data = await res.json();
                 setCompanies(Array.isArray(data) ? data : []);
             }
             // Always fetch plans for Companies if needed
             if (activeTab === 'COMPANIES' && plans.length === 0) {
-                const res = await fetch(`${API_URL}/plans`);
+                const res = await fetch(`${API_URL}/plans`, { headers: getHeaders() });
                 const data = await res.json();
                 setPlans(Array.isArray(data) ? data : []);
             }
@@ -138,7 +143,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                 // Edit existing user
                 const res = await fetch(`${API_URL}/users/${editingUser.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getHeaders(),
                     body: JSON.stringify(userForm)
                 });
                 if (res.ok) {
@@ -149,7 +154,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                 // Create new user
                 const res = await fetch(`${API_URL}/users`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getHeaders(),
                     body: JSON.stringify(userForm)
                 });
                 if (res.ok) {
@@ -166,7 +171,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     const handleDeleteUser = async (id: string) => {
         if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
         try {
-            await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/users/${id}`, { method: 'DELETE', headers: getHeaders() });
             setUsers(users.filter(u => u.id !== id));
         } catch (err) {
             console.error(err);
@@ -179,7 +184,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
         try {
             const res = await fetch(`${API_URL}/job-titles`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getHeaders(),
                 body: JSON.stringify(roleForm)
             });
             if (res.ok) {
@@ -195,7 +200,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     const handleDeleteRole = async (id: string) => {
         if (!confirm('¿Estás seguro de eliminar este cargo?')) return;
         try {
-            await fetch(`${API_URL}/job-titles/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/job-titles/${id}`, { method: 'DELETE', headers: getHeaders() });
             fetchData();
         } catch (err) {
             console.error(err);
@@ -208,7 +213,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
             if (editingCompany) {
                 const res = await fetch(`${API_URL}/companies/${editingCompany.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getHeaders(),
                     body: JSON.stringify(companyForm)
                 });
                 if (res.ok) {
@@ -220,7 +225,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
             } else {
                 const res = await fetch(`${API_URL}/companies`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getHeaders(),
                     body: JSON.stringify({
                         ...companyForm,
                         creatorId: currentUser?.id
@@ -241,7 +246,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     const handleDeleteCompany = async (id: string) => {
         if (!confirm('¿Estás seguro de eliminar esta empresa? Esto podría afectar datos vinculados.')) return;
         try {
-            await fetch(`${API_URL}/companies/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/companies/${id}`, { method: 'DELETE', headers: getHeaders() });
             setCompanies(companies.filter(c => c.id !== id));
         } catch (err) {
             console.error(err);
@@ -295,7 +300,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     const handleCreateBackup = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/backups`, { method: 'POST' });
+            const res = await fetch(`${API_URL}/backups`, { method: 'POST', headers: getHeaders() });
             if (res.ok) {
                 fetchData();
             } else {
@@ -311,7 +316,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     const handleDeleteBackup = async (filename: string) => {
         if (!confirm('Are you sure you want to delete this backup?')) return;
         try {
-            await fetch(`${API_URL}/backups/${filename}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/backups/${filename}`, { method: 'DELETE', headers: getHeaders() });
             setBackups(backups.filter(b => b.name !== filename));
         } catch (err) {
             console.error(err);
@@ -324,7 +329,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
             if (editingPlan) {
                 const res = await fetch(`${API_URL}/plans/${editingPlan.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getHeaders(),
                     body: JSON.stringify({ ...planForm, price: Number(planForm.price) })
                 });
                 if (res.ok) {
@@ -336,7 +341,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
             } else {
                 const res = await fetch(`${API_URL}/plans`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getHeaders(),
                     body: JSON.stringify({ ...planForm, price: Number(planForm.price) })
                 });
                 if (res.ok) {
@@ -353,7 +358,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     const handleDeletePlan = async (id: string) => {
         if (!confirm('¿Estás seguro de eliminar este plan?')) return;
         try {
-            await fetch(`${API_URL}/plans/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/plans/${id}`, { method: 'DELETE', headers: getHeaders() });
             setPlans(plans.filter(p => p.id !== id));
         } catch (err) {
             console.error(err);

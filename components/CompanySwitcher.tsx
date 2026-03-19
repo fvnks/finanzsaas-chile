@@ -10,19 +10,19 @@ const CompanySwitcher: React.FC = () => {
     if (!activeCompany) return null;
 
     return (
-        <div className="relative">
+        <div className="relative z-[80]">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-2 w-full p-2 rounded-lg hover:bg-white/5 transition-colors text-left"
+                className="flex w-full items-center space-x-3 rounded-xl border border-slate-800 bg-[#0b1628] px-3 py-3 text-left shadow-sm transition-colors hover:bg-[#122038]"
             >
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white">
                     {activeCompany.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{activeCompany.name}</p>
-                    <p className="text-xs text-slate-400 truncate">Multiempresa</p>
+                    <p className="truncate text-sm font-semibold text-white">{activeCompany.name}</p>
+                    <p className="truncate text-xs font-medium text-slate-200">Multiempresa</p>
                 </div>
-                <ChevronDown size={16} className="text-slate-400" />
+                <ChevronDown size={16} className="text-slate-200" />
             </button>
 
             {isOpen && (
@@ -31,9 +31,9 @@ const CompanySwitcher: React.FC = () => {
                         className="fixed inset-0 z-40"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="absolute left-0 top-full z-[90] mt-2 w-full overflow-hidden rounded-2xl border border-slate-950 bg-[#08111f] opacity-100 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.75)]">
                         <div className="p-2">
-                            <p className="text-xs font-bold text-slate-500 uppercase px-2 py-1">Mis Empresas</p>
+                            <p className="px-2 py-1 text-xs font-bold uppercase text-slate-400">Mis Empresas</p>
                             {availableCompanies.map(company => (
                                 <button
                                     key={company.id}
@@ -44,9 +44,9 @@ const CompanySwitcher: React.FC = () => {
                                         // Ideally we should use context to trigger refresh, but standard reload works for now ensures isolation
                                         setTimeout(() => window.location.reload(), 100);
                                     }}
-                                    className={`w-full flex items-center space-x-3 p-2 rounded-lg transition-colors ${activeCompany.id === company.id
-                                            ? 'bg-blue-600/20 text-blue-400'
-                                            : 'hover:bg-white/5 text-slate-300'
+                                    className={`flex w-full items-center space-x-3 rounded-xl p-3 transition-colors ${activeCompany.id === company.id
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-[#0d1726] text-slate-100 hover:bg-[#142235]'
                                         }`}
                                 >
                                     <Building2 size={18} />
@@ -55,8 +55,8 @@ const CompanySwitcher: React.FC = () => {
                                 </button>
                             ))}
                         </div>
-                        <div className="border-t border-slate-700 p-2 bg-slate-900/50">
-                            <button className="w-full text-xs text-center text-slate-500 hover:text-slate-300 py-1 transition-colors">
+                        <div className="border-t border-slate-800 bg-[#0d1726] p-2">
+                            <button className="w-full py-1 text-center text-xs text-slate-300 transition-colors hover:text-white">
                                 Gestionar Empresas
                             </button>
                         </div>

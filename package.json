@@ -10,7 +10,9 @@
     "server": "tsx --watch server/index.ts",
     "start": "npx prisma migrate deploy && tsx server/index.ts",
     "postinstall": "prisma generate",
-    "dev:all": "concurrently \"npm run server\" \"npm run dev\""
+    "dev:all": "concurrently \"npm run server\" \"npm run dev\"",
+    "typecheck": "node node_modules\\typescript\\bin\\tsc --noEmit",
+    "smoke:api": "tsx server/scripts/smoke-api.ts"
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",

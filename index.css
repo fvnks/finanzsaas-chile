@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Aptos", "Segoe UI", "Trebuchet MS", sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
+  color: #0f172a;
+  background: #f4f7fb;
+  --primary-color: #2563eb;
+  --surface-strong: #081120;
+  --surface-soft: rgba(255, 255, 255, 0.78);
+  --border-soft: rgba(148, 163, 184, 0.24);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -15,4 +20,30 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: inherit;
+  color: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.35);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
 }

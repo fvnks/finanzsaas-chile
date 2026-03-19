@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   LayoutDashboard,
@@ -6,14 +5,12 @@ import {
   FileText,
   Briefcase,
   Target,
-  PieChart,
   LogOut,
   Sparkles,
   HardHat,
   ChevronDown,
   ChevronRight,
   Map,
-  Truck,
   TrendingUp,
   Wrench,
   Package,
@@ -21,7 +18,10 @@ import {
   Box,
   Layers,
   CreditCard,
-  BarChart3
+  BarChart3,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Building2
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 import CompanySwitcher from './CompanySwitcher.tsx';
@@ -35,10 +35,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout }) => {
   const [expandedGroups, setExpandedGroups] = React.useState<string[]>(['obras', 'finanzas', 'directorio', 'admin']);
-  const [isCollapsed, setIsCollapsed] = React.useState(true);
-
-  // Auto-collapse on small screens if needed, or stick to manual toggle
-
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev =>
@@ -46,48 +43,46 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
     );
   };
 
-  // Define all available items with their groups
   const groups = [
     {
       id: 'obras',
       label: 'Gestión de Obras',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }, // Dashboard fits best here or top level? Let's put top level or inside Obras. Usually Dashboard is global.
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'projects', label: 'Proyectos', icon: Briefcase },
         { id: 'tools', label: 'Herramientas', icon: Wrench },
-        { id: 'deliveries', label: 'Entregas (EPP/Herr.)', icon: Package },
+        { id: 'deliveries', label: 'Entregas', icon: Package },
         { id: 'reports', label: 'Reportes Diarios', icon: FileText },
         { id: 'docControl', label: 'Control Documental', icon: FileText },
-        { id: 'planos', label: 'Planos // Cuelgues', icon: Map },
+        { id: 'planos', label: 'Planos y Cuelgues', icon: Map },
       ]
     },
     {
       id: 'ventas',
       label: 'Ventas y CRM',
       items: [
-        { id: 'crm', label: 'CRM / Cotizaciones', icon: PhoneCall },
+        { id: 'crm', label: 'CRM y Cotizaciones', icon: PhoneCall },
       ]
     },
     {
       id: 'finanzas',
-      label: 'Finanzas y Compras',
+      label: 'Finanzas',
       items: [
         { id: 'invoices', label: 'Facturas', icon: FileText },
         { id: 'costCenters', label: 'Centros de Costo', icon: Target },
         { id: 'expenses', label: 'Gastos', icon: TrendingUp },
-        { id: 'bankAccounts', label: 'Cuentas Bancarias', icon: CreditCard },
-        { id: 'cashFlow', label: 'Flujo de Caja', icon: BarChart3 },
+        { id: 'bankAccounts', label: 'Tesorería', icon: CreditCard },
+        { id: 'cashFlow', label: 'Forecast de Caja', icon: BarChart3 },
       ]
     },
     {
       id: 'inventario',
       label: 'Inventario',
       items: [
-        { id: 'products', label: 'Catálogo de Prod.', icon: Layers },
+        { id: 'products', label: 'Catálogo', icon: Layers },
         { id: 'warehouses', label: 'Bodegas y Stock', icon: Box },
       ]
     },
-
     {
       id: 'directorio',
       label: 'Directorio',
@@ -100,49 +95,31 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
       id: 'admin',
       label: 'Administración',
       items: [
-        { id: 'admin', label: 'Admin / Config', icon: Sparkles },
+        { id: 'admin', label: 'Admin y Config', icon: Sparkles },
       ]
     }
   ];
 
-  /* 
-     SPECIAL CASE: Dashboard
-     Often Dashboard is outside groups. Let's make logical decision:
-     If we want 'menus desplegables' for everything, maybe dashboard is standalone at top.
-  */
-
-  // Filter Logic
   const getAllowedGroups = () => {
     if (!user) return [];
-    
-    // Check company modules
-    const activeCompany = user.companies?.find(c => c.id === user.activeCompanyId);
-    // Determine active modules, default to all if none specified (legacy data)
-    const activeModules = activeCompany?.modules || ['INVOICING', 'PROJECTS', 'INVENTORY', 'TOOLS', 'HR'];
 
-    // Admin sees everything within the company's active modules
-    // Other users are filtered by both their role permissions AND company modules
+    const activeCompany = user.companies?.find(c => c.id === user.activeCompanyId);
+    const activeModules = activeCompany?.modules || ['INVOICING', 'PROJECTS', 'INVENTORY', 'TOOLS', 'HR'];
     const allowed = user.role === UserRole.ADMIN ? null : (user.allowedSections || ['dashboard']);
 
     return groups.map(group => ({
       ...group,
       items: group.items.filter(item => {
-        // Module check
         if (item.id === 'crm' && !(activeModules.includes('INVOICING') || activeModules.includes('CRM'))) return false;
         if (item.id === 'invoices' && !activeModules.includes('INVOICING')) return false;
         if (item.id === 'projects' && !activeModules.includes('PROJECTS')) return false;
         if (item.id === 'tools' && !activeModules.includes('TOOLS')) return false;
         if (item.id === 'deliveries' && !activeModules.includes('HR')) return false;
         if (item.id === 'workers' && !activeModules.includes('HR')) return false;
-        
         if (item.id === 'products' && !activeModules.includes('INVENTORY')) return false;
         if (item.id === 'warehouses' && !activeModules.includes('INVENTORY')) return false;
-        // Assume costCenters and others maybe tied to INVOICING or PROJECTS. We'll leave them open or tied to INVOICING.
         if (item.id === 'costCenters' && !activeModules.includes('INVOICING')) return false;
-
-        // User permission check
         if (allowed && !allowed.includes(item.id)) return false;
-        
         return true;
       })
     })).filter(group => group.items.length > 0);
@@ -151,32 +128,50 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
   const visibleGroups = getAllowedGroups();
 
   return (
-    <aside
-      className={`bg-slate-900 text-white flex flex-col h-screen sticky top-0 shrink-0 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'
-        }`}
-      onMouseEnter={() => setIsCollapsed(false)}
-      onMouseLeave={() => setIsCollapsed(true)}
-    >
-      <div className="p-4 flex items-center justify-between">
-        {!isCollapsed ? (
-          <div className="w-full mr-2">
+    <aside className={`sticky top-0 self-start relative flex h-screen shrink-0 flex-col overflow-visible border-r border-slate-800 bg-[#0b1220] text-white transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-72'}`}>
+      <div className="relative z-[70] border-b border-slate-800 px-3 py-3">
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-3`}>
+          {!isCollapsed ? (
+            <div className="min-w-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-sky-300">
+                  <Building2 size={18} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">Workspace</p>
+                  <h1 className="truncate text-base font-semibold text-white">Vertikal Finanzas</h1>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800">
+              <span className="text-sm font-semibold text-sky-300">V</span>
+            </div>
+          )}
+
+          <button
+            onClick={() => setIsCollapsed(prev => !prev)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            aria-label={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+          >
+            {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
+        </div>
+
+        {!isCollapsed && (
+          <div className="mt-3 rounded-xl border border-slate-800 bg-[#091423] p-2">
             <CompanySwitcher />
-          </div>
-        ) : (
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold shrink-0 mx-auto mb-2">
-            V
           </div>
         )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto custom-scrollbar">
+      <nav className="relative flex-1 space-y-4 overflow-y-auto px-2 py-4">
         {visibleGroups.map(group => (
-          <div key={group.id} className="border-t border-slate-800/50 pt-2 first:border-0 first:pt-0">
-            {/* Group Header - Hide label if collapsed */}
+          <div key={group.id}>
             {!isCollapsed && (
               <button
                 onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between px-2 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider hover:text-slate-300 transition-colors group"
+                className="mb-1 flex w-full items-center justify-between px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 transition-colors hover:text-slate-200"
               >
                 <span className="truncate">{group.label}</span>
                 {expandedGroups.includes(group.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -189,13 +184,21 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   title={isCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'space-x-3 px-3'} py-2.5 rounded-lg transition-all ${activeTab === item.id
-                    ? 'bg-primary text-white shadow-lg shadow-slate-900/30'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  className={`group w-full rounded-lg transition-colors ${activeTab === item.id
+                    ? 'bg-slate-800 text-white'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
                     }`}
                 >
-                  <item.icon size={20} strokeWidth={2} />
-                  {!isCollapsed && <span className="font-medium text-sm truncate">{item.label}</span>}
+                  <div className={`flex items-center ${isCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5`}>
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${activeTab === item.id ? 'bg-slate-700 text-sky-300' : 'bg-slate-900 text-slate-300 group-hover:bg-slate-800 group-hover:text-white'}`}>
+                      <item.icon size={16} strokeWidth={2.1} />
+                    </div>
+                    {!isCollapsed && (
+                      <div className="min-w-0 text-left">
+                        <div className="truncate text-sm font-medium">{item.label}</div>
+                      </div>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
@@ -203,15 +206,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         ))}
       </nav>
 
-      <div className="p-3 border-t border-slate-800 bg-slate-900">
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} mb-4 px-1`}>
-          <div className="w-9 h-9 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold shadow-lg shadow-indigo-900/50">
+      <div className="relative border-t border-slate-800 p-3">
+        <div className={`mb-4 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-1`}>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-sm font-semibold text-slate-100">
             {user?.name.charAt(0).toUpperCase()}
           </div>
           {!isCollapsed && (
-            <div className="overflow-hidden min-w-0">
-              <p className="text-sm font-bold truncate text-white">{user?.name}</p>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold truncate">
+            <div className="min-w-0 overflow-hidden">
+              <p className="truncate text-sm font-medium text-white">{user?.name}</p>
+              <p className="truncate text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
                 {user?.role === UserRole.ADMIN ? 'Administrador' :
                   user?.role === UserRole.SUPERVISOR ? 'Supervisor' :
                     user?.role === UserRole.WORKER ? 'Trabajador' : 'Usuario'}
@@ -221,11 +224,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         </div>
         <button
           onClick={onLogout}
-          title={isCollapsed ? "Cerrar Sesión" : undefined}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/50 rounded-lg transition-colors`}
+          title={isCollapsed ? 'Cerrar sesión' : undefined}
+          className={`w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-slate-300 transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200 ${isCollapsed ? 'flex justify-center' : 'flex items-center gap-3'}`}
         >
           <LogOut size={isCollapsed ? 20 : 18} />
-          {!isCollapsed && <span className="font-medium text-sm">Salir</span>}
+          {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
         </button>
       </div>
     </aside>

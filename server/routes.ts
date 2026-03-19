@@ -5,58 +5,30 @@ import multer from "multer";
 import { Readable } from "stream";
 import { uploadToOneDrive, getFileStreamFromWebUrl } from "./services/onedrive";
 import { createBackup, listBackups, getBackupPath, deleteBackup } from "./services/backup";
+import financeRouter from "./routes/finance";
+import inventoryRouter from "./routes/inventory";
+import invoicesRouter from "./routes/invoices";
+import {
+    deleteOwnedRecord,
+    findOwnedRecord,
+    getCompanyId,
+    getInvoiceTypeLabel,
+    normalizeInvoiceType,
+    updateOwnedRecord
+} from "./lib/domain";
+import { requireAdmin, requireSelfOrAdmin } from "./middleware/auth";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
-const INVOICE_TYPE_ALIASES: Record<string, string> = {
-    SALE: "SALE",
-    VENTA: "SALE",
-    PURCHASE: "PURCHASE",
-    COMPRA: "PURCHASE",
-    CREDIT_NOTE: "CREDIT_NOTE",
-    NOTA_CREDITO: "CREDIT_NOTE"
-};
-
-const normalizeInvoiceType = (value?: string) => {
-    if (!value) return "SALE";
-    return INVOICE_TYPE_ALIASES[value] || value;
-};
-
-const getInvoiceTypeLabel = (value?: string) => {
-    switch (normalizeInvoiceType(value)) {
-        case "PURCHASE":
-            return "Compra";
-        case "SALE":
-            return "Venta";
-        case "CREDIT_NOTE":
-            return "Nota de Credito";
-        default:
-            return "Documento";
+const requireCompanyId = (req: Request, res: Response) => {
+    const companyId = getCompanyId(req);
+    if (!companyId) {
+        res.status(400).json({ error: "Company ID required" });
+        return null;
     }
-};
-
-const findOwnedRecord = async (delegate: any, id: string, companyId: string) => {
-    return delegate.findFirst({ where: { id, companyId } });
-};
-
-const updateOwnedRecord = async (
-    delegate: any,
-    id: string,
-    companyId: string,
-    data: Record<string, unknown>
-) => {
-    const existing = await findOwnedRecord(delegate, id, companyId);
-    if (!existing) return null;
-    return delegate.update({ where: { id }, data });
-};
-
-const deleteOwnedRecord = async (delegate: any, id: string, companyId: string) => {
-    const existing = await findOwnedRecord(delegate, id, companyId);
-    if (!existing) return false;
-    await delegate.delete({ where: { id } });
-    return true;
+    return companyId;
 };
 
 // --- DIAGNOSTIC ENDPOINT FOR RAILWAY ---
@@ -111,7 +83,7 @@ router.get("/debug-db", async (req, res) => {
 // --- AUTHORIZATION MIDDLEWARE ---
 const checkModuleAccess = (requiredModule: string) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        const companyId = (req as any).companyId || req.headers['x-company-id'];
+        const companyId = getCompanyId(req);
         
         if (!companyId) {
             return res.status(400).json({ error: "Company ID required for this action." });
@@ -481,372 +453,7 @@ router.delete("/projects/:id", async (req, res) => {
     }
 });
 
-// --- INVOICES ---
-router.get("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const invoices = await prisma.invoice.findMany({
-            where: { companyId },
-            orderBy: { date: 'desc' },
-            include: { client: true, project: true } // Include relations for UI
-        });
-        res.json(invoices);
-    } catch (err) {
-        console.error("Error fetching invoices:", err);
-        res.status(500).json({ error: "Failed to fetch invoices" });
-    }
-});
-
-router.post("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
-    try {
-        const { number, net, iva, total, date, dueDate, status, clientId, projectId, costCenterId, type, items, relatedInvoiceId, annulInvoice, paymentDate } = req.body;
-        // Validate costCenterId handles empty strings or 'none' if sent by frontend
-        const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
-        // Validate projectId handles empty strings
-        const validProjectId = projectId && projectId !== '' ? projectId : undefined;
-
-        const companyId = (req as any).companyId;
-        // VALIDATION: Check for duplicates
-        // 1. Calculate check criteria
-        const checkType = type || 'SALE';
-        const normalizedType = normalizeInvoiceType(type);
-
-        // Build where clause
-        const duplicateWhere: any = {
-            number: number,
-            type: normalizedType,
-            companyId,
-            status: { not: 'CANCELLED' } // We might allow re-using folio if previous was cancelled? Or strictly never?
-            // Usually efficient tax systems don't allow re-use even if cancelled. 
-            // Let's stick to strict: no duplicates active or inactive. 
-            // actually, let's just check number + type + client (if purchase)
-        };
-        // Remove status check to be strict
-        delete duplicateWhere.status;
-
-        // 2. If it is a PURCHASE (COMPRA), it is unique per Client.
-        if (normalizedType === 'PURCHASE') {
-            if (!clientId) {
-                return res.status(400).json({ error: "Debe especificar un cliente para facturas de compra." });
-            }
-            duplicateWhere.clientId = clientId;
-        } else {
-            // For SALES (VENTA), NOTES, etc emitted by US, they should be global unique.
-            // However, verify if we have multiple emission points? Assuming single SaaS for now.
-        }
-
-        const existing = await prisma.invoice.findFirst({
-            where: duplicateWhere
-        });
-
-        if (existing) {
-            const duplicateTypeName = getInvoiceTypeLabel(checkType);
-            return res.status(409).json({
-                error: `El folio ${number} ya existe para ${duplicateTypeName}.`
-            });
-        }
-
-        const result = await prisma.$transaction(async (tx) => {
-            const newInvoice = await tx.invoice.create({
-                data: {
-                    number,
-                    netAmount: net,
-                    taxAmount: iva,
-                    totalAmount: total,
-                    date: date ? new Date(date) : new Date(),
-                    dueDate: dueDate ? new Date(dueDate) : null,
-                    status: status || 'ISSUED',
-                    clientId,
-                    projectId: validProjectId,
-                    costCenterId: validCostCenterId,
-                    type: normalizedType,
-                    emissionType: 'MANUAL',
-                    purchaseOrderNumber: req.body.purchaseOrderNumber,
-                    dispatchGuideNumber: req.body.dispatchGuideNumber,
-                    hesNumber: req.body.hesNumber,
-                    relatedInvoiceId: relatedInvoiceId || undefined,
-                    paymentStatus: req.body.paymentStatus || 'PENDING',
-                    paymentDate: paymentDate ? new Date(paymentDate) : null,
-                    companyId,
-                    items: items && items.length > 0 ? {
-                        create: items.map((item: any) => ({
-                            description: item.description,
-                            quantity: Number(item.quantity),
-                            unitPrice: Number(item.unitPrice),
-                            total: Number(item.total)
-                        }))
-                    } : undefined
-                },
-                include: {
-                    items: true
-                }
-            });
-
-            // If it is a Credit Note and references an invoice, we cancel said invoice IF requested
-            if (normalizedType === 'CREDIT_NOTE' && relatedInvoiceId && annulInvoice !== false) {
-                await tx.invoice.update({
-                    where: { id: relatedInvoiceId },
-                    data: { status: 'CANCELLED' }
-                });
-            }
-
-            return newInvoice;
-        });
-
-        res.json(result);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to create invoice" });
-    }
-});
-
-router.delete("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const companyId = (req as any).companyId;
-        await prisma.$transaction(async (tx) => {
-            // Check if it's a Credit Note
-            const invoice = await tx.invoice.findFirst({ where: { id, companyId } });
-            if (!invoice) throw new Error("Invoice not found");
-
-            if (normalizeInvoiceType(invoice.type) === 'CREDIT_NOTE' && invoice.relatedInvoiceId) {
-                // Check if the related invoice was cancelled. If so, revert it to PENDING.
-                // If it is NOT cancelled (meaning it was a partial credit note), do NOT touch the status.
-                const relatedInvoice = await tx.invoice.findUnique({ where: { id: invoice.relatedInvoiceId } });
-
-                if (relatedInvoice && relatedInvoice.status === 'CANCELLED') {
-                    await tx.invoice.update({
-                        where: { id: invoice.relatedInvoiceId },
-                        data: { status: 'PENDING' }
-                    });
-                }
-            }
-
-            await tx.invoice.delete({ where: { id } });
-        });
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error("Error deleting invoice:", err);
-        res.status(500).json({ error: "Failed to delete invoice" });
-    }
-});
-
-router.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { number, net, iva, total, date, dueDate, status, clientId, projectId, costCenterId, type, items, purchaseOrderNumber, dispatchGuideNumber, isPaid, relatedInvoiceId, paymentDate } = req.body;
-
-        const validCostCenterId = costCenterId && costCenterId !== 'none' ? costCenterId : undefined;
-        const validProjectId = projectId && projectId !== '' ? projectId : undefined;
-        const companyId = (req as any).companyId;
-        const normalizedType = normalizeInvoiceType(type);
-
-        const updatedInvoice = await prisma.$transaction(async (tx) => {
-            // Delete existing items
-            await tx.invoiceItem.deleteMany({ where: { invoiceId: id } });
-
-            // Verify ownership
-            const existing = await tx.invoice.findFirst({ where: { id, companyId } });
-            if (!existing) throw new Error("Invoice not found");
-
-            // Update Invoice
-            const invoice = await tx.invoice.update({
-                where: { id },
-                data: {
-                    number,
-                    netAmount: net,
-                    taxAmount: iva,
-                    totalAmount: total,
-                    date: new Date(date),
-                    dueDate: dueDate ? new Date(dueDate) : null,
-                    status: status || 'DRAFT',
-                    client: clientId ? { connect: { id: clientId } } : { disconnect: true },
-                    project: validProjectId ? { connect: { id: validProjectId } } : { disconnect: true },
-                    costCenter: validCostCenterId ? { connect: { id: validCostCenterId } } : { disconnect: true },
-                    type: normalizedType,
-                    purchaseOrderNumber,
-                    dispatchGuideNumber,
-                    isPaid: isPaid ?? false,
-                    paymentStatus: req.body.paymentStatus || (isPaid ? 'PAID' : 'PENDING'), // Handle logic if not sent
-                    paymentDate: paymentDate ? new Date(paymentDate) : null,
-                    hesNumber: req.body.hesNumber || null,
-                    relatedInvoice: req.body.relatedInvoiceId ? { connect: { id: req.body.relatedInvoiceId } } : { disconnect: true }
-                }
-            });
-
-            if (items && items.length > 0) {
-                await tx.invoiceItem.createMany({
-                    data: items.map((item: any) => ({
-                        description: item.description,
-                        quantity: Number(item.quantity),
-                        unitPrice: Number(item.unitPrice),
-                        total: Number(item.total),
-                        invoiceId: id
-                    }))
-                });
-            }
-
-            // If it is a Credit Note and references an invoice, we cancel said invoice IF requested
-            if (normalizedType === 'CREDIT_NOTE' && relatedInvoiceId && req.body.annulInvoice !== false) {
-                await tx.invoice.update({
-                    where: { id: relatedInvoiceId },
-                    data: { status: 'CANCELLED' }
-                });
-            }
-
-            // Fetch the complete invoice with relations to match GET structure
-            const completeInvoice = await tx.invoice.findUnique({
-                where: { id },
-                include: { client: true, project: true }
-            });
-
-            return completeInvoice;
-        }, {
-            maxWait: 5000, // default: 2000
-            timeout: 20000 // default: 5000
-        });
-
-        res.json(updatedInvoice);
-    } catch (err) {
-        console.error("Error updating invoice:", err);
-        res.status(500).json({ error: "Failed to update invoice" });
-    }
-});
-
-// --- PAYMENTS ---
-
-// Get Payments for Invoice
-router.get("/invoices/:id/payments", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const payments = await prisma.payment.findMany({
-            where: { invoiceId: id },
-            orderBy: { date: 'desc' }
-        });
-        res.json(payments);
-    } catch (error) {
-        console.error("Error fetching payments:", error);
-        res.status(500).json({ error: "Failed to fetch payments" });
-    }
-});
-
-// Add Payment
-router.post("/invoices/:id/payments", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { amount, date, method, reference, comment, companyId } = req.body;
-
-        // 1. Create Payment
-        const payment = await prisma.payment.create({
-            data: {
-                invoiceId: id,
-                amount: Number(amount),
-                date: new Date(date),
-                method,
-                reference,
-                comment,
-                companyId
-            }
-        });
-
-        // 2. Recalculate Invoice Status
-        const invoice = await prisma.invoice.findUnique({
-            where: { id },
-            include: { payments: true }
-        });
-
-        if (invoice) {
-            const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
-            const isFullyPaid = totalPaid >= invoice.totalAmount;
-
-            let newStatus = 'PENDING';
-            if (isFullyPaid) newStatus = 'PAID';
-            else if (totalPaid > 0) newStatus = 'PARTIAL';
-
-            await prisma.invoice.update({
-                where: { id },
-                data: {
-                    isPaid: isFullyPaid,
-                    paymentStatus: newStatus
-                }
-            });
-        }
-
-        res.status(201).json(payment);
-    } catch (error) {
-        console.error("Error creating payment:", error);
-        res.status(500).json({ error: "Failed to create payment" });
-    }
-});
-
-// Delete Payment
-router.delete("/payments/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const payment = await prisma.payment.findUnique({ where: { id } });
-        if (!payment) return res.status(404).json({ error: "Payment not found" });
-
-        const invoiceId = payment.invoiceId;
-
-        await prisma.payment.delete({ where: { id } });
-
-        // Recalculate Invoice Status
-        const invoice = await prisma.invoice.findUnique({
-            where: { id: invoiceId },
-            include: { payments: true }
-        });
-
-        if (invoice) {
-            const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
-            const isFullyPaid = totalPaid >= invoice.totalAmount;
-
-            let newStatus = 'PENDING';
-            if (isFullyPaid) newStatus = 'PAID';
-            else if (totalPaid > 0) newStatus = 'PARTIAL';
-
-            await prisma.invoice.update({
-                where: { id: invoiceId },
-                data: {
-                    isPaid: isFullyPaid,
-                    paymentStatus: newStatus
-                }
-            });
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error("Error deleting payment:", error);
-        res.status(500).json({ error: "Failed to delete payment" });
-    }
-});
-
-router.patch("/invoices/:id/payment", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { isPaid, paymentDate, paymentStatus } = req.body;
-
-        const companyId = (req as any).companyId;
-        // Verify ownership first
-        const existing = await prisma.invoice.findFirst({ where: { id, companyId } });
-        if (!existing) return res.status(404).json({ error: "Invoice not found" });
-
-        const updateData: any = { isPaid };
-        if (paymentDate !== undefined) updateData.paymentDate = paymentDate ? new Date(paymentDate) : null;
-        if (paymentStatus) updateData.paymentStatus = paymentStatus;
-
-        const updated = await prisma.invoice.update({
-            where: { id },
-            data: updateData
-        });
-        res.json(updated);
-    } catch (err) {
-        console.error("Error updating invoice payment status:", err);
-        res.status(500).json({ error: "Failed to update invoice payment status" });
-    }
-});
+router.use(invoicesRouter);
 
 
 // --- SUPPLIERS ---
@@ -1042,8 +649,13 @@ router.post("/crews", async (req, res) => {
 
 router.put("/crews/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
         const { name, role, workerIds, projectId } = req.body;
+
+        const existing = await prisma.crew.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Crew not found" });
 
         const updated = await prisma.crew.update({
             where: { id },
@@ -1066,7 +678,11 @@ router.put("/crews/:id", async (req, res) => {
 
 router.delete("/crews/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
+        const existing = await prisma.crew.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Crew not found" });
         await prisma.crew.delete({ where: { id } });
         res.json({ success: true });
     } catch (err) {
@@ -1075,7 +691,7 @@ router.delete("/crews/:id", async (req, res) => {
 });
 
 // --- USERS (Admin) ---
-router.get("/users", async (req, res) => {
+router.get("/users", requireAdmin, async (req, res) => {
     try {
         const users = await prisma.user.findMany({
             select: {
@@ -1096,7 +712,7 @@ router.get("/users", async (req, res) => {
     }
 });
 
-router.post("/users", async (req, res) => {
+router.post("/users", requireAdmin, async (req, res) => {
     try {
         const { name, email, password, role, allowedSections, assignedProjectIds, companyIds } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -1122,7 +738,7 @@ router.post("/users", async (req, res) => {
     }
 });
 
-router.put("/users/:id", async (req, res) => {
+router.put("/users/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, password, role, allowedSections, assignedProjectIds, companyIds } = req.body;
@@ -1151,7 +767,7 @@ router.put("/users/:id", async (req, res) => {
     }
 });
 
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.user.delete({ where: { id } });
@@ -1161,7 +777,7 @@ router.delete("/users/:id", async (req, res) => {
     }
 });
 
-router.get("/users/:id", async (req, res) => {
+router.get("/users/:id", requireSelfOrAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const user = await prisma.user.findUnique({
@@ -1185,7 +801,7 @@ router.get("/users/:id", async (req, res) => {
 });
 
 // --- COMPANIES (Admin) ---
-router.get("/companies", async (req, res) => {
+router.get("/companies", requireAdmin, async (req, res) => {
     try {
         const companies = await prisma.company.findMany({ orderBy: { name: 'asc' } });
         res.json(companies);
@@ -1195,7 +811,7 @@ router.get("/companies", async (req, res) => {
     }
 });
 
-router.post("/companies", async (req, res) => {
+router.post("/companies", requireAdmin, async (req, res) => {
     try {
         const { name, rut, logoUrl, creatorId } = req.body;
         const newCompany = await prisma.company.create({
@@ -1215,7 +831,7 @@ router.post("/companies", async (req, res) => {
     }
 });
 
-router.put("/companies/:id", async (req, res) => {
+router.put("/companies/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, rut, logoUrl } = req.body;
@@ -1230,7 +846,7 @@ router.put("/companies/:id", async (req, res) => {
     }
 });
 
-router.delete("/companies/:id", async (req, res) => {
+router.delete("/companies/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         // Check for dependencies? Or just fail if FK constraint.
@@ -1246,7 +862,8 @@ router.delete("/companies/:id", async (req, res) => {
 // --- JOB TITLES ---
 router.get("/job-titles", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const titles = await prisma.jobTitle.findMany({
             where: { companyId },
             orderBy: { name: 'asc' }
@@ -1261,7 +878,8 @@ router.get("/job-titles", async (req, res) => {
 router.post("/job-titles", async (req, res) => {
     try {
         const { name, description } = req.body;
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const newTitle = await prisma.jobTitle.create({
             data: { name, description, companyId }
         });
@@ -1276,19 +894,10 @@ router.put("/job-titles/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description } = req.body;
-        const companyId = (req as any).companyId;
-        const updated = await prisma.jobTitle.update({
-            where: { id }, // In future, scope by companyId if needed, but ID is unique.
-            // But we should verify ownership
-            data: { name, description }
-        });
-        // Verify ownership via findFirst before update?
-        // For now, let's assume UUID security + company context usage elsewhere.
-        // Actually best to findFirst to verify
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const existing = await prisma.jobTitle.findFirst({ where: { id, companyId } });
         if (!existing) return res.status(404).json({ error: "Job Title not found" });
-
-        // Re-execute update
         const safeUpdate = await prisma.jobTitle.update({
             where: { id },
             data: { name, description }
@@ -1303,7 +912,8 @@ router.put("/job-titles/:id", async (req, res) => {
 router.delete("/job-titles/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const existing = await prisma.jobTitle.findFirst({ where: { id, companyId } });
         if (!existing) return res.status(404).json({ error: "Job Title not found" });
 
@@ -1774,8 +1384,13 @@ router.post("/documents", upload.single('file'), async (req: any, res: any) => {
 
 router.put("/documents/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
         const { status } = req.body; // PENDING, APPROVED, REJECTED
+
+        const existing = await prisma.document.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Document not found" });
 
         const updated = await prisma.document.update({
             where: { id },
@@ -1790,7 +1405,11 @@ router.put("/documents/:id", async (req, res) => {
 
 router.delete("/documents/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
+        const existing = await prisma.document.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Document not found" });
         await prisma.document.delete({ where: { id } });
         res.json({ success: true });
     } catch (err) {
@@ -1802,7 +1421,11 @@ router.delete("/documents/:id", async (req, res) => {
 // --- DOCUMENT CATEGORIES ---
 router.get("/clients/:clientId/document-categories", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { clientId } = req.params;
+        const client = await prisma.client.findFirst({ where: { id: clientId, companyId } });
+        if (!client) return res.status(404).json({ error: "Client not found" });
         const categories = await prisma.documentCategory.findMany({
             where: { clientId },
             orderBy: { name: 'asc' }
@@ -1816,8 +1439,12 @@ router.get("/clients/:clientId/document-categories", async (req, res) => {
 
 router.post("/clients/:clientId/document-categories", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { clientId } = req.params;
         const { name, color } = req.body;
+        const client = await prisma.client.findFirst({ where: { id: clientId, companyId } });
+        if (!client) return res.status(404).json({ error: "Client not found" });
         const newCat = await prisma.documentCategory.create({
             data: { name, color, clientId }
         });
@@ -1833,7 +1460,13 @@ router.post("/clients/:clientId/document-categories", async (req, res) => {
 
 router.delete("/document-categories/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
+        const existing = await prisma.documentCategory.findFirst({
+            where: { id, client: { companyId } }
+        });
+        if (!existing) return res.status(404).json({ error: "Category not found" });
         await prisma.documentCategory.delete({ where: { id } });
         res.json({ success: true });
     } catch (err) {
@@ -2205,7 +1838,16 @@ router.put("/expenses/:id", async (req, res) => {
 
 router.delete("/expenses/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
+        const existing = await prisma.expense.findFirst({
+            where: {
+                id,
+                OR: [{ originCompanyId: companyId }, { targetCompanyId: companyId }]
+            }
+        });
+        if (!existing) return res.status(404).json({ error: "Expense not found" });
         await prisma.expense.delete({ where: { id } });
         res.json({ success: true });
     } catch (err) {
@@ -2279,7 +1921,16 @@ router.post("/expenses", async (req, res) => {
 
 router.delete("/expenses/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
+        const existing = await prisma.expense.findFirst({
+            where: {
+                id,
+                OR: [{ originCompanyId: companyId }, { targetCompanyId: companyId }]
+            }
+        });
+        if (!existing) return res.status(404).json({ error: "Expense not found" });
         await prisma.expense.delete({ where: { id } });
         res.json({ success: true });
     } catch (err) {
@@ -2290,7 +1941,7 @@ router.delete("/expenses/:id", async (req, res) => {
 
 
 // --- BACKUPS ---
-router.get("/backups", async (req, res) => {
+router.get("/backups", requireAdmin, async (req, res) => {
     try {
         const backups = await listBackups();
         res.json(backups);
@@ -2300,7 +1951,7 @@ router.get("/backups", async (req, res) => {
     }
 });
 
-router.post("/backups", async (req, res) => {
+router.post("/backups", requireAdmin, async (req, res) => {
     try {
         const filename = await createBackup();
         res.json({ filename });
@@ -2321,7 +1972,7 @@ router.get("/backups/:filename", (req, res) => {
     }
 });
 
-router.delete("/backups/:filename", async (req, res) => {
+router.delete("/backups/:filename", requireAdmin, async (req, res) => {
     try {
         const { filename } = req.params;
         await deleteBackup(filename);
@@ -2376,9 +2027,13 @@ router.post("/tools", checkModuleAccess("TOOLS"), async (req, res) => {
 
 router.put("/tools/:id", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
         const { name, brand, model, serialNumber, status, lastMaintenanceDate, nextMaintenanceDate } = req.body;
+
+        const existing = await prisma.tool.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Tool not found" });
 
         const updatedTool = await prisma.tool.update({
             where: { id },
@@ -2402,8 +2057,11 @@ router.put("/tools/:id", async (req, res) => {
 
 router.delete("/tools/:id", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
+        const existing = await prisma.tool.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Tool not found" });
         await prisma.tool.delete({ where: { id } });
         res.json({ success: true });
     } catch (err: any) {
@@ -2415,9 +2073,13 @@ router.delete("/tools/:id", async (req, res) => {
 // --- TOOL MAINTENANCE ---
 router.post("/tools/:id/maintenance", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id: toolId } = req.params;
         const { date, description, cost, provider } = req.body;
+
+        const tool = await prisma.tool.findFirst({ where: { id: toolId, companyId } });
+        if (!tool) return res.status(404).json({ error: "Tool not found" });
 
         const result = await prisma.$transaction(async (tx) => {
             const parsedDate = new Date(date);
@@ -2453,8 +2115,13 @@ router.post("/tools/:id/maintenance", async (req, res) => {
 
 router.delete("/tools/maintenance/:id", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
+        const existing = await prisma.toolMaintenance.findFirst({
+            where: { id, tool: { companyId } }
+        });
+        if (!existing) return res.status(404).json({ error: "Maintenance not found" });
         await prisma.toolMaintenance.delete({ where: { id } });
         res.json({ success: true });
     } catch (err: any) {
@@ -2538,8 +2205,16 @@ router.get("/epp-deliveries", async (req, res) => {
 
 router.post("/epp-deliveries", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { eppId, workerId, quantity, date, notes } = req.body;
+
+        const [epp, worker] = await Promise.all([
+            prisma.epp.findFirst({ where: { id: eppId, companyId } }),
+            prisma.worker.findFirst({ where: { id: workerId, companyId } })
+        ]);
+        if (!epp) return res.status(404).json({ error: "EPP not found" });
+        if (!worker) return res.status(404).json({ error: "Worker not found" });
 
         const result = await prisma.$transaction(async (tx) => {
             const qty = Number(quantity);
@@ -2587,8 +2262,16 @@ router.get("/tool-assignments", async (req, res) => {
 
 router.post("/tool-assignments", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { toolId, workerId, assignedAt, notes } = req.body;
+
+        const [tool, worker] = await Promise.all([
+            prisma.tool.findFirst({ where: { id: toolId, companyId } }),
+            prisma.worker.findFirst({ where: { id: workerId, companyId } })
+        ]);
+        if (!tool) return res.status(404).json({ error: "Tool not found" });
+        if (!worker) return res.status(404).json({ error: "Worker not found" });
 
         const result = await prisma.$transaction(async (tx) => {
             const assignment = await tx.toolAssignment.create({
@@ -2616,9 +2299,15 @@ router.post("/tool-assignments", async (req, res) => {
 
 router.put("/tool-assignments/:id/return", async (req, res) => {
     try {
-        const companyId = (req as any).companyId;
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
         const { returnedAt, notes } = req.body;
+
+        const existing = await prisma.toolAssignment.findFirst({
+            where: { id, tool: { companyId } }
+        });
+        if (!existing) return res.status(404).json({ error: "Assignment not found" });
 
         const result = await prisma.$transaction(async (tx) => {
             const assignment = await tx.toolAssignment.update({
@@ -2646,7 +2335,7 @@ router.put("/tool-assignments/:id/return", async (req, res) => {
 
 
 // --- SUBSCRIPTION PLANS ---
-router.get("/plans", async (req, res) => {
+router.get("/plans", requireAdmin, async (req, res) => {
     try {
         const plans = await prisma.subscriptionPlan.findMany({
             orderBy: { price: 'asc' }
@@ -2657,7 +2346,7 @@ router.get("/plans", async (req, res) => {
     }
 });
 
-router.post("/plans", async (req, res) => {
+router.post("/plans", requireAdmin, async (req, res) => {
     try {
         const { name, price, description, features, modules, maxUsers, maxStorageGB } = req.body;
         const plan = await prisma.subscriptionPlan.create({
@@ -2677,7 +2366,7 @@ router.post("/plans", async (req, res) => {
     }
 });
 
-router.put("/plans/:id", async (req, res) => {
+router.put("/plans/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, price, description, features, modules, maxUsers, maxStorageGB } = req.body;
@@ -2699,7 +2388,7 @@ router.put("/plans/:id", async (req, res) => {
     }
 });
 
-router.delete("/plans/:id", async (req, res) => {
+router.delete("/plans/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.subscriptionPlan.delete({ where: { id } });
@@ -2932,500 +2621,9 @@ router.delete("/quotes/:id", async (req, res) => {
 
 
 // --- PRODUCTS ---
-router.get("/products", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const products = await prisma.product.findMany({
-            where: { companyId },
-            include: { stocks: { include: { warehouse: true } } },
-            orderBy: { name: 'asc' }
-        });
-        res.json(products);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to fetch products", details: err.message });
-    }
-});
+router.use(inventoryRouter);
 
-router.post("/products", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { code, name, description, type, category, unit, price } = req.body;
-        const product = await prisma.product.create({
-            data: {
-                companyId,
-                code,
-                name,
-                description,
-                type: type || 'GOOD',
-                category,
-                unit: unit || 'UN',
-                price: Number(price) || 0
-            }
-        });
-        res.json(product);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to create product", details: err.message });
-    }
-});
-
-router.put("/products/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { id } = req.params;
-        const { code, name, description, type, category, unit, price } = req.body;
-        
-        // Find explicitly instead of updateMany to return object properly
-        const product = await updateOwnedRecord(prisma.product, id, companyId, {
-            code,
-            name,
-            description,
-            type,
-            category,
-            unit,
-            price: Number(price)
-        });
-        if (!product) return res.status(404).json({ error: 'Product not found' });
-        res.json(product);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to update product", details: err.message });
-    }
-});
-
-router.delete("/products/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { id } = req.params;
-        const deleted = await deleteOwnedRecord(prisma.product, id, companyId);
-        if (!deleted) return res.status(404).json({ error: "Product not found" });
-        res.json({ success: true });
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to delete product", details: err.message });
-    }
-});
-
-// --- WAREHOUSES & STOCK ---
-router.get("/warehouses", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const warehouses = await prisma.warehouse.findMany({
-            where: { companyId },
-            include: { stocks: { include: { product: true } } },
-            orderBy: { name: 'asc' }
-        });
-        res.json(warehouses);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to fetch warehouses", details: err.message });
-    }
-});
-
-router.post("/warehouses", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { name, location, manager } = req.body;
-        const warehouse = await prisma.warehouse.create({
-            data: { companyId, name, location, manager }
-        });
-        res.json(warehouse);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to create warehouse", details: err.message });
-    }
-});
-
-router.put("/warehouses/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { id } = req.params;
-        const { name, location, manager } = req.body;
-
-        const warehouse = await updateOwnedRecord(prisma.warehouse, id, companyId, {
-            name,
-            location,
-            manager
-        });
-        if (!warehouse) return res.status(404).json({ error: 'Warehouse not found' });
-        res.json(warehouse);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to update warehouse", details: err.message });
-    }
-});
-
-router.delete("/warehouses/:id", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { id } = req.params;
-        const deleted = await deleteOwnedRecord(prisma.warehouse, id, companyId);
-        if (!deleted) return res.status(404).json({ error: "Warehouse not found" });
-        res.json({ success: true });
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to delete warehouse", details: err.message });
-    }
-});
-
-// --- INVENTORY MOVEMENTS ---
-router.post("/inventory-movements", checkModuleAccess("INVENTORY"), async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { type, quantity, date, description, productId, fromWarehouseId, toWarehouseId, projectId } = req.body;
-
-        const [product, fromWarehouse, toWarehouse, project] = await Promise.all([
-            productId ? findOwnedRecord(prisma.product, productId, companyId) : Promise.resolve(null),
-            fromWarehouseId ? findOwnedRecord(prisma.warehouse, fromWarehouseId, companyId) : Promise.resolve(null),
-            toWarehouseId ? findOwnedRecord(prisma.warehouse, toWarehouseId, companyId) : Promise.resolve(null),
-            projectId ? findOwnedRecord(prisma.project, projectId, companyId) : Promise.resolve(null)
-        ]);
-
-        if (!product) return res.status(404).json({ error: "Product not found" });
-        if (fromWarehouseId && !fromWarehouse) return res.status(404).json({ error: "Source warehouse not found" });
-        if (toWarehouseId && !toWarehouse) return res.status(404).json({ error: "Destination warehouse not found" });
-        if (projectId && !project) return res.status(404).json({ error: "Project not found" });
-
-        const result = await prisma.$transaction(async (tx) => {
-             // 1. Create movement record
-             const movement = await tx.inventoryMovement.create({
-                 data: {
-                     companyId,
-                     type,
-                     quantity: Number(quantity),
-                     date: date ? new Date(date) : new Date(),
-                     description,
-                     productId,
-                     fromWarehouseId,
-                     toWarehouseId,
-                     projectId
-                 }
-             });
-
-             // Helper to update stock
-             const updateStock = async (warehouseId: string, qtyChange: number) => {
-                 const currentStock = await tx.stock.findUnique({
-                     where: { productId_warehouseId: { productId, warehouseId } }
-                 });
-
-                 if (currentStock) {
-                     await tx.stock.update({
-                         where: { productId_warehouseId: { productId, warehouseId } },
-                         data: {
-                             quantity: {
-                                 increment: qtyChange
-                             }
-                         }
-                     });
-                 } else {
-                     await tx.stock.create({
-                         data: {
-                             productId,
-                             warehouseId,
-                             quantity: qtyChange
-                         }
-                     });
-                 }
-             };
-
-             // 2. Adjust stocks depending on type
-             const qty = Number(quantity);
-             if (type === 'IN' && toWarehouseId) {
-                 await updateStock(toWarehouseId, qty);
-             } else if (type === 'OUT' && fromWarehouseId) {
-                 await updateStock(fromWarehouseId, -qty);
-             } else if (type === 'TRANSFER' && fromWarehouseId && toWarehouseId) {
-                 await updateStock(fromWarehouseId, -qty);
-                 await updateStock(toWarehouseId, qty);
-             } else if (type === 'ADJUSTMENT' && toWarehouseId) {
-                 await updateStock(toWarehouseId, qty);
-             }
-
-             return movement;
-        });
-
-        res.json(result);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to process inventory movement", details: err.message });
-    }
-});
-
-// --- BANK ACCOUNTS ---
-router.get("/bank-accounts", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const accounts = await prisma.bankAccount.findMany({
-            where: { companyId },
-            include: { transactions: { orderBy: { date: 'desc' }, take: 5 } },
-            orderBy: { name: 'asc' }
-        });
-        res.json(accounts);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to fetch bank accounts", details: err.message });
-    }
-});
-
-router.post("/bank-accounts", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { name, number, currency, balance } = req.body;
-        const account = await prisma.bankAccount.create({
-            data: {
-                companyId,
-                name,
-                number,
-                currency: currency || 'CLP',
-                balance: Number(balance) || 0
-            }
-        });
-        res.json(account);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to create bank account", details: err.message });
-    }
-});
-
-router.put("/bank-accounts/:id", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { id } = req.params;
-        const { name, number, currency, balance } = req.body;
-
-        const account = await updateOwnedRecord(prisma.bankAccount, id, companyId, {
-            name,
-            number,
-            currency,
-            balance: Number(balance)
-        });
-        if (!account) return res.status(404).json({ error: 'Bank account not found' });
-        res.json(account);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to update bank account", details: err.message });
-    }
-});
-
-router.delete("/bank-accounts/:id", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { id } = req.params;
-        const deleted = await deleteOwnedRecord(prisma.bankAccount, id, companyId);
-        if (!deleted) return res.status(404).json({ error: "Bank account not found" });
-        res.json({ success: true });
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to delete bank account", details: err.message });
-    }
-});
-
-// --- BANK TRANSACTIONS ---
-router.get("/bank-transactions", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { bankAccountId } = req.query;
-
-        const transactions = await prisma.bankTransaction.findMany({
-            where: {
-                bankAccount: { companyId },
-                ...(bankAccountId ? { bankAccountId: bankAccountId as string } : {})
-            },
-            include: { bankAccount: true },
-            orderBy: { date: 'desc' }
-        });
-        res.json(transactions);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to fetch transactions", details: err.message });
-    }
-});
-
-router.post("/bank-transactions", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const { bankAccountId, type, amount, description, reference, category, date } = req.body;
-
-        const account = await findOwnedRecord(prisma.bankAccount, bankAccountId, companyId);
-        if (!account) return res.status(404).json({ error: "Bank account not found" });
-
-        const result = await prisma.$transaction(async (tx) => {
-            const transaction = await tx.bankTransaction.create({
-                data: {
-                    bankAccountId,
-                    type,
-                    amount: Number(amount),
-                    description,
-                    reference,
-                    category,
-                    date: date ? new Date(date) : new Date()
-                }
-            });
-
-            const balanceChange = type === 'IN' ? Number(amount) : -Number(amount);
-            await tx.bankAccount.update({
-                where: { id: bankAccountId },
-                data: {
-                    balance: {
-                        increment: balanceChange
-                    }
-                }
-            });
-
-            return transaction;
-        });
-
-        res.json(result);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to process transaction", details: err.message });
-    }
-});
-
-// --- EXCHANGE RATES ---
-router.get("/exchange-rates", async (req, res) => {
-    try {
-        const rates = await prisma.exchangeRate.findMany({
-            orderBy: { date: 'desc' },
-            take: 30
-        });
-        res.json(rates);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to fetch exchange rates", details: err.message });
-    }
-});
-
-router.post("/exchange-rates", async (req, res) => {
-    try {
-        const { currency, value, date } = req.body;
-        const rate = await prisma.exchangeRate.upsert({
-            where: {
-                date_currency: {
-                    date: date ? new Date(date) : new Date(),
-                    currency
-                }
-            },
-            update: { value: Number(value) },
-            create: {
-                date: date ? new Date(date) : new Date(),
-                currency,
-                value: Number(value)
-            }
-        });
-        res.json(rate);
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to save exchange rate", details: err.message });
-    }
-});
-
-// --- CASH FLOW projection ---
-router.get("/cash-flow", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        const receivableTypes = ["SALE", "VENTA"];
-        const payableTypes = ["PURCHASE", "COMPRA"];
-
-        const accountsPayable = await prisma.invoice.findMany({
-            where: {
-                companyId,
-                type: { in: payableTypes },
-                isPaid: false,
-                status: { not: "CANCELLED" }
-            },
-            select: { date: true, dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
-        });
-
-        const accountsReceivable = await prisma.invoice.findMany({
-            where: {
-                companyId,
-                type: { in: receivableTypes },
-                isPaid: false,
-                status: { not: "CANCELLED" }
-            },
-            select: { date: true, dueDate: true, totalAmount: true, currency: true, exchangeRate: true }
-        });
-
-        const forecastSourceInvoices = await prisma.invoice.findMany({
-            where: {
-                companyId,
-                type: { in: [...receivableTypes, ...payableTypes] }
-            },
-            select: {
-                type: true,
-                date: true,
-                dueDate: true,
-                isPaid: true,
-                status: true
-            }
-        });
-
-        const accounts = await prisma.bankAccount.findMany({
-            where: { companyId },
-            select: { currency: true, balance: true }
-        });
-
-        const latestRates = await prisma.exchangeRate.findMany({
-            orderBy: { date: 'desc' },
-            take: 10
-        });
-
-        const getRate = (currency: string) => {
-             if (currency === 'CLP') return 1;
-             const rate = latestRates.find(r => r.currency === currency);
-             return rate ? rate.value : 1; 
-        };
-
-        const totalBalanceCLP = accounts.reduce((sum, acc) => {
-             const rate = getRate(acc.currency);
-             return sum + (acc.balance * rate);
-        }, 0);
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const diagnostics = forecastSourceInvoices.reduce((summary, invoice) => {
-            const referenceDate = invoice.dueDate || invoice.date;
-            const isReceivable = receivableTypes.includes(invoice.type);
-
-            if (invoice.status === "CANCELLED") {
-                if (isReceivable) summary.cancelledReceivable += 1;
-                else summary.cancelledPayable += 1;
-                return summary;
-            }
-
-            if (invoice.isPaid) {
-                if (isReceivable) summary.paidReceivable += 1;
-                else summary.paidPayable += 1;
-                return summary;
-            }
-
-            if (!referenceDate) {
-                if (isReceivable) summary.missingDateReceivable += 1;
-                else summary.missingDatePayable += 1;
-                return summary;
-            }
-
-            const normalizedDate = new Date(referenceDate);
-            normalizedDate.setHours(0, 0, 0, 0);
-
-            if (normalizedDate < today) {
-                if (isReceivable) summary.overdueReceivable += 1;
-                else summary.overduePayable += 1;
-                return summary;
-            }
-
-            if (isReceivable) summary.includedReceivable += 1;
-            else summary.includedPayable += 1;
-            return summary;
-        }, {
-            includedReceivable: 0,
-            includedPayable: 0,
-            paidReceivable: 0,
-            paidPayable: 0,
-            cancelledReceivable: 0,
-            cancelledPayable: 0,
-            missingDateReceivable: 0,
-            missingDatePayable: 0,
-            overdueReceivable: 0,
-            overduePayable: 0
-        });
-
-        res.json({
-            currentBalanceCLP: totalBalanceCLP,
-            accountsPayable,
-            accountsReceivable,
-            diagnostics
-        });
-    } catch (err: any) {
-        res.status(500).json({ error: "Failed to calculate cash flow", details: err.message });
-    }
-});
+router.use(financeRouter);
 
 // --- CLIENT PORTAL MODULE ---
 router.get("/portal/:token/dashboard", async (req, res) => {

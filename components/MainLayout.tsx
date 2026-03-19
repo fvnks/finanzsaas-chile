@@ -25,6 +25,7 @@ import ProductsPage from '../pages/ProductsPage.tsx';
 import WarehousesPage from '../pages/WarehousesPage.tsx';
 import BankAccountsPage from '../pages/BankAccountsPage.tsx';
 import CashFlowPage from '../pages/CashFlowPage.tsx';
+import { Activity, Building2, RefreshCw, ShieldCheck } from 'lucide-react';
 
 import { API_URL } from '../src/config.ts';
 import { useCompany } from './CompanyContext';
@@ -34,6 +35,29 @@ interface MainLayoutProps {
     onLogout: () => void;
     onRefreshUser?: () => void;
 }
+
+const TAB_LABELS: Record<string, string> = {
+    dashboard: 'Panel Ejecutivo',
+    invoices: 'Facturación',
+    expenses: 'Gastos y Rendiciones',
+    docControl: 'Control Documental',
+    planos: 'Planos y Cuelgues',
+    deliveries: 'Entregas Operativas',
+    tools: 'Herramientas',
+    clients: 'Clientes',
+    suppliers: 'Proveedores',
+    projects: 'Proyectos',
+    workers: 'Trabajadores y Cuadrillas',
+    costCenters: 'Centros de Costo',
+    reports: 'Reportes Diarios',
+    financialReports: 'Reportes Financieros',
+    crm: 'CRM y Cotizaciones',
+    products: 'Catálogo de Productos',
+    warehouses: 'Bodegas y Stock',
+    bankAccounts: 'Tesorería',
+    cashFlow: 'Forecast de Caja',
+    admin: 'Administración'
+};
 
 const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -69,7 +93,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
     const getHeaders = () => {
         return {
             'Content-Type': 'application/json',
-            'x-company-id': activeCompany?.id || ''
+            'x-company-id': activeCompany?.id || '',
+            'x-user-id': user.id
         };
     };
 
@@ -77,7 +102,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
         if (!user || !activeCompany) return;
         setLoading(true);
         try {
-            const headers = { 'x-company-id': activeCompany.id };
+            const headers = { 'x-company-id': activeCompany.id, 'x-user-id': user.id };
 
             const [resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resDailyReports, resUsers, resSuppliers, resExpenses, resTools] = await Promise.all([
                 fetch(`${API_URL}/clients`, { headers }).then(res => res.json()),
@@ -140,10 +165,67 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
         }
     }, [user, activeCompany]);
 
+    const activeTabLabel = TAB_LABELS[activeTab] || 'Workspace';
+    const pendingInvoices = invoices.filter(invoice => !invoice.isPaid).length;
+    const activeProjectsCount = projects.filter(project => project.status === 'ACTIVE').length;
+    const workspacePulse = [
+        { label: 'Facturas pendientes', value: pendingInvoices },
+        { label: 'Proyectos activos', value: activeProjectsCount },
+        { label: 'Clientes visibles', value: clients.length }
+    ];
+
     return (
-        <div className="flex min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
+            <div className="relative flex min-h-screen">
             <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={onLogout} />
-            <main className="flex-1 p-8 overflow-y-auto">
+            <main className="relative flex-1 overflow-y-auto">
+                <div className="mx-auto max-w-[1480px] p-4 md:p-5 xl:p-6">
+                    <div className="mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+                        <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="min-w-0">
+                                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Workspace</div>
+                                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{activeTabLabel}</h1>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                    <Building2 size={15} className="text-slate-500" />
+                                    <span className="truncate">{activeCompany?.name || 'Sin empresa'}</span>
+                                </span>
+                                <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                    <ShieldCheck size={15} className="text-slate-500" />
+                                    {user.name}
+                                </span>
+                                <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                    <Activity size={15} className="text-slate-500" />
+                                    {loading ? 'Sincronizando' : 'Listo'}
+                                </span>
+                                <button
+                                    onClick={refreshData}
+                                    className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+                                >
+                                    <RefreshCw size={15} />
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-3 px-5 py-4 md:grid-cols-3">
+                            {workspacePulse.map(item => (
+                                <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{item.label}</div>
+                                    <div className="mt-1 text-xl font-semibold text-slate-900">{item.value}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {error && (
+                            <div className="border-t border-slate-200 px-5 py-3 text-sm font-medium text-red-600">
+                                {error}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
                 {activeTab === 'dashboard' && <Dashboard invoices={invoices} clients={clients} />}
                 {activeTab === 'invoices' && (
                     <InvoicesPage invoices={invoices} clients={clients} suppliers={suppliers} costCenters={costCenters} projects={projects} currentUser={user}
@@ -632,7 +714,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 {activeTab === 'bankAccounts' && <BankAccountsPage />}
                 {activeTab === 'cashFlow' && <CashFlowPage />}
                 {activeTab === 'admin' && <AdminPage currentUser={user} projects={projects} onRefreshUser={onRefreshUser} />}
+                    </div>
+                </div>
             </main>
+            </div>
         </div>
     );
 };

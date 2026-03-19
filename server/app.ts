@@ -3,6 +3,10 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import routes from "./routes";
+import { prisma } from "./prisma";
+import { attachCompanyContext } from "./middleware/company";
+import { attachCurrentUser } from "./middleware/auth";
+import { logger } from "./lib/logger";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +29,7 @@ app.use((req, res, next) => {
     }
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, x-company-id, active-company-id');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, x-company-id, active-company-id, x-user-id');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
     // Handle Preflight directly
@@ -38,14 +42,52 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
-// Company Context Middleware
 app.use((req, res, next) => {
-    const companyId = req.headers['x-company-id'];
-    if (companyId) {
-        (req as any).companyId = typeof companyId === 'string' ? companyId : companyId[0];
-    }
+    const startedAt = Date.now();
+
+    res.on("finish", () => {
+        logger.info({
+            event: "http_request",
+            method: req.method,
+            path: req.path,
+            statusCode: res.statusCode,
+            durationMs: Date.now() - startedAt,
+            companyId: (req as any).companyId || null
+        });
+    });
+
     next();
+});
+
+app.use(attachCompanyContext);
+app.use(attachCurrentUser);
+
+app.get("/api/health", (_req, res) => {
+    res.json({
+        status: "ok",
+        service: "finanzsaas-chile-api",
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.get("/api/health/ready", async (_req, res) => {
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        res.json({
+            status: "ready",
+            database: "ok",
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        logger.error({
+            event: "health_readiness_failed",
+            message: error?.message || "Database readiness check failed"
+        });
+        res.status(503).json({
+            status: "not_ready",
+            database: "error"
+        });
+    }
 });
 
 // API Routes
