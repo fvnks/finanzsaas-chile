@@ -42,7 +42,11 @@ model Company {
   plan       SubscriptionPlan? @relation(fields: [planId], references: [id])
   planStatus String            @default("ACTIVE") // ACTIVE, SUSPENDED, TRIAL
   modules    String[]          // e.g. ["INVOICING", "PROJECTS", "INVENTORY", "HR"]
-  primaryColor String?          @default("#2563eb")
+  primaryColor String?         @default("#2563eb")
+  subscriptionStartedAt DateTime?
+  subscriptionEndsAt    DateTime?
+  lastPaymentAt         DateTime?
+  billingCycleMonths    Int      @default(1)
 
   users User[] @relation("UserCompanies")
 

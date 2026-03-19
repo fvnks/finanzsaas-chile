@@ -34,6 +34,21 @@ interface AdminPageProps {
     onRefreshUser?: () => void;
 }
 
+const MODULE_OPTIONS = [
+    { id: 'INVOICING', label: 'Facturación' },
+    { id: 'PROJECTS', label: 'Proyectos' },
+    { id: 'INVENTORY', label: 'Inventario' },
+    { id: 'TOOLS', label: 'Herramientas' },
+    { id: 'HR', label: 'RRHH' },
+    { id: 'CRM', label: 'CRM y Cotizaciones' }
+];
+
+const PLAN_STATUS_OPTIONS = [
+    { id: 'ACTIVE', label: 'Activa' },
+    { id: 'TRIAL', label: 'Trial' },
+    { id: 'SUSPENDED', label: 'Suspendida' }
+];
+
 const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshUser }) => {
     const [activeTab, setActiveTab] = useState<'USERS' | 'ROLES' | 'COMPANIES' | 'BACKUPS' | 'PLANS'>('USERS');
     const [users, setUsers] = useState<User[]>([]);
@@ -72,13 +87,31 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     });
 
     // Company Form State
-    const [companyForm, setCompanyForm] = useState({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
+    const [companyForm, setCompanyForm] = useState({
+        name: '',
+        rut: '',
+        logoUrl: '',
+        planId: '',
+        primaryColor: '',
+        planStatus: 'ACTIVE',
+        modules: [] as string[],
+        subscriptionStartedAt: '',
+        subscriptionEndsAt: '',
+        billingCycleMonths: 1
+    });
     const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 
     // Plan Form State
-    const [planForm, setPlanForm] = useState({ name: '', price: 0, description: '', features: [] as string[], modules: [] as string[] });
+    const [planForm, setPlanForm] = useState({
+        name: '',
+        price: 0,
+        description: '',
+        features: [] as string[],
+        modules: [] as string[],
+        maxUsers: 5,
+        maxStorageGB: 5
+    });
     const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
-    const availableModules = ['INVOICING', 'PROJECTS', 'INVENTORY', 'TOOLS', 'HR'];
 
     // Role Form State
     const [roleForm, setRoleForm] = useState({ name: '', description: '' });
@@ -91,6 +124,36 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     useEffect(() => {
         fetchData();
     }, [activeTab]);
+
+    const applyPlanToCompanyForm = (planId: string) => {
+        const selectedPlan = plans.find(plan => plan.id === planId);
+        setCompanyForm(prev => ({
+            ...prev,
+            planId,
+            modules: selectedPlan?.modules || []
+        }));
+    };
+
+    const getModuleLabel = (moduleId: string) => {
+        return MODULE_OPTIONS.find(option => option.id === moduleId)?.label || moduleId;
+    };
+
+    const handleRenewCompany = async (companyId: string, months = 1) => {
+        try {
+            const res = await fetch(`${API_URL}/companies/${companyId}/renew`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ months })
+            });
+
+            if (res.ok) {
+                const renewed = await res.json();
+                setCompanies(prev => prev.map(company => company.id === renewed.id ? renewed : company));
+            }
+        } catch (error) {
+            console.error("Error renewing company subscription:", error);
+        }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -220,7 +283,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                     const updated = await res.json();
                     setCompanies(companies.map(c => c.id === updated.id ? updated : c));
                     setEditingCompany(null);
-                    setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
+                    setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '', planStatus: 'ACTIVE', modules: [], subscriptionStartedAt: '', subscriptionEndsAt: '', billingCycleMonths: 1 });
                 }
             } else {
                 const res = await fetch(`${API_URL}/companies`, {
@@ -234,7 +297,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                 if (res.ok) {
                     const created = await res.json();
                     setCompanies([...companies, created]);
-                    setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
+                    setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '', planStatus: 'ACTIVE', modules: [], subscriptionStartedAt: '', subscriptionEndsAt: '', billingCycleMonths: 1 });
                     if (onRefreshUser) onRefreshUser();
                 }
             }
@@ -260,13 +323,18 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
             rut: company.rut, 
             logoUrl: company.logoUrl || '', 
             planId: company.planId || '', 
-            primaryColor: company.primaryColor || '' 
+            primaryColor: company.primaryColor || '',
+            planStatus: company.planStatus || 'ACTIVE',
+            modules: company.modules || [],
+            subscriptionStartedAt: company.subscriptionStartedAt ? String(company.subscriptionStartedAt).slice(0, 10) : '',
+            subscriptionEndsAt: company.subscriptionEndsAt ? String(company.subscriptionEndsAt).slice(0, 10) : '',
+            billingCycleMonths: company.billingCycleMonths || 1
         });
     };
 
     const cancelEditCompany = () => {
         setEditingCompany(null);
-        setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '' });
+        setCompanyForm({ name: '', rut: '', logoUrl: '', planId: '', primaryColor: '', planStatus: 'ACTIVE', modules: [], subscriptionStartedAt: '', subscriptionEndsAt: '', billingCycleMonths: 1 });
     };
 
     const openUserModal = (user?: User) => {
@@ -336,7 +404,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                     const updated = await res.json();
                     setPlans(plans.map(p => p.id === updated.id ? updated : p));
                     setEditingPlan(null);
-                    setPlanForm({ name: '', price: 0, description: '', features: [], modules: [] });
+                    setPlanForm({ name: '', price: 0, description: '', features: [], modules: [], maxUsers: 5, maxStorageGB: 5 });
                 }
             } else {
                 const res = await fetch(`${API_URL}/plans`, {
@@ -347,7 +415,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                 if (res.ok) {
                     const created = await res.json();
                     setPlans([...plans, created]);
-                    setPlanForm({ name: '', price: 0, description: '', features: [], modules: [] });
+                    setPlanForm({ name: '', price: 0, description: '', features: [], modules: [], maxUsers: 5, maxStorageGB: 5 });
                 }
             }
         } catch (err) {
@@ -372,7 +440,9 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
             price: plan.price,
             description: plan.description || '',
             features: plan.features as string[] || [],
-            modules: plan.modules || []
+            modules: plan.modules || [],
+            maxUsers: plan.maxUsers || 5,
+            maxStorageGB: plan.maxStorageGB || 5
         });
     };
 
@@ -598,13 +668,50 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                     <select
                                         className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 rounded-2xl text-white font-medium placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
                                         value={companyForm.planId}
-                                        onChange={e => setCompanyForm({ ...companyForm, planId: e.target.value })}
+                                        onChange={e => applyPlanToCompanyForm(e.target.value)}
                                     >
                                         <option value="">(Sin Plan)</option>
                                         {plans.map(p => (
                                             <option key={p.id} value={p.id}>{p.name}</option>
                                         ))}
                                     </select>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estado SuscripciÃ³n</label>
+                                    <select
+                                        className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 rounded-2xl text-white font-medium placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={companyForm.planStatus}
+                                        onChange={e => setCompanyForm({ ...companyForm, planStatus: e.target.value })}
+                                    >
+                                        {PLAN_STATUS_OPTIONS.map(option => (
+                                            <option key={option.id} value={option.id}>{option.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">MÃ³dulos Vendidos</label>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {MODULE_OPTIONS.map(option => (
+                                            <label key={option.id} className="flex items-center space-x-2 text-sm text-slate-300">
+                                                <input
+                                                    type="checkbox"
+                                                    className="rounded border-slate-600 bg-slate-800"
+                                                    checked={companyForm.modules.includes(option.id)}
+                                                    onChange={e => {
+                                                        const checked = e.target.checked;
+                                                        setCompanyForm(prev => ({
+                                                            ...prev,
+                                                            modules: checked
+                                                                ? [...prev.modules, option.id]
+                                                                : prev.modules.filter(moduleId => moduleId !== option.id)
+                                                        }));
+                                                    }}
+                                                />
+                                                <span>{option.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <p className="mt-2 text-xs text-slate-500">Plan base mÃ¡s personalizaciÃ³n por empresa.</p>
                                 </div>
                                 <div className="flex space-x-2">
                                     <button type="submit" className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-lg transition-all active:scale-95">
@@ -638,9 +745,43 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                             <div>
                                                 <h4 className="font-bold text-slate-800">{company.name}</h4>
                                                 <p className="text-xs text-slate-500 font-mono">{company.rut}</p>
+                                                <div className="mt-2 flex flex-wrap gap-2">
+                                                    <span className="rounded-full bg-slate-200 px-2 py-1 text-[10px] font-bold uppercase text-slate-600">
+                                                        {company.plan?.name || 'Sin plan'}
+                                                    </span>
+                                                    <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
+                                                        company.planStatus === 'ACTIVE'
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : company.planStatus === 'TRIAL'
+                                                                ? 'bg-amber-100 text-amber-700'
+                                                                : 'bg-rose-100 text-rose-700'
+                                                    }`}>
+                                                        {company.planStatus || 'ACTIVE'}
+                                                    </span>
+                                                    <span className="rounded-full bg-indigo-100 px-2 py-1 text-[10px] font-bold uppercase text-indigo-700">
+                                                        {company.userCount || 0} usuarios
+                                                    </span>
+                                                    {company.subscriptionEndsAt && (
+                                                        <span className="rounded-full bg-sky-100 px-2 py-1 text-[10px] font-bold uppercase text-sky-700">
+                                                            Vence {new Date(company.subscriptionEndsAt).toLocaleDateString('es-CL')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {!!company.modules?.length && (
+                                                    <div className="mt-2 flex flex-wrap gap-1">
+                                                        {company.modules.map(moduleId => (
+                                                            <span key={moduleId} className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600">
+                                                                {getModuleLabel(moduleId)}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleRenewCompany(company.id)} className="p-2 text-slate-300 hover:text-emerald-600 transition-colors" title="Renovar 1 mes">
+                                                <CheckCircle size={18} />
+                                            </button>
                                             <button onClick={() => startEditCompany(company)} className="p-2 text-slate-300 hover:text-blue-500 transition-colors">
                                                 <Edit2 size={18} />
                                             </button>
@@ -772,21 +913,21 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Módulos Activos</label>
                                     <div className="space-y-2">
-                                        {availableModules.map(mod => (
-                                            <label key={mod} className="flex items-center space-x-2 text-sm text-slate-300">
+                                        {MODULE_OPTIONS.map(option => (
+                                            <label key={option.id} className="flex items-center space-x-2 text-sm text-slate-300">
                                                 <input 
                                                     type="checkbox" 
                                                     className="rounded border-slate-600 bg-slate-800"
-                                                    checked={planForm.modules.includes(mod)}
+                                                    checked={planForm.modules.includes(option.id)}
                                                     onChange={e => {
                                                         const checked = e.target.checked;
                                                         setPlanForm(prev => ({
                                                             ...prev,
-                                                            modules: checked ? [...prev.modules, mod] : prev.modules.filter(m => m !== mod)
+                                                            modules: checked ? [...prev.modules, option.id] : prev.modules.filter(m => m !== option.id)
                                                         }));
                                                     }}
                                                 />
-                                                <span>{mod}</span>
+                                                <span>{option.label}</span>
                                             </label>
                                         ))}
                                     </div>
@@ -799,7 +940,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                     {editingPlan && (
                                         <button type="button" onClick={() => {
                                             setEditingPlan(null);
-                                            setPlanForm({ name: '', price: 0, description: '', features: [], modules: [] });
+                                            setPlanForm({ name: '', price: 0, description: '', features: [], modules: [], maxUsers: 5, maxStorageGB: 5 });
                                         }} className="px-4 py-3 bg-slate-700 text-white rounded-xl">Cancelar</button>
                                     )}
                                 </div>
@@ -813,7 +954,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
                                             <h4 className="text-xl font-black text-slate-800">{plan.name}</h4>
-                                            <p className="text-indigo-600 font-bold text-2xl mt-1">${plan.price.toLocaleString()}</p>
+                                            <p className="text-indigo-600 font-bold text-2xl mt-1">${plan.price.toLocaleString()}<span className="ml-1 text-sm text-slate-400">/ mes</span></p>
                                         </div>
                                         <div className="flex space-x-1">
                                             <button onClick={() => startEditPlan(plan)} className="p-2 text-slate-400 hover:text-blue-500"><Edit2 size={16} /></button>
@@ -831,6 +972,9 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
                                     </div>
                                     <div className="flex items-center text-xs font-bold text-slate-400">
                                         <Users size={14} className="mr-1" /> Usuarios: {plan.maxUsers || 'Ilimitado'}
+                                    </div>
+                                    <div className="mt-2 text-xs font-bold text-slate-400">
+                                        Storage: {plan.maxStorageGB || 'N/D'} GB
                                     </div>
                                 </div>
                             ))}

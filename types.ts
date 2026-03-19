@@ -28,6 +28,12 @@ export interface Company {
   planId?: string;
   planStatus?: string;
   modules?: string[];
+  plan?: SubscriptionPlan;
+  userCount?: number;
+  subscriptionStartedAt?: string;
+  subscriptionEndsAt?: string;
+  lastPaymentAt?: string;
+  billingCycleMonths?: number;
 }
 
 export interface User {
@@ -514,6 +520,8 @@ export interface SubscriptionPlan {
   description?: string;
   features: string[];
   modules: string[];
+  maxUsers?: number | null;
+  maxStorageGB?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }

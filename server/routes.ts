@@ -21,6 +21,7 @@ import { requireAdmin, requireSelfOrAdmin } from "./middleware/auth";
 const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
+const prismaAny: any = prisma;
 
 const requireCompanyId = (req: Request, res: Response) => {
     const companyId = getCompanyId(req);
@@ -29,6 +30,111 @@ const requireCompanyId = (req: Request, res: Response) => {
         return null;
     }
     return companyId;
+};
+
+const resolveCompanyModules = async (planId?: string | null, modules?: string[] | null) => {
+    if (modules && modules.length > 0) {
+        return [...new Set(modules)];
+    }
+
+    if (!planId) {
+        return [];
+    }
+
+    const plan = await prisma.subscriptionPlan.findUnique({
+        where: { id: planId },
+        select: { modules: true }
+    });
+
+    return plan?.modules || [];
+};
+
+const addMonths = (baseDate: Date, months: number) => {
+    const nextDate = new Date(baseDate);
+    nextDate.setMonth(nextDate.getMonth() + months);
+    return nextDate;
+};
+
+const normalizeSubscriptionDates = (payload: {
+    subscriptionStartedAt?: string | null;
+    subscriptionEndsAt?: string | null;
+    lastPaymentAt?: string | null;
+    billingCycleMonths?: number | null;
+    planStatus?: string | null;
+}) => {
+    const billingCycleMonths = payload.billingCycleMonths ? Number(payload.billingCycleMonths) : 1;
+    const subscriptionStartedAt = payload.subscriptionStartedAt ? new Date(payload.subscriptionStartedAt) : undefined;
+    const lastPaymentAt = payload.lastPaymentAt ? new Date(payload.lastPaymentAt) : undefined;
+    let subscriptionEndsAt = payload.subscriptionEndsAt ? new Date(payload.subscriptionEndsAt) : undefined;
+
+    if (!subscriptionEndsAt && subscriptionStartedAt && (payload.planStatus === "ACTIVE" || payload.planStatus === "TRIAL")) {
+        subscriptionEndsAt = addMonths(subscriptionStartedAt, billingCycleMonths);
+    }
+
+    return {
+        subscriptionStartedAt,
+        subscriptionEndsAt,
+        lastPaymentAt,
+        billingCycleMonths
+    };
+};
+
+const validateUserCapacity = async (companyIds: string[] = [], excludedUserId?: string) => {
+    if (!companyIds.length) {
+        return null;
+    }
+
+    const companies = await prisma.company.findMany({
+        where: { id: { in: companyIds } },
+        select: {
+            id: true,
+            name: true,
+            planStatus: true,
+            plan: {
+                select: {
+                    maxUsers: true
+                }
+            },
+            _count: {
+                select: {
+                    users: true
+                }
+            }
+        }
+    });
+
+    for (const company of companies) {
+        if (company.planStatus !== "ACTIVE" && company.planStatus !== "TRIAL") {
+            return `La empresa ${company.name} no tiene una suscripcion activa.`;
+        }
+
+        const maxUsers = company.plan?.maxUsers;
+        if (!maxUsers) {
+            continue;
+        }
+
+        let assignedUsers = company._count.users;
+        if (excludedUserId) {
+            const existingMembership = await prisma.user.count({
+                where: {
+                    id: excludedUserId,
+                    companies: {
+                        some: { id: company.id }
+                    }
+                }
+            });
+
+            if (existingMembership > 0) {
+                assignedUsers -= 1;
+            }
+        }
+
+        if (assignedUsers >= maxUsers) {
+            return `La empresa ${company.name} ya alcanzo el limite de ${maxUsers} usuarios para su plan.`;
+        }
+    }
+
+    return null;
 };
 
 // --- DIAGNOSTIC ENDPOINT FOR RAILWAY ---
@@ -81,7 +187,7 @@ router.get("/debug-db", async (req, res) => {
 });
 
 // --- AUTHORIZATION MIDDLEWARE ---
-const checkModuleAccess = (requiredModule: string) => {
+const checkModuleAccess = (requiredModule: string | string[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         const companyId = getCompanyId(req);
         
@@ -90,9 +196,9 @@ const checkModuleAccess = (requiredModule: string) => {
         }
 
         try {
-            const company = await prisma.company.findUnique({
+            const company = await prismaAny.company.findUnique({
                 where: { id: companyId },
-                select: { modules: true, planStatus: true }
+                select: { modules: true, planStatus: true, subscriptionEndsAt: true }
             });
 
             if (!company) {
@@ -105,8 +211,10 @@ const checkModuleAccess = (requiredModule: string) => {
 
             // If modules array is empty/null, perhaps it's a legacy company with all access?
             // Allow access if modules list is empty to support legacy companies.
-            if (company.modules && company.modules.length > 0 && !company.modules.includes(requiredModule)) {
-                return res.status(403).json({ error: `No tiene acceso al módulo: ${requiredModule}. Requerido cambiar de plan.` });
+            const requiredModules = Array.isArray(requiredModule) ? requiredModule : [requiredModule];
+            const hasAccess = requiredModules.some(moduleId => company.modules.includes(moduleId));
+            if (company.modules && company.modules.length > 0 && !hasAccess) {
+                return res.status(403).json({ error: `No tiene acceso a los módulos requeridos: ${requiredModules.join(", ")}.` });
             }
 
             next();
@@ -132,7 +240,7 @@ router.post("/login", async (req, res) => {
 
         // Fetch companies for this user
         // @ts-ignore
-        const userWithCompanies = await prisma.user.findUnique({
+        const userWithCompanies: any = await prismaAny.user.findUnique({
             where: { id: user.id },
             include: { 
                 companies: {
@@ -150,7 +258,11 @@ router.post("/login", async (req, res) => {
                         updatedAt: true,
                         planId: true,
                         planStatus: true,
-                        modules: true
+                        modules: true,
+                        subscriptionStartedAt: true,
+                        subscriptionEndsAt: true,
+                        lastPaymentAt: true,
+                        billingCycleMonths: true
                     }
                 } 
             }
@@ -170,12 +282,14 @@ router.post("/login", async (req, res) => {
 });
 
 // --- COMPANIES ---
-router.put("/companies/:id", async (req, res) => {
+router.put("/companies/:id", requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { primaryColor, logoUrl, name, address, email, phone, website } = req.body;
+    const { primaryColor, logoUrl, name, address, email, phone, website, planId, planStatus, modules } = req.body;
     
     try {
-        const updated = await prisma.company.update({
+        const resolvedModules = await resolveCompanyModules(planId, modules);
+        const subscription = normalizeSubscriptionDates(req.body);
+        const updated = await prismaAny.company.update({
             where: { id },
             data: {
                 primaryColor: primaryColor !== undefined ? primaryColor : undefined,
@@ -184,13 +298,73 @@ router.put("/companies/:id", async (req, res) => {
                 address: address !== undefined ? address : undefined,
                 email: email !== undefined ? email : undefined,
                 phone: phone !== undefined ? phone : undefined,
-                website: website !== undefined ? website : undefined
+                website: website !== undefined ? website : undefined,
+                planId: planId !== undefined ? (planId || null) : undefined,
+                planStatus: planStatus || undefined,
+                modules: modules !== undefined || planId !== undefined ? resolvedModules : undefined,
+                subscriptionStartedAt: req.body.subscriptionStartedAt !== undefined ? subscription.subscriptionStartedAt || null : undefined,
+                subscriptionEndsAt: req.body.subscriptionEndsAt !== undefined || req.body.subscriptionStartedAt !== undefined || req.body.billingCycleMonths !== undefined
+                    ? subscription.subscriptionEndsAt || null
+                    : undefined,
+                lastPaymentAt: req.body.lastPaymentAt !== undefined ? subscription.lastPaymentAt || null : undefined,
+                billingCycleMonths: req.body.billingCycleMonths !== undefined ? subscription.billingCycleMonths : undefined
+            },
+            include: {
+                plan: true,
+                _count: { select: { users: true } }
             }
         });
-        res.json(updated);
+        res.json({ ...updated, userCount: updated._count.users });
     } catch (error) {
         console.error("Error updating company:", error);
         res.status(500).json({ error: "Failed to update company" });
+    }
+});
+
+router.post("/companies/:id/renew", requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const months = Math.max(1, Number(req.body?.months || 1));
+
+    try {
+        const company = await prismaAny.company.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                plan: { select: { modules: true } },
+                modules: true,
+                billingCycleMonths: true,
+                subscriptionEndsAt: true
+            }
+        });
+
+        if (!company) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        const baseDate = company.subscriptionEndsAt && company.subscriptionEndsAt > new Date()
+            ? company.subscriptionEndsAt
+            : new Date();
+
+        const renewed = await prismaAny.company.update({
+            where: { id },
+            data: {
+                planStatus: "ACTIVE",
+                lastPaymentAt: new Date(),
+                billingCycleMonths: company.billingCycleMonths || months,
+                subscriptionStartedAt: company.subscriptionEndsAt ? undefined : new Date(),
+                subscriptionEndsAt: addMonths(baseDate, months),
+                modules: company.modules?.length ? company.modules : (company.plan?.modules || [])
+            },
+            include: {
+                plan: true,
+                _count: { select: { users: true } }
+            }
+        });
+
+        res.json({ ...renewed, userCount: renewed._count.users });
+    } catch (error) {
+        console.error("Error renewing company subscription:", error);
+        res.status(500).json({ error: "Failed to renew company subscription" });
     }
 });
 
@@ -715,6 +889,10 @@ router.get("/users", requireAdmin, async (req, res) => {
 router.post("/users", requireAdmin, async (req, res) => {
     try {
         const { name, email, password, role, allowedSections, assignedProjectIds, companyIds } = req.body;
+        const capacityError = await validateUserCapacity(companyIds || []);
+        if (capacityError) {
+            return res.status(400).json({ error: capacityError });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await prisma.user.create({
@@ -742,6 +920,12 @@ router.put("/users/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, password, role, allowedSections, assignedProjectIds, companyIds } = req.body;
+        if (companyIds) {
+            const capacityError = await validateUserCapacity(companyIds || [], id);
+            if (capacityError) {
+                return res.status(400).json({ error: capacityError });
+            }
+        }
 
         const data: any = {};
         if (name) data.name = name;
@@ -803,8 +987,14 @@ router.get("/users/:id", requireSelfOrAdmin, async (req, res) => {
 // --- COMPANIES (Admin) ---
 router.get("/companies", requireAdmin, async (req, res) => {
     try {
-        const companies = await prisma.company.findMany({ orderBy: { name: 'asc' } });
-        res.json(companies);
+        const companies = await prismaAny.company.findMany({
+            orderBy: { name: 'asc' },
+            include: {
+                plan: true,
+                _count: { select: { users: true } }
+            }
+        });
+        res.json(companies.map(company => ({ ...company, userCount: company._count.users })));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to fetch companies" });
@@ -813,18 +1003,32 @@ router.get("/companies", requireAdmin, async (req, res) => {
 
 router.post("/companies", requireAdmin, async (req, res) => {
     try {
-        const { name, rut, logoUrl, creatorId } = req.body;
-        const newCompany = await prisma.company.create({
+        const { name, rut, logoUrl, creatorId, planId, planStatus, modules, primaryColor } = req.body;
+        const resolvedModules = await resolveCompanyModules(planId, modules);
+        const subscription = normalizeSubscriptionDates(req.body);
+        const newCompany = await prismaAny.company.create({
             data: {
                 name,
                 rut,
                 logoUrl,
+                primaryColor: primaryColor || "#2563eb",
+                planId: planId || null,
+                planStatus: planStatus || "ACTIVE",
+                modules: resolvedModules,
+                subscriptionStartedAt: subscription.subscriptionStartedAt || new Date(),
+                subscriptionEndsAt: subscription.subscriptionEndsAt || addMonths(new Date(), subscription.billingCycleMonths),
+                lastPaymentAt: subscription.lastPaymentAt || new Date(),
+                billingCycleMonths: subscription.billingCycleMonths,
                 users: creatorId ? {
                     connect: { id: creatorId }
                 } : undefined
+            },
+            include: {
+                plan: true,
+                _count: { select: { users: true } }
             }
         });
-        res.json(newCompany);
+        res.json({ ...newCompany, userCount: newCompany._count.users });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to create company" });
@@ -834,12 +1038,32 @@ router.post("/companies", requireAdmin, async (req, res) => {
 router.put("/companies/:id", requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, rut, logoUrl } = req.body;
-        const updated = await prisma.company.update({
+        const { name, rut, logoUrl, primaryColor, planId, planStatus, modules } = req.body;
+        const resolvedModules = await resolveCompanyModules(planId, modules);
+        const subscription = normalizeSubscriptionDates(req.body);
+        const updated = await prismaAny.company.update({
             where: { id },
-            data: { name, rut, logoUrl }
+            data: {
+                name,
+                rut,
+                logoUrl,
+                primaryColor,
+                planId: planId || null,
+                planStatus: planStatus || "ACTIVE",
+                modules: resolvedModules,
+                subscriptionStartedAt: req.body.subscriptionStartedAt !== undefined ? subscription.subscriptionStartedAt || null : undefined,
+                subscriptionEndsAt: req.body.subscriptionEndsAt !== undefined || req.body.subscriptionStartedAt !== undefined || req.body.billingCycleMonths !== undefined
+                    ? subscription.subscriptionEndsAt || null
+                    : undefined,
+                lastPaymentAt: req.body.lastPaymentAt !== undefined ? subscription.lastPaymentAt || null : undefined,
+                billingCycleMonths: req.body.billingCycleMonths !== undefined ? subscription.billingCycleMonths : undefined
+            },
+            include: {
+                plan: true,
+                _count: { select: { users: true } }
+            }
         });
-        res.json(updated);
+        res.json({ ...updated, userCount: updated._count.users });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to update company" });
@@ -2400,7 +2624,7 @@ router.delete("/plans/:id", requireAdmin, async (req, res) => {
 
 
 // --- CRM: LEADS ---
-router.get("/leads", checkModuleAccess('INVOICING'), async (req, res) => { // Reusing INVOICING module for now or assume CRM module, using INVOICING since CRM module string not strictly defined yet in plan, let's just make it check companyId
+router.get("/leads", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const leads = await prisma.lead.findMany({
@@ -2414,7 +2638,7 @@ router.get("/leads", checkModuleAccess('INVOICING'), async (req, res) => { // Re
     }
 });
 
-router.post("/leads", async (req, res) => {
+router.post("/leads", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { name, companyName, email, phone, status, source, notes } = req.body;
@@ -2436,7 +2660,7 @@ router.post("/leads", async (req, res) => {
     }
 });
 
-router.put("/leads/:id", async (req, res) => {
+router.put("/leads/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
@@ -2458,7 +2682,7 @@ router.put("/leads/:id", async (req, res) => {
     }
 });
 
-router.delete("/leads/:id", async (req, res) => {
+router.delete("/leads/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
@@ -2471,7 +2695,7 @@ router.delete("/leads/:id", async (req, res) => {
 });
 
 // --- CRM: QUOTES ---
-router.get("/quotes", async (req, res) => {
+router.get("/quotes", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const quotes = await prisma.quote.findMany({
@@ -2485,7 +2709,7 @@ router.get("/quotes", async (req, res) => {
     }
 });
 
-router.get("/quotes/:id", async (req, res) => {
+router.get("/quotes/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
@@ -2500,7 +2724,7 @@ router.get("/quotes/:id", async (req, res) => {
     }
 });
 
-router.post("/quotes", async (req, res) => {
+router.post("/quotes", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { number, date, validUntil, status, notes, leadId, items } = req.body;
@@ -2549,7 +2773,7 @@ router.post("/quotes", async (req, res) => {
     }
 });
 
-router.put("/quotes/:id", async (req, res) => {
+router.put("/quotes/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
@@ -2607,7 +2831,7 @@ router.put("/quotes/:id", async (req, res) => {
     }
 });
 
-router.delete("/quotes/:id", async (req, res) => {
+router.delete("/quotes/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
