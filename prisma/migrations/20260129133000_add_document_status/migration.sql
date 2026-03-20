@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Document" ADD COLUMN     "status" TEXT NOT NULL DEFAULT 'PENDING';
-

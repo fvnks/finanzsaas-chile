@@ -1,19 +1,29 @@
 import { NextFunction, Request, Response } from "express";
 import { prisma } from "../prisma";
+import { verifySessionToken } from "../lib/session";
 
 export const attachCurrentUser = async (req: Request, _res: Response, next: NextFunction) => {
-    const userIdHeader = req.headers["x-user-id"];
-    const userId = typeof userIdHeader === "string" ? userIdHeader : userIdHeader?.[0];
+    const authorizationHeader = req.headers.authorization;
+    const bearerToken = typeof authorizationHeader === "string" && authorizationHeader.startsWith("Bearer ")
+        ? authorizationHeader.slice("Bearer ".length).trim()
+        : null;
 
-    if (!userId) {
+    if (!bearerToken) {
+        return next();
+    }
+
+    const session = verifySessionToken(bearerToken);
+    if (!session) {
         return next();
     }
 
     try {
         const user = await prisma.user.findUnique({
-            where: { id: userId },
+            where: { id: session.userId },
             select: {
                 id: true,
+                email: true,
+                name: true,
                 role: true,
                 activeCompanyId: true,
                 companies: { select: { id: true } }
@@ -25,6 +35,15 @@ export const attachCurrentUser = async (req: Request, _res: Response, next: Next
         }
     } catch (error) {
         console.error("Failed to attach current user:", error);
+    }
+
+    next();
+};
+
+export const requireAuthenticatedUser = (req: Request, res: Response, next: NextFunction) => {
+    const currentUser = (req as any).currentUser;
+    if (!currentUser) {
+        return res.status(401).json({ error: "Authentication required" });
     }
 
     next();

@@ -117,8 +117,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
     const [roleForm, setRoleForm] = useState({ name: '', description: '' });
 
     const getHeaders = () => ({
-        'Content-Type': 'application/json',
-        'x-user-id': currentUser?.id || ''
+        'Content-Type': 'application/json'
     });
 
     useEffect(() => {

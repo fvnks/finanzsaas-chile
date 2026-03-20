@@ -6,12 +6,67 @@ import MainLayout from './components/MainLayout.tsx';
 import { CompanyProvider } from './components/CompanyContext.tsx';
 import ClientPortal from './components/ClientPortal.tsx';
 
+const TOKEN_STORAGE_KEY = 'token';
+const USER_STORAGE_KEY = 'currentUser';
+
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    if (!storedUser) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(storedUser) as User;
+    } catch {
+      localStorage.removeItem(USER_STORAGE_KEY);
+      return null;
+    }
+  });
   const [error, setError] = useState('');
 
   const urlParams = new URLSearchParams(window.location.search);
   const portalToken = urlParams.get('portal');
+
+  React.useEffect(() => {
+    const originalFetch = window.fetch.bind(window);
+
+    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+      const activeCompanyId = localStorage.getItem('activeCompanyId');
+      const request = input instanceof Request ? input : null;
+      const url = typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : request?.url || '';
+      const headers = new Headers(init?.headers || request?.headers || undefined);
+
+      if (token && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+
+      if (
+        activeCompanyId &&
+        url.startsWith(API_URL) &&
+        !url.endsWith('/login') &&
+        !url.includes('/portal/') &&
+        !headers.has('x-company-id') &&
+        !headers.has('active-company-id')
+      ) {
+        headers.set('x-company-id', activeCompanyId);
+      }
+
+      return originalFetch(input, {
+        ...init,
+        headers
+      });
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +83,17 @@ const App: React.FC = () => {
 
       const data = await res.json();
       if (res.ok) {
-        setUser({
+        const nextUser = {
           ...data,
           allowedSections: data.allowedSections || [],
           companies: data.companies || [],
           activeCompanyId: data.activeCompanyId
-        });
+        };
+        setUser(nextUser);
+        if (data.token) {
+          localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+        }
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser));
         setError('');
       } else {
         setError(data.error || 'Login failed');
@@ -44,26 +104,37 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = () => setUser(null);
+  const handleLogout = () => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem('activeCompanyId');
+    setUser(null);
+  };
 
   const refreshUser = async () => {
     if (!user) return;
     try {
-      const res = await fetch(`${API_URL}/users/${user.id}`, {
-        headers: { 'x-user-id': user.id }
-      });
+      const res = await fetch(`${API_URL}/users/${user.id}`);
       if (res.ok) {
         const updated = await res.json();
-        setUser({
+        const nextUser = {
           ...updated,
           allowedSections: updated.allowedSections || [],
           companies: updated.companies || []
-        });
+        };
+        setUser(nextUser);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser));
       }
     } catch (err) {
       console.error('Failed to refresh user:', err);
     }
   };
+
+  React.useEffect(() => {
+    if (user) {
+      refreshUser();
+    }
+  }, []);
 
   if (portalToken) {
     return <ClientPortal token={portalToken} />;

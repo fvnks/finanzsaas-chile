@@ -29,7 +29,7 @@ app.use((req, res, next) => {
     }
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, x-company-id, active-company-id, x-user-id');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, x-company-id, active-company-id');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
     // Handle Preflight directly
@@ -59,8 +59,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(attachCompanyContext);
 app.use(attachCurrentUser);
+app.use(attachCompanyContext);
 
 app.get("/api/health", (_req, res) => {
     res.json({

@@ -28,7 +28,7 @@ export const getInvoiceTypeLabel = (value?: string) => {
 };
 
 export const getCompanyId = (req: Request) => {
-    const companyId = (req as any).companyId || req.headers["x-company-id"];
+    const companyId = (req as any).companyId;
     if (!companyId) return null;
     return typeof companyId === "string" ? companyId : companyId[0];
 };

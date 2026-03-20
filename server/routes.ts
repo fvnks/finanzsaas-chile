@@ -16,7 +16,8 @@ import {
     normalizeInvoiceType,
     updateOwnedRecord
 } from "./lib/domain";
-import { requireAdmin, requireSelfOrAdmin } from "./middleware/auth";
+import { requireAdmin, requireAuthenticatedUser, requireSelfOrAdmin } from "./middleware/auth";
+import { createSessionToken } from "./lib/session";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -137,8 +138,16 @@ const validateUserCapacity = async (companyIds: string[] = [], excludedUserId?: 
     return null;
 };
 
+router.use((req, res, next) => {
+    if (req.path === "/login" || req.path.startsWith("/portal/")) {
+        return next();
+    }
+
+    return requireAuthenticatedUser(req, res, next);
+});
+
 // --- DIAGNOSTIC ENDPOINT FOR RAILWAY ---
-router.get("/debug-db", async (req, res) => {
+router.get("/debug-db", requireAdmin, async (req, res) => {
     try {
         const invoicesCount = await prisma.invoice.count();
         const clientsCount = await prisma.client.count();
@@ -271,6 +280,7 @@ router.post("/login", async (req, res) => {
         // Ensure allowedSections is returned, defaulting to empty if null (though Prisma handles it)
         res.json({
             ...userInfo,
+            token: createSessionToken(user.id),
             allowedSections: user.allowedSections || [],
             companies: userWithCompanies?.companies || [],
             activeCompanyId: userWithCompanies?.activeCompanyId

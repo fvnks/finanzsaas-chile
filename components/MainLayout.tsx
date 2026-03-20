@@ -93,8 +93,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
     const getHeaders = () => {
         return {
             'Content-Type': 'application/json',
-            'x-company-id': activeCompany?.id || '',
-            'x-user-id': user.id
+            'x-company-id': activeCompany?.id || ''
         };
     };
 
@@ -102,7 +101,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
         if (!user || !activeCompany) return;
         setLoading(true);
         try {
-            const headers = { 'x-company-id': activeCompany.id, 'x-user-id': user.id };
+            const headers = { 'x-company-id': activeCompany.id };
 
             const [resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resDailyReports, resUsers, resSuppliers, resExpenses, resTools] = await Promise.all([
                 fetch(`${API_URL}/clients`, { headers }).then(res => res.json()),
