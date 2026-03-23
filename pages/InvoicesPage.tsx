@@ -353,6 +353,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
     })(), // Added for Cash Flow
     net: 0,
     clientId: '',
+    supplierId: '',
     costCenterId: '',
     projectId: '',
     purchaseOrderNumber: '',
@@ -451,7 +452,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
         const sameType = inv.type === formData.type;
 
         if (formData.type === InvoiceType.COMPRA) {
-          return sameNumber && sameType && inv.clientId === formData.clientId;
+          return sameNumber && sameType && (inv as any).supplierId === formData.supplierId;
         }
 
         // For Sales/Notes, check global uniqueness (or per company if multi-tenant, but here global)
@@ -502,7 +503,12 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.clientId) return;
+    // For COMPRA invoices, require supplierId; for others, require clientId
+    if (formData.type === InvoiceType.COMPRA) {
+      if (!formData.supplierId) return;
+    } else {
+      if (!formData.clientId) return;
+    }
 
     // Check for missing assignments
     if (!formData.costCenterId && !formData.projectId) {
@@ -558,6 +564,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       })(), // Added for Cash flow
       net: 0,
       clientId: '',
+      supplierId: '',
       costCenterId: '',
       projectId: '',
       purchaseOrderNumber: '',
@@ -580,7 +587,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
       date: inv.date.split('T')[0],
       dueDate: inv.dueDate ? inv.dueDate.split('T')[0] : '', // Added for Cash Flow
       net: inv.net,
-      clientId: inv.clientId,
+      clientId: inv.clientId || '',
+      supplierId: (inv as any).supplierId || '',
       costCenterId: inv.costCenterId || '',
       projectId: inv.projectId || '',
       purchaseOrderNumber: inv.purchaseOrderNumber || '',
@@ -1864,8 +1872,13 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                       <select
                         required
                         className="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold text-slate-700"
-                        value={formData.clientId}
-                        onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                        value={formData.type === InvoiceType.COMPRA ? formData.supplierId : formData.clientId}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          ...(formData.type === InvoiceType.COMPRA
+                            ? { supplierId: e.target.value, clientId: '' }
+                            : { clientId: e.target.value, supplierId: '' })
+                        })}
                       >
                         <option value="">
                           {formData.type === InvoiceType.COMPRA ? 'Seleccione un Proveedor...' : 'Seleccione un Cliente...'}
@@ -1960,8 +1973,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                   </button>
                   <button
                     type="submit"
-                    disabled={!formData.clientId || !formData.costCenterId || !formData.net || !formData.number}
-                    className={`px-10 py-3 rounded-2xl font-black text-white shadow-xl transition-all active:scale-95 ${!formData.clientId || !formData.costCenterId || !formData.net || !formData.number
+                    disabled={(formData.type === InvoiceType.COMPRA ? !formData.supplierId : !formData.clientId) || !formData.costCenterId || !formData.net || !formData.number}
+                    className={`px-10 py-3 rounded-2xl font-black text-white shadow-xl transition-all active:scale-95 ${(formData.type === InvoiceType.COMPRA ? !formData.supplierId : !formData.clientId) || !formData.costCenterId || !formData.net || !formData.number
                       ? 'bg-slate-300 cursor-not-allowed shadow-none'
                       : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
                       }`}

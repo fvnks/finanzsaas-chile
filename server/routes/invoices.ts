@@ -23,7 +23,7 @@ invoicesRouter.get("/invoices", checkModuleAccess("INVOICING"), async (req, res)
         const invoices = await prisma.invoice.findMany({
             where: { companyId },
             orderBy: { date: "desc" },
-            include: { client: true, project: true }
+            include: { client: true, project: true, supplier: true }
         });
         res.json(invoices);
     } catch (err) {
@@ -46,6 +46,7 @@ invoicesRouter.post("/invoices", checkModuleAccess("INVOICING"), async (req, res
             dueDate,
             status,
             clientId,
+            supplierId,
             projectId,
             costCenterId,
             type,
@@ -69,10 +70,10 @@ invoicesRouter.post("/invoices", checkModuleAccess("INVOICING"), async (req, res
         };
 
         if (normalizedType === "PURCHASE") {
-            if (!clientId) {
-                return res.status(400).json({ error: "Debe especificar un cliente para facturas de compra." });
+            if (!supplierId) {
+                return res.status(400).json({ error: "Debe especificar un proveedor para facturas de compra." });
             }
-            duplicateWhere.clientId = clientId;
+            duplicateWhere.supplierId = supplierId;
         }
 
         const existing = await prisma.invoice.findFirst({ where: duplicateWhere });
@@ -93,7 +94,8 @@ invoicesRouter.post("/invoices", checkModuleAccess("INVOICING"), async (req, res
                     date: invoiceDate,
                     dueDate: asOptionalDate(dueDate),
                     status: status || "ISSUED",
-                    clientId,
+                    clientId: normalizedType === "PURCHASE" ? undefined : clientId,
+                    supplierId: normalizedType === "PURCHASE" ? supplierId : undefined,
                     projectId: validProjectId,
                     costCenterId: validCostCenterId,
                     type: normalizedType,
@@ -184,6 +186,7 @@ invoicesRouter.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, 
             dueDate,
             status,
             clientId,
+            supplierId,
             projectId,
             costCenterId,
             type,
@@ -217,7 +220,8 @@ invoicesRouter.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, 
                     date: invoiceDate,
                     dueDate: asOptionalDate(dueDate),
                     status: status || "DRAFT",
-                    client: clientId ? { connect: { id: clientId } } : { disconnect: true },
+                    client: normalizedType === "PURCHASE" ? { disconnect: true } : (clientId ? { connect: { id: clientId } } : { disconnect: true }),
+                    supplier: normalizedType === "PURCHASE" ? (supplierId ? { connect: { id: supplierId } } : { disconnect: true }) : { disconnect: true },
                     project: validProjectId ? { connect: { id: validProjectId } } : { disconnect: true },
                     costCenter: validCostCenterId ? { connect: { id: validCostCenterId } } : { disconnect: true },
                     type: normalizedType,
@@ -252,7 +256,7 @@ invoicesRouter.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, 
 
             return tx.invoice.findUnique({
                 where: { id },
-                include: { client: true, project: true }
+                include: { client: true, project: true, supplier: true }
             });
         }, {
             maxWait: 5000,

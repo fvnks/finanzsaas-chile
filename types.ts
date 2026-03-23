@@ -145,7 +145,9 @@ export interface Invoice {
   net: number;
   iva: number;
   total: number;
-  clientId: string;
+  clientId?: string;
+  supplierId?: string;
+  supplier?: Supplier;
   costCenterId: string;
   projectId?: string;
   items?: InvoiceItem[];
