@@ -172,13 +172,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
     const activeTabLabel = TAB_LABELS[activeTab] || 'Workspace';
     const pendingInvoices = invoices.filter(invoice => !invoice.isPaid).length;
     const activeProjectsCount = projects.filter(project => project.status === 'ACTIVE').length;
-    const workspacePulse = [
-        { label: 'Facturas pendientes', value: pendingInvoices },
-        { label: 'Proyectos activos', value: activeProjectsCount },
-        { label: 'Alertas stock bajo', value: lowStockAlerts.length, alert: lowStockAlerts.length > 0 }
-    ];
-
-    // Calculate low stock alerts
+    // Calculate low stock alerts first so it can be used in workspacePulse
     const lowStockAlerts = products.filter(p => {
         const totalQty = (p.stocks || []).reduce((sum: number, s: any) => sum + (s.quantity || 0), 0);
         const totalMin = (p.stocks || []).reduce((sum: number, s: any) => sum + (s.minStock || 0), 0);
@@ -201,6 +195,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             warehouses: warehouseNames.join(', ')
         };
     });
+
+    const workspacePulse = [
+        { label: 'Facturas pendientes', value: pendingInvoices },
+        { label: 'Proyectos activos', value: activeProjectsCount },
+        { label: 'Alertas stock bajo', value: lowStockAlerts.length, alert: lowStockAlerts.length > 0 }
+    ];
+
 
     return (
         <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
