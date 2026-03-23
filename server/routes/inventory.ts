@@ -152,6 +152,47 @@ inventoryRouter.delete("/warehouses/:id", checkModuleAccess("INVENTORY"), async 
     }
 });
 
+inventoryRouter.get("/inventory-movements", checkModuleAccess("INVENTORY"), async (req, res) => {
+    try {
+        const companyId = getCompanyId(req);
+        if (!companyId) return res.status(400).json({ error: "Company ID required" });
+
+        const { productId, warehouseId, type, startDate, endDate } = req.query;
+
+        const where: any = { companyId };
+
+        if (productId) where.productId = productId as string;
+        if (type) where.type = type as string;
+        if (warehouseId) {
+            where.OR = [
+                { fromWarehouseId: warehouseId as string },
+                { toWarehouseId: warehouseId as string }
+            ];
+        }
+        if (startDate || endDate) {
+            where.date = {};
+            if (startDate) where.date.gte = new Date(startDate as string);
+            if (endDate) where.date.lte = new Date(endDate as string);
+        }
+
+        const movements = await prisma.inventoryMovement.findMany({
+            where,
+            include: {
+                product: { select: { id: true, name: true, code: true } },
+                fromWarehouse: { select: { id: true, name: true } },
+                toWarehouse: { select: { id: true, name: true } },
+                project: { select: { id: true, name: true } }
+            },
+            orderBy: { date: "desc" },
+            take: 200
+        });
+
+        res.json(movements);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch movements", details: err.message });
+    }
+});
+
 inventoryRouter.post("/inventory-movements", checkModuleAccess("INVENTORY"), async (req, res) => {
     try {
         const companyId = getCompanyId(req);

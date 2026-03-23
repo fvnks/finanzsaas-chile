@@ -25,7 +25,7 @@ import ProductsPage from '../pages/ProductsPage.tsx';
 import WarehousesPage from '../pages/WarehousesPage.tsx';
 import BankAccountsPage from '../pages/BankAccountsPage.tsx';
 import CashFlowPage from '../pages/CashFlowPage.tsx';
-import { Activity, Building2, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Activity, Building2, RefreshCw, ShieldCheck, AlertTriangle, Bell, Package } from 'lucide-react';
 
 import { API_URL } from '../src/config.ts';
 import { useCompany } from './CompanyContext';
@@ -87,6 +87,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
     const [eppDeliveries, setEppDeliveries] = useState<EppDelivery[]>([]);
     const [toolAssignments, setToolAssignments] = useState<ToolAssignment[]>([]);
     const [allUsers, setAllUsers] = useState<User[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
+    const [warehouses, setWarehouses] = useState<any[]>([]);
+    const [showStockAlerts, setShowStockAlerts] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -150,6 +153,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             fetch(`${API_URL}/epp`, { headers }).then(res => res.json()).then(data => setEpps(Array.isArray(data) ? data : []));
             fetch(`${API_URL}/epp-deliveries`, { headers }).then(res => res.json()).then(data => setEppDeliveries(Array.isArray(data) ? data : []));
             fetch(`${API_URL}/tool-assignments`, { headers }).then(res => res.json()).then(data => setToolAssignments(Array.isArray(data) ? data : []));
+            fetch(`${API_URL}/products`, { headers }).then(res => res.json()).then(data => setProducts(Array.isArray(data) ? data : []));
+            fetch(`${API_URL}/warehouses`, { headers }).then(res => res.json()).then(data => setWarehouses(Array.isArray(data) ? data : []));
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -170,8 +175,32 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
     const workspacePulse = [
         { label: 'Facturas pendientes', value: pendingInvoices },
         { label: 'Proyectos activos', value: activeProjectsCount },
-        { label: 'Clientes visibles', value: clients.length }
+        { label: 'Alertas stock bajo', value: lowStockAlerts.length, alert: lowStockAlerts.length > 0 }
     ];
+
+    // Calculate low stock alerts
+    const lowStockAlerts = products.filter(p => {
+        const totalQty = (p.stocks || []).reduce((sum: number, s: any) => sum + (s.quantity || 0), 0);
+        const totalMin = (p.stocks || []).reduce((sum: number, s: any) => sum + (s.minStock || 0), 0);
+        return totalMin > 0 && totalQty < totalMin;
+    }).map(p => {
+        const totalQty = (p.stocks || []).reduce((sum: number, s: any) => sum + (s.quantity || 0), 0);
+        const totalMin = (p.stocks || []).reduce((sum: number, s: any) => sum + (s.minStock || 0), 0);
+        const warehouseNames = (p.stocks || [])
+            .filter((s: any) => s.minStock > 0 && s.quantity < s.minStock)
+            .map((s: any) => {
+                const wh = warehouses.find((w: any) => w.id === s.warehouseId);
+                return wh?.name || 'Bodega';
+            }).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
+        return {
+            id: p.id,
+            name: p.name,
+            code: p.code,
+            current: totalQty,
+            minimum: totalMin,
+            warehouses: warehouseNames.join(', ')
+        };
+    });
 
     return (
         <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
@@ -199,6 +228,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                                     {loading ? 'Sincronizando' : 'Listo'}
                                 </span>
                                 <button
+                                    onClick={() => setShowStockAlerts(!showStockAlerts)}
+                                    className={`relative inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${lowStockAlerts.length > 0 ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                                >
+                                    <Bell size={15} />
+                                    {lowStockAlerts.length > 0 && (
+                                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[9px] font-bold text-white">
+                                            {lowStockAlerts.length > 9 ? '9+' : lowStockAlerts.length}
+                                        </span>
+                                    )}
+                                </button>
+                                <button
                                     onClick={refreshData}
                                     className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                                 >
@@ -210,12 +250,48 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
 
                         <div className="grid gap-3 px-5 py-4 md:grid-cols-3">
                             {workspacePulse.map(item => (
-                                <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{item.label}</div>
-                                    <div className="mt-1 text-xl font-semibold text-slate-900">{item.value}</div>
+                                <div key={item.label} className={`rounded-xl border px-4 py-3 ${item.alert ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50'}`}>
+                                    <div className={`text-[11px] font-bold uppercase tracking-[0.16em] ${item.alert ? 'text-red-600' : 'text-slate-500'}`}>{item.label}</div>
+                                    <div className={`mt-1 text-xl font-semibold ${item.alert ? 'text-red-700' : 'text-slate-900'}`}>{item.value}</div>
                                 </div>
                             ))}
                         </div>
+
+                        {showStockAlerts && lowStockAlerts.length > 0 && (
+                            <div className="mx-5 mb-4 rounded-xl border border-red-200 bg-red-50/50 p-4">
+                                <div className="mb-3 flex items-center gap-2">
+                                    <AlertTriangle size={16} className="text-red-600" />
+                                    <h3 className="text-sm font-bold text-red-800">Productos con Stock Bajo</h3>
+                                </div>
+                                <div className="space-y-2">
+                                    {lowStockAlerts.slice(0, 10).map(alert => (
+                                        <div key={alert.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 border border-red-100">
+                                            <div className="flex items-center gap-2">
+                                                <Package size={14} className="text-slate-400" />
+                                                <div>
+                                                    <span className="font-medium text-slate-800 text-sm">{alert.name}</span>
+                                                    {alert.code && <span className="ml-2 font-mono text-xs text-slate-400">{alert.code}</span>}
+                                                    <span className="ml-2 text-xs text-slate-500">{alert.warehouses}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-bold text-red-600">{alert.current}</span>
+                                                <span className="text-xs text-slate-400"> / mín {alert.minimum}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {lowStockAlerts.length > 10 && (
+                                        <p className="text-center text-xs text-slate-500 py-1">...y {lowStockAlerts.length - 10} más</p>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => { setActiveTab('warehouses'); setShowStockAlerts(false); }}
+                                    className="mt-3 w-full rounded-lg bg-red-100 py-2 text-center text-xs font-bold text-red-700 hover:bg-red-200 transition-colors"
+                                >
+                                    Ir a Bodegas y Stock
+                                </button>
+                            </div>
+                        )}
 
                         {error && (
                             <div className="border-t border-slate-200 px-5 py-3 text-sm font-medium text-red-600">

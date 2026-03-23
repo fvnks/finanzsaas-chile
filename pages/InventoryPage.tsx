@@ -1,223 +1,296 @@
-import React, { useState, useEffect } from 'react';
-import { Package, ArrowUp, ArrowDown, History, Plus, Search, Filter } from 'lucide-react';
-import { API_URL } from '../src/config.ts';
 
-interface Material {
-    id: string;
-    name: string;
-    code: string;
-    unit: string;
-    minStock: number;
-    stock?: number;
-}
-
+import React, { useState, useEffect, useMemo } from 'react';
+import { Package, ArrowDownCircle, ArrowUpCircle, ArrowRightLeft, History, Plus, Search, Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import { API_URL } from '../src/config';
+import { useCompany } from '../components/CompanyContext';
 import { checkPermission } from '../src/utils/permissions';
-import { User } from '../types';
+import { User, Product, InventoryMovement, Warehouse } from '../types';
 
 interface InventoryPageProps {
     currentUser: any;
 }
 
 export function InventoryPage({ currentUser }: InventoryPageProps) {
-    const [materials, setMaterials] = useState<Material[]>([]);
+    const { activeCompany } = useCompany();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+    const [movements, setMovements] = useState<InventoryMovement[]>([]);
     const [loading, setLoading] = useState(true);
+    const [view, setView] = useState<'STOCK' | 'MOVEMENTS'>('STOCK');
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Modal states
-    const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-    const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
-    const [selectedMaterialId, setSelectedMaterialId] = useState('');
-
-    // Forms
-    const [materialForm, setMaterialForm] = useState({ name: '', code: '', unit: 'UNAP', minStock: 10 });
-    const [movementForm, setMovementForm] = useState({ materialId: '', type: 'IN', quantity: 0, notes: '' });
+    const [selectedWarehouse, setSelectedWarehouse] = useState<string>('');
 
     useEffect(() => {
-        fetchMaterials();
-    }, []);
+        if (activeCompany) {
+            fetchData();
+        }
+    }, [activeCompany]);
 
-    const fetchMaterials = async () => {
+    const fetchData = async () => {
+        setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/inventory/materials`);
-            const data = res.ok ? await res.json() : [];
-            setMaterials(Array.isArray(data) ? data : []);
+            const headers = { 'x-company-id': activeCompany?.id || '' };
+            const [pRes, wRes, mRes] = await Promise.all([
+                fetch(`${API_URL}/products`, { headers }).then(r => r.json()),
+                fetch(`${API_URL}/warehouses`, { headers }).then(r => r.json()),
+                fetch(`${API_URL}/inventory-movements`, { headers }).then(r => r.json())
+            ]);
+
+            setProducts(Array.isArray(pRes) ? pRes : []);
+            setWarehouses(Array.isArray(wRes) ? wRes : []);
+            setMovements(Array.isArray(mRes) ? mRes : []);
         } catch (err) {
-            console.error("Failed to fetch materials", err);
-            setMaterials([]);
+            console.error("Error fetching inventory data", err);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleMaterialSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await fetch(`${API_URL}/inventory/materials`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(materialForm)
-            });
-            if (res.ok) {
-                const newMat = await res.json();
-                setMaterials([newMat, ...materials]);
-                setIsMaterialModalOpen(false);
-                setMaterialForm({ name: '', code: '', unit: 'UNAP', minStock: 10 });
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    // Aggregated stock per product (across all warehouses or filtered)
+    const stockData = useMemo(() => {
+        const data: Record<string, { product: Product; total: number; byWarehouse: Record<string, number> }> = {};
 
-    const handleMovementSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await fetch(`${API_URL}/inventory/movements`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(movementForm)
+        products.forEach(p => {
+            data[p.id] = { product: p, total: 0, byWarehouse: {} };
+            (p.stocks || []).forEach(s => {
+                if (!selectedWarehouse || s.warehouseId === selectedWarehouse) {
+                    data[p.id].total += s.quantity;
+                    data[p.id].byWarehouse[s.warehouseId] = s.quantity;
+                }
             });
-            if (res.ok) {
-                // Update local stock roughly or re-fetch
-                const movement = await res.json();
-                // Refetch to ensure sync
-                fetchMaterials();
-                setIsMovementModalOpen(false);
-                setMovementForm({ materialId: '', type: 'IN', quantity: 0, notes: '' });
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
+        });
 
-    const filteredMaterials = materials.filter(m =>
-        m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        return Object.values(data).filter(d =>
+            d.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (d.product.code || '').toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [products, searchTerm, selectedWarehouse]);
+
+    // Stats
+    const stats = useMemo(() => {
+        const totalProducts = products.length;
+        const totalValue = products.reduce((sum, p) => sum + (p.price || 0) * (stockData.find(d => d.product.id === p.id)?.total || 0), 0);
+        const lowStock = products.filter(p => {
+            const d = stockData.find(d => d.product.id === p.id);
+            const total = d?.total || 0;
+            const minStock = (p.stocks || []).reduce((min, s) => min + (s.minStock || 0), 0);
+            return total < minStock && minStock > 0;
+        }).length;
+        return { totalProducts, totalValue, lowStock };
+    }, [products, stockData]);
+
+    const canCreate = checkPermission(currentUser as User, 'inventory', 'create');
 
     return (
-        <div className="flex-1">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Inventario de Materiales</h1>
-                    <p className="text-slate-500 mt-1">Control de stock de pañol y movimientos</p>
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                        <Package size={24} />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-800">Inventario</h1>
+                        <p className="text-slate-500 text-sm">Control de stock y movimientos de bodega</p>
+                    </div>
                 </div>
-                <div className="flex gap-3">
-                    {checkPermission(currentUser as User, 'inventory', 'create') && (
-                        <>
-                            <button
-                                onClick={() => setIsMovementModalOpen(true)}
-                                className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors"
-                            >
-                                <History size={20} />
-                                Registrar Movimiento
-                            </button>
-                            <button
-                                onClick={() => setIsMaterialModalOpen(true)}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm"
-                            >
-                                <Plus size={20} />
-                                Nuevo Material
-                            </button>
-                        </>
-                    )}
+
+                <div className="flex items-center space-x-2 bg-slate-200/50 p-1 rounded-lg">
+                    <button
+                        onClick={() => setView('STOCK')}
+                        className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center space-x-2 ${view === 'STOCK' ? 'bg-white text-slate-800 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <Package size={16} /> <span>Stock</span>
+                    </button>
+                    <button
+                        onClick={() => setView('MOVEMENTS')}
+                        className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center space-x-2 ${view === 'MOVEMENTS' ? 'bg-white text-slate-800 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <ArrowRightLeft size={16} /> <span>Movimientos</span>
+                    </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                            <Package size={24} />
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                            <Package size={20} />
                         </div>
                         <div>
-                            <p className="text-sm text-slate-500 font-medium">Total Items</p>
-                            <p className="text-2xl font-bold text-slate-800">{materials.length}</p>
+                            <p className="text-xs text-slate-500 font-medium">Total Productos</p>
+                            <p className="text-xl font-bold text-slate-800">{stats.totalProducts}</p>
                         </div>
                     </div>
                 </div>
-                {/* Add more stats if needed */}
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 flex items-center gap-4 bg-slate-50">
-                    <Search className="text-slate-400" size={20} />
-                    <input
-                        placeholder="Buscar material..."
-                        className="bg-transparent border-none outline-none text-sm w-full font-medium text-slate-600"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <table className="w-full text-left">
-                    <thead className="bg-white border-b border-slate-100">
-                        <tr>
-                            <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Código</th>
-                            <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Material</th>
-                            <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Unidad</th>
-                            <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Stock Actual</th>
-                            <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Min. Stock</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                        {filteredMaterials.map((mat) => (
-                            <tr key={mat.id} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-6 py-4 font-mono text-xs text-slate-500">{mat.code}</td>
-                                <td className="px-6 py-4 font-bold text-slate-700">{mat.name}</td>
-                                <td className="px-6 py-4 text-sm text-slate-500">{mat.unit}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-lg text-xs font-bold ${(mat.stock || 0) <= mat.minStock ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                                        {mat.stock || 0}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-xs text-slate-400">{mat.minStock}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Modal New Material */}
-            {isMaterialModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-                        <h2 className="text-xl font-bold mb-4">Nuevo Material</h2>
-                        <form onSubmit={handleMaterialSubmit} className="space-y-4">
-                            <input placeholder="Nombre" className="w-full p-2 border rounded" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} />
-                            <input placeholder="Código (SKU)" className="w-full p-2 border rounded" required value={materialForm.code} onChange={e => setMaterialForm({ ...materialForm, code: e.target.value })} />
-                            <input placeholder="Unidad (UN, KG, M)" className="w-full p-2 border rounded" required value={materialForm.unit} onChange={e => setMaterialForm({ ...materialForm, unit: e.target.value })} />
-                            <input type="number" placeholder="Stock Mínimo" className="w-full p-2 border rounded" required value={materialForm.minStock} onChange={e => setMaterialForm({ ...materialForm, minStock: Number(e.target.value) })} />
-                            <div className="flex justify-end gap-2 pt-2">
-                                <button type="button" onClick={() => setIsMaterialModalOpen(false)} className="px-4 py-2 text-slate-600">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button>
-                            </div>
-                        </form>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
+                            <AlertTriangle size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs text-slate-500 font-medium">Bajo Stock</p>
+                            <p className="text-xl font-bold text-orange-700">{stats.lowStock}</p>
+                        </div>
                     </div>
                 </div>
-            )}
-
-            {/* Modal Movement */}
-            {isMovementModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-                        <h2 className="text-xl font-bold mb-4">Registrar Movimiento</h2>
-                        <form onSubmit={handleMovementSubmit} className="space-y-4">
-                            <select className="w-full p-2 border rounded" required value={movementForm.materialId} onChange={e => setMovementForm({ ...movementForm, materialId: e.target.value })}>
-                                <option value="">Seleccione Material...</option>
-                                {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                            </select>
-                            <select className="w-full p-2 border rounded" value={movementForm.type} onChange={e => setMovementForm({ ...movementForm, type: e.target.value })}>
-                                <option value="IN">Entrada (Compra/Devolución)</option>
-                                <option value="OUT">Salida (Consumo/Pérdida)</option>
-                            </select>
-                            <input type="number" placeholder="Cantidad" className="w-full p-2 border rounded" required value={movementForm.quantity} onChange={e => setMovementForm({ ...movementForm, quantity: Number(e.target.value) })} />
-                            <div className="flex justify-end gap-2 pt-2">
-                                <button type="button" onClick={() => setIsMovementModalOpen(false)} className="px-4 py-2 text-slate-600">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Registrar</button>
-                            </div>
-                        </form>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                            <span className="text-sm font-bold">$</span>
+                        </div>
+                        <div>
+                            <p className="text-xs text-slate-500 font-medium">Valor Total Stock</p>
+                            <p className="text-xl font-bold text-slate-800">${(stats.totalValue / 1000000).toFixed(1)}M</p>
+                        </div>
                     </div>
                 </div>
-            )}
+            </div>
+
+            {/* Main Content */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+
+                {view === 'STOCK' && (
+                    <>
+                        {/* Filters */}
+                        <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-3 bg-slate-50">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre o código..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                            <select
+                                value={selectedWarehouse}
+                                onChange={(e) => setSelectedWarehouse(e.target.value)}
+                                className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            >
+                                <option value="">Todas las bodegas</option>
+                                {warehouses.map(w => (
+                                    <option key={w.id} value={w.id}>{w.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Table */}
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-white border-b border-slate-100">
+                                    <tr>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Código</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Producto</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Tipo</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Precio Unit.</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Stock Total</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {loading ? (
+                                        <tr><td colSpan={6} className="p-8 text-center text-slate-400">Cargando...</td></tr>
+                                    ) : stockData.length === 0 ? (
+                                        <tr><td colSpan={6} className="p-8 text-center text-slate-400">No hay productos registrados.</td></tr>
+                                    ) : (
+                                        stockData.map(({ product, total, byWarehouse }) => {
+                                            const minStock = (product.stocks || []).reduce((min, s) => min + (s.minStock || 0), 0);
+                                            const isLow = total < minStock && minStock > 0;
+                                            return (
+                                                <tr key={product.id} className={`hover:bg-slate-50 ${isLow ? 'bg-red-50/30' : ''}`}>
+                                                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{product.code || '-'}</td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="font-medium text-slate-800">{product.name}</div>
+                                                        {selectedWarehouse && Object.keys(byWarehouse).length > 0 && (
+                                                            <div className="text-xs text-slate-400">
+                                                                {warehouses.find(w => w.id === selectedWarehouse)?.name}: {byWarehouse[selectedWarehouse]}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${product.type === 'GOOD' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                                                            {product.type === 'GOOD' ? 'Material' : 'Servicio'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-mono text-sm text-slate-600">${product.price?.toLocaleString('es-CL') || 0}</td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <span className={`font-bold ${isLow ? 'text-red-600' : 'text-slate-800'}`}>
+                                                            {total}
+                                                        </span>
+                                                        <span className="text-xs text-slate-400 ml-1">{product.unit}</span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        {isLow ? (
+                                                            <span className="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-full">Bajo Stock</span>
+                                                        ) : (
+                                                            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">OK</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+
+                {view === 'MOVEMENTS' && (
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-white border-b border-slate-100">
+                                    <tr>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Tipo</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Producto</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Cantidad</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Origen</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Destino</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Glosa</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {loading ? (
+                                        <tr><td colSpan={7} className="p-8 text-center text-slate-400">Cargando...</td></tr>
+                                    ) : movements.length === 0 ? (
+                                        <tr><td colSpan={7} className="p-8 text-center text-slate-400">No hay movimientos registrados.</td></tr>
+                                    ) : (
+                                        movements.slice(0, 100).map(mov => {
+                                            const pInfo = products.find(p => p.id === mov.productId);
+                                            return (
+                                                <tr key={mov.id} className="hover:bg-slate-50">
+                                                    <td className="px-4 py-3 text-sm text-slate-500">{new Date(mov.date).toLocaleDateString('es-CL')}</td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={`px-2 py-1 text-[10px] font-bold rounded-full uppercase
+                                                            ${mov.type === 'IN' ? 'bg-emerald-100 text-emerald-700' :
+                                                              mov.type === 'OUT' ? 'bg-orange-100 text-orange-700' :
+                                                              mov.type === 'TRANSFER' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-700'}`}
+                                                        >
+                                                            {mov.type === 'IN' ? 'Entrada' : mov.type === 'OUT' ? 'Salida' : mov.type === 'TRANSFER' ? 'Traspaso' : 'Ajuste'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 font-medium text-slate-800">{pInfo?.name || 'Producto'}</td>
+                                                    <td className={`px-4 py-3 text-right font-bold ${mov.type === 'IN' ? 'text-emerald-600' : mov.type === 'OUT' ? 'text-orange-600' : 'text-slate-600'}`}>
+                                                        {mov.type === 'OUT' ? '-' : mov.type === 'IN' ? '+' : ''}{mov.quantity}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm text-slate-600">{mov.fromWarehouseId || '-'}</td>
+                                                    <td className="px-4 py-3 text-sm text-slate-600">{mov.toWarehouseId || '-'}</td>
+                                                    <td className="px-4 py-3 text-sm text-slate-500 truncate max-w-[150px]">{mov.description || '-'}</td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 }
