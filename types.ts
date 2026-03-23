@@ -98,8 +98,34 @@ export interface Project {
   startDate?: string;
   endDate?: string;
   workerIds: string[];
+  milestones?: ProjectMilestone[];
+  timeEntries?: TimeEntry[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProjectMilestone {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'DELAYED';
+  dueDate?: string;
+  completedAt?: string;
+  order: number;
+  createdAt: string;
+}
+
+export interface TimeEntry {
+  id: string;
+  projectId: string;
+  workerId: string;
+  userId: string;
+  date: string;
+  hours: number;
+  description?: string;
+  createdAt: string;
+  worker?: Worker;
 }
 
 export interface InvoiceItem {
@@ -157,6 +183,18 @@ export interface DailyReport {
   date: string;
   content: string;
   projectId?: string;
+  status: string;
+  attachments: string[];
+  templateId?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ReportTemplate {
+  id: string;
+  name: string;
+  content: string;
+  companyId: string;
   createdAt: string;
 }
 
@@ -380,13 +418,36 @@ export interface Lead {
   companyName?: string;
   email?: string;
   phone?: string;
-  status: 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'LOST';
+  status: 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST';
   source?: string;
   notes?: string;
+  score: number;
+  grade?: 'A' | 'B' | 'C';
+  estimatedValue: number;
+  assignedTo?: string;
   quotes?: Quote[];
+  activities?: LeadActivity[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
   companyId: string;
+}
+
+export interface LeadActivity {
+  id: string;
+  leadId: string;
+  type: 'CALL' | 'MEETING' | 'EMAIL' | 'NOTE' | 'STATUS_CHANGE' | 'QUOTE_SENT';
+  content: string;
+  userId?: string;
+  createdAt?: string | Date;
+}
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  companyId: string;
+  createdAt?: string | Date;
 }
 
 export interface Quote {

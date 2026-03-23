@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Plus, Search, MapPin, Calendar, Clock, AlertTriangle, CheckCircle2, MoreVertical, Edit2, Trash2, ArrowUpRight, BarChart3, Target, Info, CheckSquare, X, Users, ClipboardList, Check, Wallet, ChevronRight, FileText, Construction, Briefcase, DollarSign, HardHat, ShieldCheck, Zap, UserCheck, Calculator } from 'lucide-react';
-import { Project, Worker, Invoice, CostCenter, DailyReport, User } from '../types';
+import React, { useState, useMemo } from 'react';
+import { Plus, Search, MapPin, Calendar, Clock, AlertTriangle, CheckCircle2, MoreVertical, Edit2, Trash2, ArrowUpRight, BarChart3, Target, Info, CheckSquare, X, Users, ClipboardList, Check, Wallet, ChevronRight, FileText, Construction, Briefcase, DollarSign, HardHat, ShieldCheck, Zap, UserCheck, Calculator, Flag, Timer, Trash } from 'lucide-react';
+import { Project, Worker, Invoice, CostCenter, DailyReport, User, ProjectMilestone, TimeEntry } from '../types';
 import { formatCLP } from '../constants';
 
 interface ProjectsPageProps {
@@ -392,6 +392,14 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
                             <Users size={28} className="text-white/20" />
                           </div>
                         </div>
+                      </div>
+
+                      {/* Hitos y Time Tracking */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Hitos */}
+                        <MilestonesSection project={viewingProject} milestones={viewingProject.milestones || []} />
+                        {/* Time Tracking */}
+                        <TimeTrackingSection project={viewingProject} timeEntries={viewingProject.timeEntries || []} workers={workers} currentUser={currentUser} />
                       </div>
 
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -842,6 +850,244 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
       }
     </div >
   );
+};
+
+// --- Milestones Section ---
+const MilestonesSection: React.FC<{ project: Project; milestones: ProjectMilestone[] }> = ({ project, milestones }) => {
+    const [showForm, setShowForm] = useState(false);
+    const [editing, setEditing] = useState<ProjectMilestone | null>(null);
+    const [form, setForm] = useState({ name: '', description: '', status: 'PENDING', dueDate: '' });
+
+    const API_URL = (window as any).ENV?.API_URL || '';
+    const companyId = localStorage.getItem('companyId');
+
+    const handleSave = async () => {
+        if (!form.name) return;
+        try {
+            if (editing) {
+                await fetch(`${API_URL}/milestones/${editing.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'x-company-id': companyId || '' },
+                    body: JSON.stringify(form)
+                });
+            } else {
+                await fetch(`${API_URL}/projects/${project.id}/milestones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-company-id': companyId || '' },
+                    body: JSON.stringify({ ...form, order: milestones.length })
+                });
+            }
+            window.location.reload();
+        } catch (e) { console.error(e); }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('¿Eliminar hito?')) return;
+        try {
+            await fetch(`${API_URL}/milestones/${id}`, { method: 'DELETE', headers: { 'x-company-id': companyId || '' } });
+            window.location.reload();
+        } catch (e) { console.error(e); }
+    };
+
+    const statusColors: Record<string, string> = {
+        PENDING: 'bg-slate-100 text-slate-600',
+        IN_PROGRESS: 'bg-blue-100 text-blue-700',
+        COMPLETED: 'bg-green-100 text-green-700',
+        DELAYED: 'bg-red-100 text-red-700',
+    };
+
+    const completedCount = milestones.filter(m => m.status === 'COMPLETED').length;
+    const progress = milestones.length > 0 ? Math.round((completedCount / milestones.length) * 100) : 0;
+
+    return (
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                        <Flag size={20} />
+                    </div>
+                    <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">Hitos del Proyecto</h4>
+                </div>
+                <button onClick={() => { setEditing(null); setForm({ name: '', description: '', status: 'PENDING', dueDate: '' }); setShowForm(true); }} className="text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 flex items-center">
+                    <Plus size={14} className="mr-1" /> Agregar
+                </button>
+            </div>
+
+            {/* Progress bar */}
+            {milestones.length > 0 && (
+                <div className="bg-slate-50 p-4 rounded-xl">
+                    <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
+                        <span>Progreso: {completedCount}/{milestones.length} hitos</span>
+                        <span className="text-amber-600">{progress}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                    </div>
+                </div>
+            )}
+
+            {/* Form */}
+            {showForm && (
+                <div className="bg-slate-50 p-4 rounded-xl space-y-3">
+                    <input type="text" placeholder="Nombre del hito" className="w-full p-2 border border-slate-200 rounded-lg text-sm" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                    <input type="text" placeholder="Descripción (opcional)" className="w-full p-2 border border-slate-200 rounded-lg text-sm" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+                    <div className="grid grid-cols-2 gap-3">
+                        <select className="p-2 border border-slate-200 rounded-lg text-sm" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
+                            <option value="PENDING">Pendiente</option>
+                            <option value="IN_PROGRESS">En Progreso</option>
+                            <option value="COMPLETED">Completado</option>
+                            <option value="DELAYED">Retrasado</option>
+                        </select>
+                        <input type="date" className="p-2 border border-slate-200 rounded-lg text-sm" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} />
+                    </div>
+                    <div className="flex gap-2">
+                        <button onClick={handleSave} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg">{editing ? 'Actualizar' : 'Crear'}</button>
+                        <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-slate-200 text-slate-600 text-xs font-bold rounded-lg">Cancelar</button>
+                    </div>
+                </div>
+            )}
+
+            {/* List */}
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+                {milestones.map((m, i) => (
+                    <div key={m.id} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${statusColors[m.status] || statusColors.PENDING}`}>
+                            {m.status === 'COMPLETED' ? <Check size={14} /> : i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-bold ${m.status === 'COMPLETED' ? 'line-through text-slate-400' : 'text-slate-800'}`}>{m.name}</p>
+                            {m.dueDate && <p className="text-[10px] text-slate-400">Vence: {new Date(m.dueDate).toLocaleDateString()}</p>}
+                        </div>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                            <button onClick={() => { setEditing(m); setForm({ name: m.name, description: m.description || '', status: m.status, dueDate: m.dueDate ? String(m.dueDate).split('T')[0] : '' }); setShowForm(true); }} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"><Edit2 size={12} /></button>
+                            <button onClick={() => handleDelete(m.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash size={12} /></button>
+                        </div>
+                    </div>
+                ))}
+                {milestones.length === 0 && <p className="text-xs text-slate-400 italic text-center py-4">No hay hitos definidos</p>}
+            </div>
+        </div>
+    );
+};
+
+// --- Time Tracking Section ---
+const TimeTrackingSection: React.FC<{ project: Project; timeEntries: TimeEntry[]; workers: Worker[]; currentUser: any }> = ({ project, timeEntries, workers, currentUser }) => {
+    const [showForm, setShowForm] = useState(false);
+    const [form, setForm] = useState({ workerId: '', date: new Date().toISOString().split('T')[0], hours: 0, description: '' });
+
+    const API_URL = (window as any).ENV?.API_URL || '';
+    const companyId = localStorage.getItem('companyId');
+
+    const handleSave = async () => {
+        if (!form.workerId || form.hours <= 0) return;
+        try {
+            await fetch(`${API_URL}/projects/${project.id}/time-entries`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-company-id': companyId || '' },
+                body: JSON.stringify({ ...form, userId: currentUser?.id })
+            });
+            window.location.reload();
+        } catch (e) { console.error(e); }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('¿Eliminar registro?')) return;
+        try {
+            await fetch(`${API_URL}/time-entries/${id}`, { method: 'DELETE', headers: { 'x-company-id': companyId || '' } });
+            window.location.reload();
+        } catch (e) { console.error(e); }
+    };
+
+    const totalHours = timeEntries.reduce((sum, e) => sum + e.hours, 0);
+    const byWorker = useMemo(() => {
+        const map: Record<string, { worker: Worker; total: number }> = {};
+        timeEntries.forEach(e => {
+            if (!map[e.workerId]) map[e.workerId] = { worker: workers.find(w => w.id === e.workerId) || (e.worker as Worker), total: 0 };
+            map[e.workerId].total += e.hours;
+        });
+        return Object.values(map).sort((a, b) => b.total - a.total);
+    }, [timeEntries, workers]);
+
+    return (
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
+                        <Timer size={20} />
+                    </div>
+                    <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">Control de Tiempo</h4>
+                </div>
+                <button onClick={() => { setForm({ workerId: '', date: new Date().toISOString().split('T')[0], hours: 0, description: '' }); setShowForm(true); }} className="text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg hover:bg-purple-200 flex items-center">
+                    <Plus size={14} className="mr-1" /> Registrar
+                </button>
+            </div>
+
+            {/* Summary */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-900 p-4 rounded-xl text-center">
+                    <p className="text-2xl font-black text-white">{totalHours.toFixed(1)}</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold">Horas Totales</p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-xl text-center">
+                    <p className="text-2xl font-black text-purple-700">{timeEntries.length}</p>
+                    <p className="text-[10px] text-purple-500 uppercase font-bold">Registros</p>
+                </div>
+            </div>
+
+            {/* Form */}
+            {showForm && (
+                <div className="bg-slate-50 p-4 rounded-xl space-y-3">
+                    <select className="w-full p-2 border border-slate-200 rounded-lg text-sm" value={form.workerId} onChange={e => setForm({ ...form, workerId: e.target.value })}>
+                        <option value="">Seleccionar trabajador...</option>
+                        {workers.filter(w => (project as any).workerIds?.includes(w.id)).map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                    </select>
+                    <div className="grid grid-cols-2 gap-3">
+                        <input type="date" className="p-2 border border-slate-200 rounded-lg text-sm" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
+                        <input type="number" min="0.5" step="0.5" placeholder="Horas" className="p-2 border border-slate-200 rounded-lg text-sm" value={form.hours || ''} onChange={e => setForm({ ...form, hours: Number(e.target.value) })} />
+                    </div>
+                    <input type="text" placeholder="Descripción del trabajo..." className="w-full p-2 border border-slate-200 rounded-lg text-sm" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+                    <div className="flex gap-2">
+                        <button onClick={handleSave} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg">Registrar</button>
+                        <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-slate-200 text-slate-600 text-xs font-bold rounded-lg">Cancelar</button>
+                    </div>
+                </div>
+            )}
+
+            {/* By Worker */}
+            <div className="space-y-2">
+                <p className="text-[10px] font-black text-slate-400 uppercase">Horas por Trabajador</p>
+                {byWorker.map(({ worker, total }) => (
+                    <div key={worker.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-xs font-black text-purple-700">
+                                {worker.name.charAt(0)}
+                            </div>
+                            <span className="text-xs font-bold text-slate-700">{worker.name}</span>
+                        </div>
+                        <span className="text-sm font-black text-purple-700">{total.toFixed(1)}h</span>
+                    </div>
+                ))}
+                {byWorker.length === 0 && <p className="text-xs text-slate-400 italic text-center py-2">Sin registros de tiempo</p>}
+            </div>
+
+            {/* Recent entries */}
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+                <p className="text-[10px] font-black text-slate-400 uppercase">Registros Recientes</p>
+                {timeEntries.slice(0, 5).map(e => (
+                    <div key={e.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs group">
+                        <div>
+                            <span className="font-bold text-slate-700">{new Date(e.date).toLocaleDateString()}</span>
+                            <span className="text-slate-400 ml-2">{workers.find(w => w.id === e.workerId)?.name || 'Trabajador'}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <span className="font-bold text-purple-700">{e.hours}h</span>
+                            <button onClick={() => handleDelete(e.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600"><Trash size={10} /></button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 };
 
 export default ProjectsPage;

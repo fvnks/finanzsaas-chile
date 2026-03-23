@@ -696,10 +696,77 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                                 }
                             } catch (err) { console.error(err); }
                         }}
+                        onUpdate={async (id, r) => {
+                            try {
+                                const res = await fetch(`${API_URL}/daily-reports/${id}`, {
+                                    method: 'PUT',
+                                    headers: getHeaders(),
+                                    body: JSON.stringify(r)
+                                });
+                                if (res.ok) {
+                                    const { report, updatedProject } = await res.json();
+                                    setDailyReports(dailyReports.map(rep => rep.id === id ? report : rep));
+                                    if (updatedProject) {
+                                        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+                                    }
+                                }
+                            } catch (err) { console.error(err); }
+                        }}
                         onDelete={async (id) => {
                             try {
                                 await fetch(`${API_URL}/daily-reports/${id}`, { method: 'DELETE', headers: getHeaders() });
                                 setDailyReports(dailyReports.filter(r => r.id !== id));
+                            } catch (e) { console.error(e); }
+                        }}
+                        onUploadAttachment={async (id, file) => {
+                            try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                const res = await fetch(`${API_URL}/daily-reports/${id}/attachments`, {
+                                    method: 'POST',
+                                    headers: { 'x-company-id': localStorage.getItem('companyId') || '' },
+                                    body: formData
+                                });
+                                if (res.ok) {
+                                    const updated = await res.json();
+                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
+                                }
+                            } catch (e) { console.error(e); }
+                        }}
+                        onRemoveAttachment={async (id, url) => {
+                            try {
+                                const res = await fetch(`${API_URL}/daily-reports/${id}/attachments?url=${encodeURIComponent(url)}`, { method: 'DELETE', headers: getHeaders() });
+                                if (res.ok) {
+                                    const updated = await res.json();
+                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
+                                }
+                            } catch (e) { console.error(e); }
+                        }}
+                        onSubmit={async (id) => {
+                            try {
+                                const res = await fetch(`${API_URL}/daily-reports/${id}/submit`, { method: 'POST', headers: getHeaders() });
+                                if (res.ok) {
+                                    const updated = await res.json();
+                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
+                                }
+                            } catch (e) { console.error(e); }
+                        }}
+                        onApprove={async (id) => {
+                            try {
+                                const res = await fetch(`${API_URL}/daily-reports/${id}/approve`, { method: 'POST', headers: getHeaders() });
+                                if (res.ok) {
+                                    const updated = await res.json();
+                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
+                                }
+                            } catch (e) { console.error(e); }
+                        }}
+                        onReject={async (id) => {
+                            try {
+                                const res = await fetch(`${API_URL}/daily-reports/${id}/reject`, { method: 'POST', headers: getHeaders() });
+                                if (res.ok) {
+                                    const updated = await res.json();
+                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
+                                }
                             } catch (e) { console.error(e); }
                         }}
                     />

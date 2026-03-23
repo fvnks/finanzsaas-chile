@@ -21,6 +21,7 @@ model User {
   updatedAt          DateTime      @updatedAt
   dailyReports       DailyReport[]
   planMarks          PlanMark[]
+  timeEntries        TimeEntry[]
   companies          Company[]     @relation("UserCompanies")
 }
 
@@ -50,6 +51,7 @@ model Company {
   costCenters           CostCenter[]
   crews                 Crew[]
   DailyReport           DailyReport[]
+  reportTemplates       ReportTemplate[]
   documents             Document[]
   requirements          DocumentRequirement[]
   epps                  Epp[]
@@ -59,6 +61,7 @@ model Company {
   invoices              Invoice[]
   jobTitles             JobTitle[]
   leads                 Lead[]
+  emailTemplates        EmailTemplate[]
   payments              Payment[]
   Plan                  Plan[]
   Product               Product[]
@@ -116,9 +119,40 @@ model Project {
   inventoryMovements   InventoryMovement[]
   invoices             Invoice[]
   plans                Plan[]
+  milestones           ProjectMilestone[]
+  timeEntries          TimeEntry[]
   client               Client?               @relation(fields: [clientId], references: [id])
   company              Company               @relation(fields: [companyId], references: [id])
   purchaseOrders       PurchaseOrder[]
+}
+
+model ProjectMilestone {
+  id          String   @id @default(uuid())
+  projectId   String
+  name        String
+  description String?
+  status      String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, DELAYED
+  dueDate     DateTime?
+  completedAt DateTime?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model TimeEntry {
+  id        String   @id @default(uuid())
+  projectId String
+  workerId  String
+  userId    String
+  date      DateTime
+  hours     Float    @default(0)
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  worker    Worker   @relation(fields: [workerId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model CostCenter {
@@ -156,6 +190,7 @@ model Worker {
   company         Company          @relation(fields: [companyId], references: [id])
   crews           Crew[]           @relation("CrewWorkers")
   planMarks       PlanMark[]       @relation("PlanMarkWorkers")
+  timeEntries     TimeEntry[]
 
   @@unique([rut, companyId])
 }
@@ -262,17 +297,32 @@ model InvoiceItem {
 }
 
 model DailyReport {
+  id         String   @id @default(uuid())
+  userId     String
+  date       DateTime
+  content    String
+  projectId  String?
+  status     String   @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED
+  attachments String[] @default([])
+  templateId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  companyId  String
+  company    Company     @relation(fields: [companyId], references: [id])
+  project    Project?    @relation(fields: [projectId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+  template   ReportTemplate? @relation(fields: [templateId], references: [id])
+}
+
+model ReportTemplate {
   id        String   @id @default(uuid())
-  userId    String
-  date      DateTime
+  name      String
   content   String
-  projectId String?
+  companyId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  companyId String
   company   Company  @relation(fields: [companyId], references: [id])
-  project   Project? @relation(fields: [projectId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  reports   DailyReport[]
 }
 
 model PurchaseOrder {
@@ -584,19 +634,45 @@ model SubscriptionPlan {
 }
 
 model Lead {
-  id          String   @id @default(uuid())
-  name        String
-  companyName String?
-  email       String?
-  phone       String?
-  status      String   @default("NEW")
-  source      String?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
-  quotes      Quote[]
+  id            String   @id @default(uuid())
+  name          String
+  companyName   String?
+  email         String?
+  phone         String?
+  status        String   @default("NEW")
+  source        String?
+  notes         String?
+  score         Int      @default(0) // 0-100
+  grade         String?  // A, B, C
+  estimatedValue Float?  @default(0)
+  assignedTo    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id])
+  quotes        Quote[]
+  activities    LeadActivity[]
+}
+
+model LeadActivity {
+  id        String   @id @default(uuid())
+  leadId    String
+  type      String   // CALL, MEETING, EMAIL, NOTE, STATUS_CHANGE, QUOTE_SENT
+  content   String
+  userId    String?
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model EmailTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  subject   String
+  body      String
+  companyId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  company   Company  @relation(fields: [companyId], references: [id])
 }
 
 model Quote {

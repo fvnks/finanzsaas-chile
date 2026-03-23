@@ -562,7 +562,7 @@ router.get("/projects", checkModuleAccess("PROJECTS"), async (req, res) => {
         const projects = await prisma.project.findMany({
             where: { companyId },
             orderBy: { createdAt: 'desc' },
-            include: { client: true } // Fetch client name if needed
+            include: { client: true, milestones: { orderBy: { order: 'asc' } }, timeEntries: { include: { worker: true }, orderBy: { date: 'desc' } } }
         });
         res.json(projects);
     } catch (err) {
@@ -634,6 +634,177 @@ router.delete("/projects/:id", async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete project" });
+    }
+});
+
+// --- PROJECT MILESTONES ---
+router.get("/projects/:projectId/milestones", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const project = await prisma.project.findFirst({ where: { id: projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Project not found" });
+        const milestones = await prisma.projectMilestone.findMany({
+            where: { projectId },
+            orderBy: { order: 'asc' }
+        });
+        res.json(milestones);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch milestones" });
+    }
+});
+
+router.post("/projects/:projectId/milestones", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const { name, description, status, dueDate, order } = req.body;
+        const project = await prisma.project.findFirst({ where: { id: projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Project not found" });
+        const milestone = await prisma.projectMilestone.create({
+            data: { projectId, name, description, status: status || 'PENDING', dueDate: dueDate ? new Date(dueDate) : null, order: order || 0 }
+        });
+        res.json(milestone);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to create milestone" });
+    }
+});
+
+router.put("/milestones/:id", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const { name, description, status, dueDate, order } = req.body;
+        const existing = await prisma.projectMilestone.findFirst({ where: { id } });
+        if (!existing) return res.status(404).json({ error: "Milestone not found" });
+        const project = await prisma.project.findFirst({ where: { id: existing.projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Milestone not found" });
+        const milestone = await prisma.projectMilestone.update({
+            where: { id },
+            data: {
+                name, description, status, dueDate: dueDate ? new Date(dueDate) : undefined, order,
+                completedAt: status === 'COMPLETED' && existing.status !== 'COMPLETED' ? new Date() : status !== 'COMPLETED' ? null : undefined
+            }
+        });
+        res.json(milestone);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to update milestone" });
+    }
+});
+
+router.delete("/milestones/:id", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const existing = await prisma.projectMilestone.findFirst({ where: { id } });
+        if (!existing) return res.status(404).json({ error: "Milestone not found" });
+        const project = await prisma.project.findFirst({ where: { id: existing.projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Milestone not found" });
+        await prisma.projectMilestone.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete milestone" });
+    }
+});
+
+// --- TIME ENTRIES ---
+router.get("/projects/:projectId/time-entries", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const { workerId, dateFrom, dateTo } = req.query;
+        const project = await prisma.project.findFirst({ where: { id: projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Project not found" });
+        const where: any = { projectId };
+        if (workerId) where.workerId = workerId as string;
+        if (dateFrom || dateTo) {
+            where.date = {};
+            if (dateFrom) where.date.gte = new Date(dateFrom as string);
+            if (dateTo) where.date.lte = new Date(dateTo as string);
+        }
+        const entries = await prisma.timeEntry.findMany({
+            where,
+            orderBy: { date: 'desc' },
+            include: { worker: true, user: true }
+        });
+        res.json(entries);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch time entries" });
+    }
+});
+
+router.post("/projects/:projectId/time-entries", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const { workerId, userId, date, hours, description } = req.body;
+        const project = await prisma.project.findFirst({ where: { id: projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Project not found" });
+        // Verify worker belongs to company
+        if (workerId) {
+            const worker = await prisma.worker.findFirst({ where: { id: workerId, companyId } });
+            if (!worker) return res.status(404).json({ error: "Worker not found" });
+        }
+        const entry = await prisma.timeEntry.create({
+            data: { projectId, workerId, userId, date: new Date(date), hours: Number(hours) || 0, description }
+        });
+        res.json(entry);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to create time entry" });
+    }
+});
+
+router.put("/time-entries/:id", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const { workerId, date, hours, description } = req.body;
+        const existing = await prisma.timeEntry.findFirst({ where: { id } });
+        if (!existing) return res.status(404).json({ error: "Time entry not found" });
+        const project = await prisma.project.findFirst({ where: { id: existing.projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Time entry not found" });
+        const entry = await prisma.timeEntry.update({
+            where: { id },
+            data: { workerId, date: date ? new Date(date) : undefined, hours: hours !== undefined ? Number(hours) : undefined, description }
+        });
+        res.json(entry);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to update time entry" });
+    }
+});
+
+router.delete("/time-entries/:id", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const existing = await prisma.timeEntry.findFirst({ where: { id } });
+        if (!existing) return res.status(404).json({ error: "Time entry not found" });
+        const project = await prisma.project.findFirst({ where: { id: existing.projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Time entry not found" });
+        await prisma.timeEntry.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete time entry" });
+    }
+});
+
+// --- PROJECT TIME SUMMARY ---
+router.get("/projects/:projectId/time-summary", checkModuleAccess("PROJECTS"), async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const companyId = req.headers['x-company-id'] as string;
+        const project = await prisma.project.findFirst({ where: { id: projectId, companyId } });
+        if (!project) return res.status(404).json({ error: "Project not found" });
+        const entries = await prisma.timeEntry.findMany({ where: { projectId } });
+        const totalHours = entries.reduce((sum, e) => sum + e.hours, 0);
+        const byWorker = await prisma.timeEntry.groupBy({
+            by: ['workerId'],
+            where: { projectId },
+            _sum: { hours: true }
+        });
+        res.json({ totalHours, byWorker, entryCount: entries.length });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch time summary" });
     }
 });
 
@@ -1158,14 +1329,93 @@ router.delete("/job-titles/:id", async (req, res) => {
     }
 });
 
+// --- REPORT TEMPLATES ---
+router.get("/report-templates", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const templates = await prisma.reportTemplate.findMany({
+            where: { companyId },
+            orderBy: { name: 'asc' }
+        });
+        res.json(templates);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch report templates" });
+    }
+});
+
+router.post("/report-templates", async (req, res) => {
+    try {
+        const { name, content } = req.body;
+        const companyId = (req as any).companyId;
+        if (!name || !content) return res.status(400).json({ error: "Name and content are required" });
+        const template = await prisma.reportTemplate.create({
+            data: { name, content, companyId }
+        });
+        res.json(template);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to create report template" });
+    }
+});
+
+router.put("/report-templates/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, content } = req.body;
+        const companyId = (req as any).companyId;
+        const template = await prisma.reportTemplate.findFirst({ where: { id, companyId } });
+        if (!template) return res.status(404).json({ error: "Template not found" });
+        const updated = await prisma.reportTemplate.update({
+            where: { id },
+            data: { name, content }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update report template" });
+    }
+});
+
+router.delete("/report-templates/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        const template = await prisma.reportTemplate.findFirst({ where: { id, companyId } });
+        if (!template) return res.status(404).json({ error: "Template not found" });
+        await prisma.reportTemplate.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to delete report template" });
+    }
+});
+
 // --- DAILY REPORTS ---
 router.get("/daily-reports", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
+        const { status, projectId, dateFrom, dateTo, search } = req.query;
+        const where: any = { companyId };
+        if (status) where.status = status;
+        if (projectId) where.projectId = projectId;
+        if (dateFrom || dateTo) {
+            where.date = {};
+            if (dateFrom) where.date.gte = new Date(dateFrom as string);
+            if (dateTo) where.date.lte = new Date(dateTo as string);
+        }
         const reports = await prisma.dailyReport.findMany({
-            where: { companyId },
-            orderBy: { date: 'desc' }
+            where,
+            orderBy: { date: 'desc' },
+            include: { template: true }
         });
+        if (search) {
+            const s = (search as string).toLowerCase();
+            return res.json(reports.filter(r =>
+                r.content.toLowerCase().includes(s) ||
+                (r.project && r.project.name.toLowerCase().includes(s))
+            ));
+        }
         res.json(reports);
     } catch (err) {
         console.error(err);
@@ -1175,15 +1425,12 @@ router.get("/daily-reports", async (req, res) => {
 
 router.post("/daily-reports", async (req, res) => {
     try {
-        const { userId, date, content, projectId, progress } = req.body;
+        const { userId, date, content, projectId, progress, status, templateId } = req.body;
         const companyId = (req as any).companyId;
-
-        // Verify project belongs to company
         if (projectId) {
             const proj = await prisma.project.findFirst({ where: { id: projectId, companyId } });
             if (!proj) return res.status(404).json({ error: "Project not found" });
         }
-
         const result = await prisma.$transaction(async (tx) => {
             const report = await tx.dailyReport.create({
                 data: {
@@ -1191,21 +1438,20 @@ router.post("/daily-reports", async (req, res) => {
                     date: date ? new Date(date) : new Date(),
                     content,
                     projectId: projectId || undefined,
+                    status: status || 'DRAFT',
+                    templateId: templateId || undefined,
                     companyId
                 }
             });
-
             if (projectId && progress !== undefined) {
                 await tx.project.update({
                     where: { id: projectId },
                     data: { progress: Number(progress) }
                 });
             }
-
             const updatedProject = projectId ? await tx.project.findUnique({ where: { id: projectId } }) : null;
             return { report, updatedProject };
         });
-
         res.json(result);
     } catch (err) {
         console.error(err);
@@ -1213,11 +1459,148 @@ router.post("/daily-reports", async (req, res) => {
     }
 });
 
+router.put("/daily-reports/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { date, content, projectId, progress, status } = req.body;
+        const companyId = (req as any).companyId;
+        const existing = await prisma.dailyReport.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Daily Report not found" });
+        if (projectId) {
+            const proj = await prisma.project.findFirst({ where: { id: projectId, companyId } });
+            if (!proj) return res.status(404).json({ error: "Project not found" });
+        }
+        const result = await prisma.$transaction(async (tx) => {
+            const report = await tx.dailyReport.update({
+                where: { id },
+                data: {
+                    date: date ? new Date(date) : undefined,
+                    content,
+                    projectId: projectId || undefined,
+                    status: status || undefined
+                }
+            });
+            if (projectId && progress !== undefined) {
+                await tx.project.update({
+                    where: { id: projectId },
+                    data: { progress: Number(progress) }
+                });
+            }
+            const updatedProject = projectId ? await tx.project.findUnique({ where: { id: projectId } }) : null;
+            return { report, updatedProject };
+        });
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update daily report" });
+    }
+});
+
+router.post("/daily-reports/:id/attachments", upload.single('file'), async (req: any, res: any) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        if (!req.file) return res.status(400).json({ error: "No file provided" });
+        const report = await prisma.dailyReport.findFirst({ where: { id, companyId } });
+        if (!report) return res.status(404).json({ error: "Daily Report not found" });
+        const uploadResult = await uploadToOneDrive(
+            req.file.buffer,
+            req.file.originalname,
+            `/ReportesDiarios/${companyId}/${id}`
+        );
+        const updated = await prisma.dailyReport.update({
+            where: { id },
+            data: { attachments: [...(report.attachments || []), uploadResult.webUrl] }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to upload attachment" });
+    }
+});
+
+router.delete("/daily-reports/:id/attachments", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { url } = req.query;
+        const companyId = (req as any).companyId;
+        const report = await prisma.dailyReport.findFirst({ where: { id, companyId } });
+        if (!report) return res.status(404).json({ error: "Daily Report not found" });
+        const updated = await prisma.dailyReport.update({
+            where: { id },
+            data: { attachments: (report.attachments || []).filter((a: string) => a !== url) }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to remove attachment" });
+    }
+});
+
+router.post("/daily-reports/:id/submit", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        const report = await prisma.dailyReport.findFirst({ where: { id, companyId } });
+        if (!report) return res.status(404).json({ error: "Daily Report not found" });
+        if (report.status !== 'DRAFT') return res.status(400).json({ error: "Only draft reports can be submitted" });
+        const updated = await prisma.dailyReport.update({
+            where: { id },
+            data: { status: 'PENDING_APPROVAL' }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to submit report" });
+    }
+});
+
+router.post("/daily-reports/:id/approve", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        const userRole = (req as any).user?.role;
+        if (userRole !== 'ADMIN' && userRole !== 'SUPERVISOR') {
+            return res.status(403).json({ error: "Only admins or supervisors can approve reports" });
+        }
+        const report = await prisma.dailyReport.findFirst({ where: { id, companyId } });
+        if (!report) return res.status(404).json({ error: "Daily Report not found" });
+        const updated = await prisma.dailyReport.update({
+            where: { id },
+            data: { status: 'APPROVED' }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to approve report" });
+    }
+});
+
+router.post("/daily-reports/:id/reject", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        const userRole = (req as any).user?.role;
+        if (userRole !== 'ADMIN' && userRole !== 'SUPERVISOR') {
+            return res.status(403).json({ error: "Only admins or supervisors can reject reports" });
+        }
+        const report = await prisma.dailyReport.findFirst({ where: { id, companyId } });
+        if (!report) return res.status(404).json({ error: "Daily Report not found" });
+        const updated = await prisma.dailyReport.update({
+            where: { id },
+            data: { status: 'REJECTED' }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to reject report" });
+    }
+});
+
 router.delete("/daily-reports/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
-
         const deleted = await deleteOwnedRecord(prisma.dailyReport, id, companyId);
         if (!deleted) return res.status(404).json({ error: "Daily Report not found" });
         res.json({ success: true });
@@ -2637,11 +3020,23 @@ router.delete("/plans/:id", requireAdmin, async (req, res) => {
 router.get("/leads", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
+        const { search, status, minScore } = req.query;
+        const where: any = { companyId };
+        if (status) where.status = status;
+        if (minScore) where.score = { gte: Number(minScore) };
         const leads = await prisma.lead.findMany({
-            where: { companyId },
-            orderBy: { createdAt: 'desc' },
-            include: { quotes: true }
+            where,
+            orderBy: { score: 'desc' },
+            include: { quotes: true, activities: { orderBy: { createdAt: 'desc' }, take: 10 } }
         });
+        if (search) {
+            const s = (search as string).toLowerCase();
+            return res.json(leads.filter(l =>
+                l.name.toLowerCase().includes(s) ||
+                (l.companyName || '').toLowerCase().includes(s) ||
+                (l.email || '').toLowerCase().includes(s)
+            ));
+        }
         res.json(leads);
     } catch (err: any) {
         res.status(500).json({ error: "Failed to fetch leads", details: err.message });
@@ -2651,18 +3046,22 @@ router.get("/leads", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) =
 router.post("/leads", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
-        const { name, companyName, email, phone, status, source, notes } = req.body;
+        const { name, companyName, email, phone, status, source, notes, score, grade, estimatedValue, assignedTo } = req.body;
         const lead = await prisma.lead.create({
             data: {
-                name,
-                companyName,
-                email,
-                phone,
+                name, companyName, email, phone,
                 status: status || 'NEW',
-                source,
-                notes,
+                source, notes,
+                score: score || 0,
+                grade,
+                estimatedValue: estimatedValue || 0,
+                assignedTo,
                 companyId
             }
+        });
+        // Log activity
+        await prisma.leadActivity.create({
+            data: { leadId: lead.id, type: 'STATUS_CHANGE', content: `Lead creado con estado: ${lead.status}`, userId: (req as any).user?.id }
         });
         res.json(lead);
     } catch (err: any) {
@@ -2674,33 +3073,126 @@ router.put("/leads/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, re
     try {
         const companyId = (req as any).companyId;
         const { id } = req.params;
-        const { name, companyName, email, phone, status, source, notes } = req.body;
-        
-        const lead = await updateOwnedRecord(prisma.lead, id, companyId, {
-            name,
-            companyName,
-            email,
-            phone,
-            status,
-            source,
-            notes
+        const { name, companyName, email, phone, status, source, notes, score, grade, estimatedValue, assignedTo } = req.body;
+        const existing = await prisma.lead.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Lead not found" });
+        const lead = await prisma.lead.update({
+            where: { id },
+            data: { name, companyName, email, phone, status, source, notes, score, grade, estimatedValue, assignedTo }
         });
-        if (!lead) return res.status(404).json({ error: "Lead not found" });
+        // Log status change activity
+        if (status && status !== existing.status) {
+            await prisma.leadActivity.create({
+                data: { leadId: id, type: 'STATUS_CHANGE', content: `Estado cambiado de ${existing.status} a ${status}`, userId: (req as any).user?.id }
+            });
+        }
         res.json(lead);
     } catch (err: any) {
         res.status(500).json({ error: "Failed to update lead", details: err.message });
     }
 });
 
-router.delete("/leads/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
+router.put("/leads/:id/score", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { score } = req.body;
+        const companyId = (req as any).companyId;
+        const existing = await prisma.lead.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Lead not found" });
+        // Auto-calculate grade based on score
+        let grade: string | null = null;
+        if (score >= 70) grade = 'A';
+        else if (score >= 40) grade = 'B';
+        else if (score > 0) grade = 'C';
+        const lead = await prisma.lead.update({
+            where: { id },
+            data: { score, grade }
+        });
+        res.json(lead);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update score", details: err.message });
+    }
+});
+
+router.post("/leads/:id/activities", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type, content } = req.body;
+        const companyId = (req as any).companyId;
+        const lead = await prisma.lead.findFirst({ where: { id, companyId } });
+        if (!lead) return res.status(404).json({ error: "Lead not found" });
+        const activity = await prisma.leadActivity.create({
+            data: { leadId: id, type, content, userId: (req as any).user?.id }
+        });
+        res.json(activity);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create activity", details: err.message });
+    }
+});
+
+router.get("/leads/:id/activities", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        const lead = await prisma.lead.findFirst({ where: { id, companyId } });
+        if (!lead) return res.status(404).json({ error: "Lead not found" });
+        const activities = await prisma.leadActivity.findMany({
+            where: { leadId: id },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(activities);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch activities", details: err.message });
+    }
+});
+
+// --- CRM: EMAIL TEMPLATES ---
+router.get("/email-templates", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
     try {
         const companyId = (req as any).companyId;
+        const templates = await prisma.emailTemplate.findMany({ where: { companyId }, orderBy: { name: 'asc' } });
+        res.json(templates);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to fetch templates", details: err.message });
+    }
+});
+
+router.post("/email-templates", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { name, subject, body } = req.body;
+        if (!name || !subject || !body) return res.status(400).json({ error: "All fields required" });
+        const template = await prisma.emailTemplate.create({ data: { name, subject, body, companyId } });
+        res.json(template);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to create template", details: err.message });
+    }
+});
+
+router.put("/email-templates/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
+    try {
         const { id } = req.params;
-        const deleted = await deleteOwnedRecord(prisma.lead, id, companyId);
-        if (!deleted) return res.status(404).json({ error: "Lead not found" });
+        const { name, subject, body } = req.body;
+        const companyId = (req as any).companyId;
+        const existing = await prisma.emailTemplate.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Template not found" });
+        const template = await prisma.emailTemplate.update({ where: { id }, data: { name, subject, body } });
+        res.json(template);
+    } catch (err: any) {
+        res.status(500).json({ error: "Failed to update template", details: err.message });
+    }
+});
+
+router.delete("/email-templates/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = (req as any).companyId;
+        const existing = await prisma.emailTemplate.findFirst({ where: { id, companyId } });
+        if (!existing) return res.status(404).json({ error: "Template not found" });
+        await prisma.emailTemplate.delete({ where: { id } });
         res.json({ success: true });
     } catch (err: any) {
-        res.status(500).json({ error: "Failed to delete lead", details: err.message });
+        res.status(500).json({ error: "Failed to delete template", details: err.message });
     }
 });
 
