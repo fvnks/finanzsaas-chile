@@ -6,7 +6,13 @@ export const INVOICE_TYPE_ALIASES: Record<string, string> = {
     PURCHASE: "PURCHASE",
     COMPRA: "PURCHASE",
     CREDIT_NOTE: "CREDIT_NOTE",
-    NOTA_CREDITO: "CREDIT_NOTE"
+    NOTA_CREDITO: "CREDIT_NOTE",
+    DEBIT_NOTE: "DEBIT_NOTE",
+    NOTA_DEBITO: "DEBIT_NOTE",
+    GUIA_DESPACHO: "GUIA_DESPACHO",
+    DISPATCH_GUIDE: "GUIA_DESPACHO",
+    FACTURA_EXENTA: "FACTURA_EXENTA",
+    EXEMPT_INVOICE: "FACTURA_EXENTA"
 };
 
 export const normalizeInvoiceType = (value?: string) => {
@@ -21,9 +27,15 @@ export const getInvoiceTypeLabel = (value?: string) => {
         case "SALE":
             return "Venta";
         case "CREDIT_NOTE":
-            return "Nota de Credito";
+            return "Nota de Crédito";
+        case "DEBIT_NOTE":
+            return "Nota de Débito";
+        case "GUIA_DESPACHO":
+            return "Guía de Despacho";
+        case "FACTURA_EXENTA":
+            return "Factura Exenta";
         default:
-            return "Documento";
+            return value?.replace(/_/g, ' ') || "Documento";
     }
 };
 

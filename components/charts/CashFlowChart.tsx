@@ -3,19 +3,31 @@ import React, { useMemo } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { Invoice, InvoiceType } from '../../types';
+import { Invoice } from '../../types';
 import { formatCLP } from '../../constants';
 
 interface CashFlowChartProps {
     invoices: Invoice[];
 }
 
+const normalizeInvoiceType = (value?: string) => {
+    if (!value) return "SALE";
+    const aliases: Record<string, string> = {
+        SALE: "SALE", VENTA: "SALE",
+        PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
+        CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
+        DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
+        GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
+        FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
+    };
+    return aliases[value] || value;
+};
+
 const CashFlowChart: React.FC<CashFlowChartProps> = ({ invoices }) => {
     const data = useMemo(() => {
         const monthlyData: Record<string, { name: string; income: number; expense: number; monthIndex: number }> = {};
 
         invoices.forEach(inv => {
-            // Filter out cancelled
             if (inv.status === 'CANCELLED') return;
 
             const date = new Date(inv.date);
@@ -27,23 +39,15 @@ const CashFlowChart: React.FC<CashFlowChartProps> = ({ invoices }) => {
                     name: monthName,
                     income: 0,
                     expense: 0,
-                    monthIndex: date.getTime() // Crude sort key
+                    monthIndex: date.getTime()
                 };
             }
 
-            if (inv.type === InvoiceType.VENTA || inv.type === InvoiceType.NOTA_DEBITO) {
+            const normType = normalizeInvoiceType(inv.type);
+            if (normType === 'SALE' || normType === 'DEBIT_NOTE') {
                 monthlyData[monthKey].income += inv.total;
-            } else if (inv.type === InvoiceType.COMPRA || inv.type === InvoiceType.NOTA_CREDITO) {
-                // Technically NC on Sales reduces Income, but usually tracked as Expense/Contra-revenue for simple visuals
-                // Or strictly: Review types. If Type is NC, checks 'relatedInvoice'.
-                // For simplicity in this overview:
-                // Sales = Income
-                // Purchases = Expense
-                // NC usually reduces the respective category, but if type is unique, let's treat Purchases as Expense.
-                // Let's stick to strict: VENTA -> Income, COMPRA -> Expense.
-                if (inv.type === InvoiceType.COMPRA) {
-                    monthlyData[monthKey].expense += inv.total;
-                }
+            } else if (normType === 'PURCHASE' || normType === 'CREDIT_NOTE') {
+                monthlyData[monthKey].expense += inv.total;
             }
         });
 

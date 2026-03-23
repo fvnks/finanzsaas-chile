@@ -33,6 +33,19 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
   const [startDate, setStartDate] = useState<string>('2023-01-01');
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
+  const normalizeInvoiceType = (value?: string) => {
+    if (!value) return "SALE";
+    const aliases: Record<string, string> = {
+      SALE: "SALE", VENTA: "SALE",
+      PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
+      CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
+      DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
+      GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
+      FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
+    };
+    return aliases[value] || value;
+  };
+
   // Filtrado y procesamiento de datos
   const reportData = useMemo(() => {
     const filteredInvoices = invoices.filter(inv => {
@@ -46,15 +59,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
 
     const calculateNetSales = (invs: Invoice[]) => {
       const gross = invs
-        .filter(inv => inv.type === InvoiceType.VENTA || inv.type === InvoiceType.FACTURA_EXENTA)
+        .filter(inv => normalizeInvoiceType(inv.type) === 'SALE' || normalizeInvoiceType(inv.type) === 'FACTURA_EXENTA')
         .reduce((sum, inv) => sum + inv.total, 0);
 
       const cn = invs
-        .filter(inv => inv.type === InvoiceType.NOTA_CREDITO)
+        .filter(inv => normalizeInvoiceType(inv.type) === 'CREDIT_NOTE')
         .reduce((sum, inv) => sum + inv.total, 0);
 
       const dn = invs
-        .filter(inv => inv.type === InvoiceType.NOTA_DEBITO)
+        .filter(inv => normalizeInvoiceType(inv.type) === 'DEBIT_NOTE')
         .reduce((sum, inv) => sum + inv.total, 0);
 
       return { gross, cn, dn, net: gross - cn + dn };
@@ -64,7 +77,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
     const totalSales = globalSales.net; // For compatibility with existing UI props
 
     const totalPurchases = filteredInvoices
-      .filter(inv => inv.type === InvoiceType.COMPRA)
+      .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
       .reduce((sum, inv) => sum + inv.total, 0);
 
     // Group by project
@@ -73,7 +86,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
       const { net: sales, gross, cn, dn } = calculateNetSales(pInvoices);
 
       const purchases = pInvoices
-        .filter(inv => inv.type === InvoiceType.COMPRA)
+        .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
         .reduce((sum, inv) => sum + inv.total, 0);
 
       return {
@@ -96,7 +109,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ invoices, projects, costCente
       const { net: sales } = calculateNetSales(ccInvoices);
 
       const purchases = ccInvoices
-        .filter(inv => inv.type === InvoiceType.COMPRA)
+        .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
         .reduce((sum, inv) => sum + inv.total, 0);
 
       return {

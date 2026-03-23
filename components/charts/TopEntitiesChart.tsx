@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import { Invoice, InvoiceType, Client } from '../../types';
+import { Invoice, Client } from '../../types';
 import { formatCLP } from '../../constants';
 
 interface TopEntitiesChartProps {
@@ -12,6 +12,19 @@ interface TopEntitiesChartProps {
     type: 'CLIENTS' | 'SUPPLIERS';
 }
 
+const normalizeInvoiceType = (value?: string) => {
+    if (!value) return "SALE";
+    const aliases: Record<string, string> = {
+        SALE: "SALE", VENTA: "SALE",
+        PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
+        CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
+        DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
+        GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
+        FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
+    };
+    return aliases[value] || value;
+};
+
 const TopEntitiesChart: React.FC<TopEntitiesChartProps> = ({ invoices, clients, type }) => {
     const data = useMemo(() => {
         const totals: Record<string, number> = {};
@@ -19,18 +32,15 @@ const TopEntitiesChart: React.FC<TopEntitiesChartProps> = ({ invoices, clients, 
         invoices.forEach(inv => {
             if (inv.status === 'CANCELLED') return;
 
-            const targetType = type === 'CLIENTS' ? InvoiceType.VENTA : InvoiceType.COMPRA;
-            if (inv.type !== targetType) return;
+            const targetType = type === 'CLIENTS' ? 'SALE' : 'PURCHASE';
+            if (normalizeInvoiceType(inv.type) !== targetType) return;
 
-            // Use clientId or fallback to a "Unknown" key if null
-            // For Clients, clientId is usually mandatory. For Suppliers (Purchase), usually clientId acts as provider ref.
             const key = inv.clientId || 'unknown';
 
             if (!totals[key]) totals[key] = 0;
             totals[key] += inv.total;
         });
 
-        // Convert to array and sort
         return Object.entries(totals)
             .map(([id, total]) => {
                 const client = clients.find(c => c.id === id);
@@ -40,7 +50,7 @@ const TopEntitiesChart: React.FC<TopEntitiesChartProps> = ({ invoices, clients, 
                 };
             })
             .sort((a, b) => b.total - a.total)
-            .slice(0, 5); // Top 5
+            .slice(0, 5);
     }, [invoices, clients, type]);
 
     const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e'];

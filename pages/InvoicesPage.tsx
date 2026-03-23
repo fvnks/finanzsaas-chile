@@ -57,6 +57,32 @@ import { checkPermission } from '../src/utils/permissions';
 import { User } from '../types';
 import { useCompany } from '../components/CompanyContext';
 
+// Normalize and label helpers (mirrors server/lib/domain.ts logic)
+const normalizeInvoiceType = (value?: string) => {
+  if (!value) return "SALE";
+  const aliases: Record<string, string> = {
+    SALE: "SALE", VENTA: "SALE",
+    PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
+    CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
+    DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
+    GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
+    FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
+  };
+  return aliases[value] || value;
+};
+
+const getInvoiceTypeLabel = (value?: string) => {
+  switch (normalizeInvoiceType(value)) {
+    case "PURCHASE": return "Compra";
+    case "SALE": return "Venta";
+    case "CREDIT_NOTE": return "Nota de Crédito";
+    case "DEBIT_NOTE": return "Nota de Débito";
+    case "GUIA_DESPACHO": return "Guía de Despacho";
+    case "FACTURA_EXENTA": return "Factura Exenta";
+    default: return value?.replace(/_/g, ' ') || "Documento";
+  }
+};
+
 const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, suppliers = [], costCenters, projects, onAdd, onUpdate, onDelete, onAddSupplier, currentUser }) => {
   const { activeCompany } = useCompany();
   const [showModal, setShowModal] = useState(false);
@@ -146,7 +172,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
 
         const formatRow = (inv: Invoice) => ({
           'Folio': inv.number,
-          'Tipo': inv.type,
+          'Tipo': getInvoiceTypeLabel(inv.type),
           'Fecha': new Date(inv.date).toLocaleDateString('es-CL'),
           'Razón Social': clients.find(c => c.id === inv.clientId)?.razonSocial || 'N/A',
           'RUT': clients.find(c => c.id === inv.clientId)?.rut || 'N/A',
@@ -178,8 +204,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
 
   const filteredInvoices = useMemo(() => {
     return invoices.filter(inv => {
-      // Basic Filters
-      const matchesType = filterType === 'ALL' || inv.type === filterType;
+      // Basic Filters - normalize both to handle English/Spanish values from DB
+      const matchesType = filterType === 'ALL' || normalizeInvoiceType(inv.type) === normalizeInvoiceType(filterType);
       const client = clients.find(c => c.id === inv.clientId);
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch = inv.number.toLowerCase().includes(searchLower) ||
@@ -871,10 +897,10 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                             {inv.type === InvoiceType.GUIA_DESPACHO ? (
                               <div className="flex items-center gap-1">
                                 <Truck size={10} />
-                                <span>GUIA DESPACHO</span>
+                                <span>Guía de Despacho</span>
                               </div>
                             ) : (
-                              inv.type.replace('_', ' ')
+                              getInvoiceTypeLabel(inv.type)
                             )}
                           </span>
                           {children.length > 0 && (
@@ -1119,13 +1145,23 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                         <td className="px-6 py-3 pl-12 border-l-4 border-slate-200">
                           <div className="flex items-center space-x-2">
                             <CornerDownRight size={14} className="text-slate-300" />
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter 
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter
                                 ${child.type === InvoiceType.NOTA_DEBITO ? 'bg-blue-100 text-blue-700' :
                                 child.type === InvoiceType.GUIA_DESPACHO ? 'bg-indigo-100 text-indigo-700' :
                                   child.type === InvoiceType.VENTA ? 'bg-green-100 text-green-700' :
-                                    'bg-purple-100 text-purple-700'
+                                    child.type === InvoiceType.COMPRA ? 'bg-orange-100 text-orange-700' :
+                                      'bg-purple-100 text-purple-700'
                               }`}>
-                              {child.type === InvoiceType.VENTA ? (
+                              {child.type === InvoiceType.GUIA_DESPACHO ? (
+                                <div className="flex items-center gap-1">
+                                  <Truck size={10} />
+                                  <span>Guía de Despacho</span>
+                                </div>
+                              ) : child.type === InvoiceType.NOTA_CREDITO ? (
+                                'Nota de Crédito'
+                              ) : child.type === InvoiceType.NOTA_DEBITO ? (
+                                'Nota de Débito'
+                              ) : child.type === InvoiceType.VENTA ? (
                                 <div className="flex items-center gap-1">
                                   <RefreshCw size={10} className="animate-spin-slow" />
                                   <span>{(() => {
@@ -1136,7 +1172,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                                   })()}</span>
                                 </div>
                               ) : (
-                                child.type.replace('_', ' ')
+                                getInvoiceTypeLabel(child.type)
                               )}
                             </span>
                           </div>
@@ -1148,6 +1184,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                         <td className="px-6 py-3 text-xs text-slate-400 italic">
                           {(() => {
                             if (child.type === InvoiceType.NOTA_CREDITO) return 'Nota de Crédito';
+                            if (child.type === InvoiceType.NOTA_DEBITO) return 'Nota de Débito';
                             const isPast = child.date !== inv.date
                               ? child.date < inv.date
                               : (parseInt(child.number.replace(/\D/g, ''), 10) || 0) < (parseInt(inv.number.replace(/\D/g, ''), 10) || 0);
@@ -1222,7 +1259,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                     <div className="flex items-center space-x-2 text-slate-500 text-sm">
                       <span className="font-mono font-bold">#{selectedInvoice.number}</span>
                       <span>•</span>
-                      <span className="capitalize">{selectedInvoice.type.replace('_', ' ').toLowerCase()}</span>
+                      <span className="capitalize">{getInvoiceTypeLabel(selectedInvoice.type)}</span>
                     </div>
                   </div>
                 </div>
@@ -1257,7 +1294,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                       <div className="border-[3px] border-red-600 p-3 inline-block mb-2 bg-white">
                         <p className="text-red-600 font-bold text-sm uppercase tracking-widest leading-none text-center mb-1">R.U.T.: {activeCompany?.rut || 'Sin RUT'}</p>
                         <p className="text-slate-900 font-black text-lg uppercase tracking-tight my-1 text-center leading-none">
-                          {selectedInvoice.type.replace('_', ' ')}
+                          {getInvoiceTypeLabel(selectedInvoice.type)}
                         </p>
                         <p className="text-red-600 font-black text-lg text-center">Nº {selectedInvoice.number}</p>
                       </div>

@@ -3,12 +3,25 @@ import React, { useMemo } from 'react';
 import {
     PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { Invoice, InvoiceType } from '../../types';
+import { Invoice } from '../../types';
 import { formatCLP } from '../../constants';
 
 interface AgingReportChartProps {
     invoices: Invoice[];
 }
+
+const normalizeInvoiceType = (value?: string) => {
+    if (!value) return "SALE";
+    const aliases: Record<string, string> = {
+        SALE: "SALE", VENTA: "SALE",
+        PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
+        CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
+        DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
+        GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
+        FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
+    };
+    return aliases[value] || value;
+};
 
 const AgingReportChart: React.FC<AgingReportChartProps> = ({ invoices }) => {
     const data = useMemo(() => {
@@ -23,7 +36,7 @@ const AgingReportChart: React.FC<AgingReportChartProps> = ({ invoices }) => {
 
         invoices.forEach(inv => {
             // Analyze only Unpaid Sales
-            if (inv.type !== InvoiceType.VENTA || inv.status === 'CANCELLED' || inv.isPaid) return;
+            if (normalizeInvoiceType(inv.type) !== 'SALE' || inv.status === 'CANCELLED' || inv.isPaid) return;
 
             // Calculate days overdue
             // If dueDate exists use it, otherwise use date

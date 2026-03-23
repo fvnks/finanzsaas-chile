@@ -37,6 +37,31 @@ interface CostCentersPageProps {
 import { checkPermission } from '../src/utils/permissions';
 import { User } from '../types';
 
+const normalizeInvoiceType = (value?: string) => {
+  if (!value) return "SALE";
+  const aliases: Record<string, string> = {
+    SALE: "SALE", VENTA: "SALE",
+    PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
+    CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
+    DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
+    GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
+    FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
+  };
+  return aliases[value] || value;
+};
+
+const getInvoiceTypeLabel = (value?: string) => {
+  switch (normalizeInvoiceType(value)) {
+    case "PURCHASE": return "Compra";
+    case "SALE": return "Venta";
+    case "CREDIT_NOTE": return "Nota de Crédito";
+    case "DEBIT_NOTE": return "Nota de Débito";
+    case "GUIA_DESPACHO": return "Guía de Despacho";
+    case "FACTURA_EXENTA": return "Factura Exenta";
+    default: return value?.replace(/_/g, ' ') || "Documento";
+  }
+};
+
 const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices, projects, clients, onAdd, onUpdate, onDelete, currentUser }) => {
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,7 +82,7 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
 
   const stats = useMemo(() => {
     const totalPurchasesGlobal = invoices
-      .filter(inv => inv.type === InvoiceType.COMPRA)
+      .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
       .reduce((sum, inv) => sum + inv.total, 0);
 
     return { totalPurchasesGlobal };
@@ -66,10 +91,10 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
   const getCCDetails = (cc: CostCenter) => {
     const associatedInvoices = invoices.filter(inv => inv.costCenterId === cc.id);
     const purchases = associatedInvoices
-      .filter(inv => inv.type === InvoiceType.COMPRA)
+      .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
       .reduce((sum, inv) => sum + inv.total, 0);
     const sales = associatedInvoices
-      .filter(inv => inv.type === InvoiceType.VENTA)
+      .filter(inv => normalizeInvoiceType(inv.type) === 'SALE')
       .reduce((sum, inv) => sum + inv.total, 0);
 
     const budget = cc.budget || 0;
@@ -317,8 +342,8 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                                     <td className="px-8 py-5">
                                       <div className="flex flex-col">
                                         <span className="font-black text-slate-800">{inv.number}</span>
-                                        <span className={`text-[9px] font-black uppercase ${inv.type === InvoiceType.VENTA ? 'text-green-500' : 'text-orange-500'}`}>
-                                          {inv.type}
+                                        <span className={`text-[9px] font-black uppercase ${normalizeInvoiceType(inv.type) === 'SALE' ? 'text-green-500' : 'text-orange-500'}`}>
+                                          {getInvoiceTypeLabel(inv.type)}
                                         </span>
                                       </div>
                                     </td>
@@ -326,7 +351,7 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                                       {clients.find(c => c.id === inv.clientId)?.razonSocial}
                                     </td>
                                     <td className="px-8 py-5 text-slate-400 font-medium">{inv.date}</td>
-                                    <td className={`px-8 py-5 text-right font-black ${inv.type === InvoiceType.VENTA ? 'text-green-600' : 'text-slate-900'}`}>
+                                    <td className={`px-8 py-5 text-right font-black ${normalizeInvoiceType(inv.type) === 'SALE' ? 'text-green-600' : 'text-slate-900'}`}>
                                       {formatCLP(inv.total)}
                                     </td>
                                   </tr>

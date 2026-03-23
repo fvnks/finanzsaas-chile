@@ -49,6 +49,31 @@ interface ClientsPageProps {
 import { checkPermission } from '../src/utils/permissions';
 import { User } from '../types';
 
+const normalizeInvoiceType = (value?: string) => {
+  if (!value) return "SALE";
+  const aliases: Record<string, string> = {
+    SALE: "SALE", VENTA: "SALE",
+    PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
+    CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
+    DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
+    GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
+    FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
+  };
+  return aliases[value] || value;
+};
+
+const getInvoiceTypeLabel = (value?: string) => {
+  switch (normalizeInvoiceType(value)) {
+    case "PURCHASE": return "Compra";
+    case "SALE": return "Venta";
+    case "CREDIT_NOTE": return "Nota de Crédito";
+    case "DEBIT_NOTE": return "Nota de Débito";
+    case "GUIA_DESPACHO": return "Guía de Despacho";
+    case "FACTURA_EXENTA": return "Factura Exenta";
+    default: return value?.replace(/_/g, ' ') || "Documento";
+  }
+};
+
 const ClientsPage: React.FC<ClientsPageProps> = ({
   clients,
   suppliers = [],
@@ -70,7 +95,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [historySearchTerm, setHistorySearchTerm] = useState('');
-  const [historyTypeFilter, setHistoryTypeFilter] = useState<'ALL' | InvoiceType>('ALL');
+  const [historyTypeFilter, setHistoryTypeFilter] = useState<'ALL' | 'VENTA' | 'COMPRA'>('ALL');
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   // Pagination State
@@ -198,14 +223,14 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
     if (!historyClient) return [];
     return invoices
       .filter(inv => inv.clientId === historyClient.id)
-      .filter(inv => historyTypeFilter === 'ALL' || inv.type === historyTypeFilter)
+      .filter(inv => historyTypeFilter === 'ALL' || normalizeInvoiceType(inv.type) === normalizeInvoiceType(historyTypeFilter))
       .filter(inv => inv.number.toLowerCase().includes(historySearchTerm.toLowerCase()))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [historyClient, invoices, historySearchTerm, historyTypeFilter]);
 
   const historyTotals = useMemo(() => {
-    const sales = filteredHistoryInvoices.filter(i => i.type === InvoiceType.VENTA).reduce((acc, curr) => acc + curr.total, 0);
-    const purchases = filteredHistoryInvoices.filter(i => i.type === InvoiceType.COMPRA).reduce((acc, curr) => acc + curr.total, 0);
+    const sales = filteredHistoryInvoices.filter(i => normalizeInvoiceType(i.type) === 'SALE').reduce((acc, curr) => acc + curr.total, 0);
+    const purchases = filteredHistoryInvoices.filter(i => normalizeInvoiceType(i.type) === 'PURCHASE').reduce((acc, curr) => acc + curr.total, 0);
     return { sales, purchases };
   }, [filteredHistoryInvoices]);
 
@@ -458,7 +483,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                         />
                       </div>
                       <div className="flex items-center space-x-2 bg-white p-1 rounded-xl border border-slate-200">
-                        {(['ALL', InvoiceType.VENTA, InvoiceType.COMPRA] as const).map(type => (
+                        {(['ALL', 'VENTA', 'COMPRA'] as const).map(type => (
                           <button
                             key={type}
                             onClick={() => setHistoryTypeFilter(type)}
@@ -467,7 +492,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                               : 'text-slate-400 hover:text-slate-600'
                               }`}
                           >
-                            {type === 'ALL' ? 'Todos' : type + 's'}
+                            {type === 'ALL' ? 'Todos' : type === 'VENTA' ? 'Ventas' : 'Compras'}
                           </button>
                         ))}
                       </div>
@@ -511,9 +536,9 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                           {filteredHistoryInvoices.map((inv) => (
                             <tr key={inv.id} className="hover:bg-slate-50/50 transition-colors group">
                               <td className="px-6 py-4">
-                                <span className={`inline-flex items-center px-2 py-1 rounded-md text-[9px] font-black uppercase ${inv.type === InvoiceType.VENTA ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                                <span className={`inline-flex items-center px-2 py-1 rounded-md text-[9px] font-black uppercase ${normalizeInvoiceType(inv.type) === 'SALE' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                                   }`}>
-                                  {inv.type}
+                                  {getInvoiceTypeLabel(inv.type)}
                                 </span>
                               </td>
                               <td className="px-6 py-4 font-bold text-slate-700">{inv.number}</td>
@@ -557,7 +582,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                 <div className="bg-white rounded-[2rem] w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200">
                   <div className="px-8 py-5 bg-slate-900 text-white flex justify-between items-center">
                     <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-xl ${selectedInvoice.type === InvoiceType.VENTA ? 'bg-green-500' : 'bg-orange-500'}`}>
+                      <div className={`p-2 rounded-xl ${normalizeInvoiceType(selectedInvoice.type) === 'SALE' ? 'bg-green-500' : 'bg-orange-500'}`}>
                         <FileText size={20} />
                       </div>
                       <div>
@@ -580,7 +605,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                       <div className="text-right">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Fecha</p>
                         <p className="font-bold text-slate-900">{selectedInvoice.date}</p>
-                        <p className="text-xs text-slate-500 font-medium">{selectedInvoice.type === InvoiceType.VENTA ? 'Emitida' : 'Recibida'}</p>
+                        <p className="text-xs text-slate-500 font-medium">{normalizeInvoiceType(selectedInvoice.type) === 'SALE' ? 'Emitida' : 'Recibida'}</p>
                       </div>
                     </div>
 
