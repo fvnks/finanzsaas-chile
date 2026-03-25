@@ -1,0 +1,82 @@
+[
+  {
+    "id": "f7424565-8285-45f8-bc0e-bf03b133201e",
+    "number": "53",
+    "type": "SALE",
+    "status": "ISSUED",
+    "date": "2026-03-24T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "486361c6-4981-40be-a1a8-bc9c9c50bbfa",
+    "number": "10",
+    "type": "NOTA_CREDITO",
+    "status": "ISSUED",
+    "date": "2026-03-17T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "6bda6c79-895c-4887-b392-a9061ba7d7d9",
+    "number": "51",
+    "type": "VENTA",
+    "status": "ISSUED",
+    "date": "2026-03-16T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "980ada27-39b8-4efc-b7fd-c30b5ecfc5d8",
+    "number": "50",
+    "type": "VENTA",
+    "status": "ISSUED",
+    "date": "2026-03-16T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "7a0a1372-193f-40c2-ab82-1f46f198d2bc",
+    "number": "52",
+    "type": "SALE",
+    "status": "ISSUED",
+    "date": "2026-03-16T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "cbb8a016-917c-4c7b-9b16-418af2602c08",
+    "number": "49",
+    "type": "VENTA",
+    "status": "CANCELLED",
+    "date": "2026-03-10T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "98c460bc-19f1-48ec-af2c-a053151b965f",
+    "number": "48",
+    "type": "VENTA",
+    "status": "ISSUED",
+    "date": "2026-03-05T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "362b0567-e37f-4f7b-b3aa-a23655a4a707",
+    "number": "47",
+    "type": "VENTA",
+    "status": "ISSUED",
+    "date": "2026-03-02T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "5208820b-0ff4-4483-930e-aa4a245f6a57",
+    "number": "3",
+    "type": "NOTA_CREDITO",
+    "status": "ISSUED",
+    "date": "2026-02-18T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  },
+  {
+    "id": "b22115b5-f327-407a-8974-613a60b1c83c",
+    "number": "46",
+    "type": "VENTA",
+    "status": "DRAFT",
+    "date": "2026-02-16T00:00:00.000Z",
+    "companyId": "69624191-4bad-43bd-b1bf-967057dd7191"
+  }
+]

@@ -1677,7 +1677,8 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                               setFormData({
                                 ...formData,
                                 relatedInvoiceId: selectedId,
-                                clientId: relatedInvoice.clientId,
+                                clientId: relatedInvoice.clientId || '',
+                                supplierId: relatedInvoice.supplierId || '',
                                 costCenterId: relatedInvoice.costCenterId || '',
                                 projectId: relatedInvoice.projectId || '',
                                 net: relatedInvoice.net, // Copy Net Amount
@@ -1698,9 +1699,15 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                           {invoices
                             .filter(inv => (
                               inv.type === InvoiceType.VENTA ||
+                              inv.type === InvoiceType.COMPRA ||
                               inv.type === InvoiceType.NOTA_DEBITO ||
                               inv.type === InvoiceType.NOTA_CREDITO ||
-                              inv.type === InvoiceType.FACTURA_EXENTA
+                              inv.type === InvoiceType.FACTURA_EXENTA ||
+                              (inv.type as string) === 'SALE' ||
+                              (inv.type as string) === 'PURCHASE' ||
+                              (inv.type as string) === 'CREDIT_NOTE' ||
+                              (inv.type as string) === 'DEBIT_NOTE' ||
+                              (inv.type as string) === 'EXEMPT_INVOICE'
                             ) && inv.id !== editingId)
                             .sort((a, b) => {
                               const dateA = new Date(a.date).getTime();
@@ -1712,9 +1719,11 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                             })
                             .map(inv => {
                               const client = clients.find(c => c.id === inv.clientId);
+                              const supplier = suppliers.find(s => s.id === inv.supplierId);
+                              const entityName = client?.razonSocial || supplier?.razonSocial || 'Sin Entidad';
                               return (
                                 <option key={inv.id} value={inv.id}>
-                                  Nº {inv.number} - {client?.razonSocial} - {formatCLP(inv.total)} ({inv.date}) {inv.status === 'CANCELLED' ? '(ANULADA)' : ''}
+                                  Nº {inv.number} - {entityName} - {formatCLP(inv.total)} ({inv.date}) {inv.status === 'CANCELLED' ? '(ANULADA)' : ''}
                                 </option>
                               );
                             })}
