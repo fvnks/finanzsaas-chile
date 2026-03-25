@@ -57,10 +57,19 @@ const App: React.FC = () => {
         headers.set('x-company-id', activeCompanyId);
       }
 
-      return originalFetch(input, {
+      const response = await originalFetch(input, {
         ...init,
         headers
       });
+
+      if (response.status === 401 && !url.endsWith('/login')) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem('activeCompanyId');
+        window.location.reload();
+      }
+
+      return response;
     };
 
     return () => {
