@@ -12,18 +12,21 @@ import {
 } from 'lucide-react';
 import { Supplier } from '../types';
 import SupplierFormModal from '../components/SupplierFormModal';
+import CategoryManagerModal from '../components/CategoryManagerModal';
 
 interface SuppliersPageProps {
     suppliers: Supplier[];
     onAdd: (supplier: Omit<Supplier, 'id' | 'companyId'>) => Promise<void>;
     onUpdate: (supplier: Supplier) => Promise<void>;
     onDelete: (id: string) => Promise<void>;
+    onRenameCategory?: (oldName: string, newName: string) => Promise<void>;
     embedded?: boolean;
 }
 
-const SuppliersPage: React.FC<SuppliersPageProps> = ({ suppliers, onAdd, onUpdate, onDelete, embedded = false }) => {
+const SuppliersPage: React.FC<SuppliersPageProps> = ({ suppliers, onAdd, onUpdate, onDelete, onRenameCategory, embedded = false }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
 
     const handleDelete = async (id: string) => {
@@ -60,12 +63,22 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({ suppliers, onAdd, onUpdat
                     </div>
                 )}
                 <div className={embedded ? "w-full flex justify-end" : ""}>
-                    <button
-                        onClick={() => openModal()}
-                        className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center"
-                    >
-                        <Plus size={16} className="mr-1" /> Nuevo Proveedor
-                    </button>
+                    <div className="flex gap-2">
+                        {onRenameCategory && (
+                            <button
+                                onClick={() => setIsCategoryModalOpen(true)}
+                                className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors shadow-sm flex items-center"
+                            >
+                                Gestionar Categorías
+                            </button>
+                        )}
+                        <button
+                            onClick={() => openModal()}
+                            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center"
+                        >
+                            <Plus size={16} className="mr-1" /> Nuevo Proveedor
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -169,6 +182,15 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({ suppliers, onAdd, onUpdat
                 editingSupplier={editingSupplier}
                 existingCategories={existingCategories}
             />
+
+            {onRenameCategory && (
+                <CategoryManagerModal
+                    isOpen={isCategoryModalOpen}
+                    onClose={() => setIsCategoryModalOpen(false)}
+                    existingCategories={existingCategories}
+                    onRenameCategory={onRenameCategory}
+                />
+            )}
         </div>
     );
 };

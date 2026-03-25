@@ -859,6 +859,27 @@ router.post("/suppliers", async (req, res) => {
     }
 });
 
+router.put("/suppliers/categories/rename", async (req, res) => {
+    try {
+        const companyId = (req as any).companyId;
+        const { oldCategory, newCategory } = req.body;
+
+        if (!oldCategory || !newCategory) {
+            return res.status(400).json({ error: "Missing parameters" });
+        }
+
+        const result = await prisma.supplier.updateMany({
+            where: { companyId, category: oldCategory },
+            data: { category: newCategory }
+        });
+
+        res.json({ success: true, count: result.count });
+    } catch (err) {
+        console.error("Error renaming supplier category:", err);
+        res.status(500).json({ error: "Failed to rename category" });
+    }
+});
+
 router.put("/suppliers/:id", async (req, res) => {
     try {
         const { id } = req.params;

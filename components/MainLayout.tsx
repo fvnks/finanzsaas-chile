@@ -611,6 +611,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                             }
                         } catch (err) { console.error("Failed to add supplier", err); }
                     }}
+                    onRenameCategory={async (oldCategory, newCategory) => {
+                        try {
+                            const res = await fetch(`${API_URL}/suppliers/categories/rename`, {
+                                method: 'PUT',
+                                headers: getHeaders(),
+                                body: JSON.stringify({ oldCategory, newCategory })
+                            });
+                            if (res.ok) {
+                                refreshData(); // Trigger a data refresh so that components reflect the renamed category
+                            } else {
+                                alert("No se pudo renombrar la categoría.");
+                            }
+                        } catch (err) { 
+                            console.error("Failed to rename category", err); 
+                            alert("Error de conexión al renombrar categoría.");
+                        }
+                    }}
                 />}
 
                 {activeTab === 'projects' && (
