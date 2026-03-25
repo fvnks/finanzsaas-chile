@@ -1702,6 +1702,14 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                               inv.type === InvoiceType.NOTA_CREDITO ||
                               inv.type === InvoiceType.FACTURA_EXENTA
                             ) && inv.id !== editingId)
+                            .sort((a, b) => {
+                              const dateA = new Date(a.date).getTime();
+                              const dateB = new Date(b.date).getTime();
+                              if (dateB !== dateA) return dateB - dateA;
+                              const numA = parseInt(a.number.replace(/\D/g, '')) || 0;
+                              const numB = parseInt(b.number.replace(/\D/g, '')) || 0;
+                              return numB - numA;
+                            })
                             .map(inv => {
                               const client = clients.find(c => c.id === inv.clientId);
                               return (
