@@ -2,12 +2,10 @@ import { Router } from "express";
 import { prisma } from "../prisma";
 import { checkModuleAccess } from "../middleware/modules";
 import { deleteOwnedRecord, findOwnedRecord, getCompanyId, updateOwnedRecord } from "../lib/domain";
-import { requireCompanyContext } from "../middleware/company";
 import { asNumber, asOptionalDate } from "../lib/validation";
 
 const inventoryRouter = Router();
 
-inventoryRouter.use(requireCompanyContext);
 
 inventoryRouter.get("/products", checkModuleAccess("INVENTORY"), async (req, res) => {
     try {

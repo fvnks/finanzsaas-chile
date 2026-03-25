@@ -5,7 +5,6 @@ import { requireCompanyContext } from "../middleware/company";
 
 const financeRouter = Router();
 
-financeRouter.use(requireCompanyContext);
 
 financeRouter.get("/bank-accounts", async (req, res) => {
     try {

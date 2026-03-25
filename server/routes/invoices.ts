@@ -8,12 +8,10 @@ import {
     normalizeInvoiceType
 } from "../lib/domain";
 import { asNumber, asOptionalDate, asRequiredDate, requireNonEmptyString } from "../lib/validation";
-import { requireCompanyContext } from "../middleware/company";
 import { createInvoicePayment, deleteInvoicePayment, recalculateInvoicePaymentStatus } from "../services/invoicePayments";
 
 const invoicesRouter = Router();
 
-invoicesRouter.use(requireCompanyContext);
 
 invoicesRouter.get("/invoices", checkModuleAccess("INVOICING"), async (req, res) => {
     try {

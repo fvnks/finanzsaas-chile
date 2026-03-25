@@ -668,17 +668,38 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
             />
           </div>
           <div className="flex items-center space-x-2">
-            <select
-              className="border border-slate-200 rounded-xl px-4 py-2.5 bg-white outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700 text-sm appearance-none cursor-pointer pr-8 relative"
-              style={{ backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.2em' }}
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as any)}
+          <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto no-scrollbar max-w-full">
+            <button
+              onClick={() => setFilterType('ALL')}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterType === 'ALL' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
             >
-              <option value="ALL">Todos los flujos</option>
-              <option value={InvoiceType.VENTA}>Ventas Emitidas</option>
-              <option value={InvoiceType.COMPRA}>Compras Recibidas</option>
-              <option value={InvoiceType.GUIA_DESPACHO}>Guías de Despacho</option>
-            </select>
+              Todos los flujos
+            </button>
+            <button
+              onClick={() => setFilterType(InvoiceType.VENTA)}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterType === InvoiceType.VENTA ? 'bg-white text-green-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            >
+              Ventas
+            </button>
+            <button
+              onClick={() => setFilterType(InvoiceType.COMPRA)}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterType === InvoiceType.COMPRA ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            >
+              Compras
+            </button>
+            <button
+              onClick={() => setFilterType(InvoiceType.GUIA_DESPACHO)}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterType === InvoiceType.GUIA_DESPACHO ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            >
+              Guías
+            </button>
+            <button
+              onClick={() => setFilterType(InvoiceType.NOTA_CREDITO)}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterType === InvoiceType.NOTA_CREDITO ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            >
+              NC/ND
+            </button>
+          </div>
 
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
@@ -926,13 +947,13 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-slate-700 font-bold text-sm truncate max-w-[200px]">
-                          {inv.type === InvoiceType.COMPRA
-                            ? (suppliers.find(s => s.id === inv.clientId)?.razonSocial || 'Desconocido')
+                          {normalizeInvoiceType(inv.type) === 'PURCHASE'
+                            ? (suppliers.find(s => s.id === inv.supplierId)?.razonSocial || 'Desconocido')
                             : (clients.find(c => c.id === inv.clientId)?.razonSocial || 'Desconocido')}
                         </span>
                         <span className="text-[10px] text-slate-400 font-medium">
-                          {inv.type === InvoiceType.COMPRA
-                            ? (suppliers.find(s => s.id === inv.clientId)?.rut)
+                          {normalizeInvoiceType(inv.type) === 'PURCHASE'
+                            ? (suppliers.find(s => s.id === inv.supplierId)?.rut)
                             : (clients.find(c => c.id === inv.clientId)?.rut)}
                         </span>
                       </div>
