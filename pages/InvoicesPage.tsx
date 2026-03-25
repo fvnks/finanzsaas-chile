@@ -2149,10 +2149,11 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
         <SupplierFormModal
           isOpen={showSupplierModal}
           onClose={() => setShowSupplierModal(false)}
+          existingCategories={Array.from(new Set(suppliers.map(s => s.category).filter(Boolean))) as string[]}
           onSave={async (newSupplier) => {
             const saved = await onAddSupplier(newSupplier);
             if (saved && saved.id) {
-              setFormData(prev => ({ ...prev, clientId: saved.id }));
+              setFormData(prev => ({ ...prev, supplierId: saved.id, clientId: '' }));
             }
           }}
         />

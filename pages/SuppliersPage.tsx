@@ -46,6 +46,8 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({ suppliers, onAdd, onUpdat
         s.rut.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const existingCategories = Array.from(new Set(suppliers.map(s => s.category).filter(Boolean))) as string[];
+
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -165,6 +167,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({ suppliers, onAdd, onUpdat
                     }
                 }}
                 editingSupplier={editingSupplier}
+                existingCategories={existingCategories}
             />
         </div>
     );

@@ -8,9 +8,19 @@ interface SupplierFormModalProps {
     onClose: () => void;
     onSave: (supplier: Omit<Supplier, 'id' | 'companyId'> & { id?: string }) => Promise<void>;
     editingSupplier?: Supplier | null;
+    existingCategories?: string[];
 }
 
-const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, onSave, editingSupplier }) => {
+const formatRut = (value: string) => {
+    let cleaned = value.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (cleaned.length === 0) return '';
+    if (cleaned.length <= 1) return cleaned;
+    const dv = cleaned.slice(-1);
+    const body = cleaned.slice(0, -1);
+    return `${body}-${dv}`;
+};
+
+const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, onSave, editingSupplier, existingCategories = [] }) => {
     const [formData, setFormData] = useState({
         rut: '',
         razonSocial: '',
@@ -85,7 +95,7 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
                             <input
                                 type="text"
                                 value={formData.rut}
-                                onChange={e => setFormData({ ...formData, rut: e.target.value })}
+                                onChange={e => setFormData({ ...formData, rut: formatRut(e.target.value) })}
                                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
                             />
@@ -93,12 +103,18 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
                         <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">Categoría</label>
                             <input
+                                list="category-options"
                                 type="text"
                                 value={formData.category}
                                 onChange={e => setFormData({ ...formData, category: e.target.value })}
                                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Ej: Materiales"
+                                placeholder="Ej: Materiales o Servicios"
                             />
+                            <datalist id="category-options">
+                                {existingCategories.map((cat, idx) => (
+                                    <option key={`cat-${idx}`} value={cat} />
+                                ))}
+                            </datalist>
                         </div>
                     </div>
 
