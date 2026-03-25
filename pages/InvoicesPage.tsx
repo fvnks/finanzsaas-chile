@@ -83,6 +83,16 @@ const getInvoiceTypeLabel = (value?: string) => {
   }
 };
 
+const mapTypeToEnum = (value?: string): InvoiceType => {
+  const normalized = normalizeInvoiceType(value);
+  if (normalized === 'PURCHASE') return InvoiceType.COMPRA;
+  if (normalized === 'CREDIT_NOTE') return InvoiceType.NOTA_CREDITO;
+  if (normalized === 'DEBIT_NOTE') return InvoiceType.NOTA_DEBITO;
+  if (normalized === 'GUIA_DESPACHO') return InvoiceType.GUIA_DESPACHO;
+  if (normalized === 'FACTURA_EXENTA') return InvoiceType.FACTURA_EXENTA;
+  return InvoiceType.VENTA;
+};
+
 const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, suppliers = [], costCenters, projects, onAdd, onUpdate, onDelete, onAddSupplier, currentUser }) => {
   const { activeCompany } = useCompany();
   const [showModal, setShowModal] = useState(false);
@@ -608,7 +618,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
     setIsEditing(true);
     setEditingId(inv.id);
     setFormData({
-      type: inv.type,
+      type: mapTypeToEnum(inv.type),
       number: inv.number,
       date: inv.date.split('T')[0],
       dueDate: inv.dueDate ? inv.dueDate.split('T')[0] : '', // Added for Cash Flow
@@ -1668,7 +1678,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                           setFormData({
                             ...formData,
                             type: newType,
-                            number: getNextCorrelative(newType), // Auto-update number on type change
+                            number: isEditing ? formData.number : getNextCorrelative(newType), // Auto-update number only for new invoices
                             relatedInvoiceId: (newType === InvoiceType.NOTA_CREDITO || newType === InvoiceType.NOTA_DEBITO || newType === InvoiceType.VENTA) ? formData.relatedInvoiceId : undefined
                           });
                         }}
