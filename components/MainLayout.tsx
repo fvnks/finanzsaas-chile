@@ -9,21 +9,16 @@ import ReportsPage from '../pages/ReportsPage.tsx';
 import CostCentersPage from '../pages/CostCentersPage.tsx';
 import WorkersPage from '../pages/WorkersPage.tsx';
 import AdminPage from '../pages/AdminPage.tsx';
-import DailyReportsPage from '../pages/DailyReportsPage.tsx';
-import { User, UserRole, Client, Invoice, Project, CostCenter, InvoiceType, Worker, Crew, JobTitle, DailyReport, Plan, Supplier, Expense, Tool, Epp, EppDelivery, ToolAssignment } from '../types.ts';
+import { User, UserRole, Client, Invoice, Project, CostCenter, InvoiceType, Worker, Crew, JobTitle, Plan, Supplier, Expense, Tool, Epp, EppDelivery, ToolAssignment } from '../types.ts';
 import ExpensesPage from '../pages/ExpensesPage';
 import { PurchaseOrdersPage } from '../pages/PurchaseOrdersPage';
-import { DocumentsPage } from '../pages/DocumentsPage';
-import { DocControlPage } from '../pages/DocControlPage';
 import { InventoryPage } from '../pages/InventoryPage';
-import { PlanosPage } from '../pages/PlanosPage';
 import SuppliersPage from '../pages/SuppliersPage';
 import ToolsPage from '../pages/ToolsPage';
 import DeliveriesPage from '../pages/DeliveriesPage';
 import CrmPage from '../pages/CrmPage.tsx';
 import ProductsPage from '../pages/ProductsPage.tsx';
 import WarehousesPage from '../pages/WarehousesPage.tsx';
-import BankAccountsPage from '../pages/BankAccountsPage.tsx';
 import CashFlowPage from '../pages/CashFlowPage.tsx';
 import { Activity, Building2, RefreshCw, ShieldCheck, AlertTriangle, Bell, Package } from 'lucide-react';
 
@@ -40,8 +35,6 @@ const TAB_LABELS: Record<string, string> = {
     dashboard: 'Panel Ejecutivo',
     invoices: 'Facturación',
     expenses: 'Gastos y Rendiciones',
-    docControl: 'Control Documental',
-    planos: 'Planos y Cuelgues',
     deliveries: 'Entregas Operativas',
     tools: 'Herramientas',
     clients: 'Clientes',
@@ -49,12 +42,10 @@ const TAB_LABELS: Record<string, string> = {
     projects: 'Proyectos',
     workers: 'Trabajadores y Cuadrillas',
     costCenters: 'Centros de Costo',
-    reports: 'Reportes Diarios',
     financialReports: 'Reportes Financieros',
     crm: 'CRM y Cotizaciones',
     products: 'Catálogo de Productos',
     warehouses: 'Bodegas y Stock',
-    bankAccounts: 'Tesorería',
     cashFlow: 'Forecast de Caja',
     admin: 'Administración'
 };
@@ -79,7 +70,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [crews, setCrews] = useState<Crew[]>([]);
     const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
-    const [dailyReports, setDailyReports] = useState<DailyReport[]>([]);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [tools, setTools] = useState<Tool[]>([]);
@@ -106,7 +96,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
         try {
             const headers = { 'x-company-id': activeCompany.id };
 
-            const [resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resDailyReports, resUsers, resSuppliers, resExpenses, resTools] = await Promise.all([
+            const [resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resUsers, resSuppliers, resExpenses, resTools] = await Promise.all([
                 fetch(`${API_URL}/clients`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/projects`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/invoices`, { headers }).then(res => res.json()),
@@ -114,7 +104,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 fetch(`${API_URL}/workers`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/crews`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/job-titles`, { headers }).then(res => res.json()),
-                fetch(`${API_URL}/daily-reports`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/users`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/suppliers`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/expenses`, { headers }).then(res => res.json()),
@@ -142,7 +131,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             setWorkers(Array.isArray(resWorkers) ? resWorkers : []);
             setCrews(Array.isArray(resCrews) ? resCrews : []);
             setJobTitles(Array.isArray(resJobTitles) ? resJobTitles : []);
-            setDailyReports(Array.isArray(resDailyReports) ? resDailyReports : []);
             setAllUsers(Array.isArray(resUsers) ? resUsers : []);
             setSuppliers(Array.isArray(resSuppliers) ? resSuppliers : []);
             setExpenses(Array.isArray(resExpenses) ? resExpenses : []);
@@ -426,8 +414,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                     />
                 )}
 
-                {activeTab === 'docControl' && <DocControlPage clients={clients} />}
-                {activeTab === 'planos' && <PlanosPage projects={projects} currentUser={user} />}
                 {activeTab === 'deliveries' && (
                     <DeliveriesPage
                         epps={epps}
@@ -770,110 +756,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                     />
                 )}
 
-                {activeTab === 'reports' && (
-                    <DailyReportsPage
-                        reports={dailyReports}
-                        projects={projects}
-                        users={allUsers}
-                        currentUser={user}
-                        onAdd={async (r) => {
-                            try {
-                                const res = await fetch(`${API_URL}/daily-reports`, {
-                                    method: 'POST',
-                                    headers: getHeaders(),
-                                    body: JSON.stringify(r)
-                                });
-                                if (res.ok) {
-                                    const { report, updatedProject } = await res.json();
-                                    setDailyReports([report, ...dailyReports]);
-                                    if (updatedProject) {
-                                        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
-                                    }
-                                }
-                            } catch (err) { console.error(err); }
-                        }}
-                        onUpdate={async (id, r) => {
-                            try {
-                                const res = await fetch(`${API_URL}/daily-reports/${id}`, {
-                                    method: 'PUT',
-                                    headers: getHeaders(),
-                                    body: JSON.stringify(r)
-                                });
-                                if (res.ok) {
-                                    const { report, updatedProject } = await res.json();
-                                    setDailyReports(dailyReports.map(rep => rep.id === id ? report : rep));
-                                    if (updatedProject) {
-                                        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
-                                    }
-                                }
-                            } catch (err) { console.error(err); }
-                        }}
-                        onDelete={async (id) => {
-                            try {
-                                await fetch(`${API_URL}/daily-reports/${id}`, { method: 'DELETE', headers: getHeaders() });
-                                setDailyReports(dailyReports.filter(r => r.id !== id));
-                            } catch (e) { console.error(e); }
-                        }}
-                        onUploadAttachment={async (id, file) => {
-                            try {
-                                const formData = new FormData();
-                                formData.append('file', file);
-                                const res = await fetch(`${API_URL}/daily-reports/${id}/attachments`, {
-                                    method: 'POST',
-                                    headers: { 'x-company-id': localStorage.getItem('companyId') || '' },
-                                    body: formData
-                                });
-                                if (res.ok) {
-                                    const updated = await res.json();
-                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
-                                }
-                            } catch (e) { console.error(e); }
-                        }}
-                        onRemoveAttachment={async (id, url) => {
-                            try {
-                                const res = await fetch(`${API_URL}/daily-reports/${id}/attachments?url=${encodeURIComponent(url)}`, { method: 'DELETE', headers: getHeaders() });
-                                if (res.ok) {
-                                    const updated = await res.json();
-                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
-                                }
-                            } catch (e) { console.error(e); }
-                        }}
-                        onSubmit={async (id) => {
-                            try {
-                                const res = await fetch(`${API_URL}/daily-reports/${id}/submit`, { method: 'POST', headers: getHeaders() });
-                                if (res.ok) {
-                                    const updated = await res.json();
-                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
-                                }
-                            } catch (e) { console.error(e); }
-                        }}
-                        onApprove={async (id) => {
-                            try {
-                                const res = await fetch(`${API_URL}/daily-reports/${id}/approve`, { method: 'POST', headers: getHeaders() });
-                                if (res.ok) {
-                                    const updated = await res.json();
-                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
-                                }
-                            } catch (e) { console.error(e); }
-                        }}
-                        onReject={async (id) => {
-                            try {
-                                const res = await fetch(`${API_URL}/daily-reports/${id}/reject`, { method: 'POST', headers: getHeaders() });
-                                if (res.ok) {
-                                    const updated = await res.json();
-                                    setDailyReports(dailyReports.map(r => r.id === id ? updated : r));
-                                }
-                            } catch (e) { console.error(e); }
-                        }}
-                    />
-                )}
-                {activeTab === 'financialReports' && (
-                    <ReportsPage invoices={invoices} projects={projects} costCenters={costCenters} clients={clients} />
-                )}
                 {activeTab === 'crm' && <CrmPage currentUser={user} />}
                 {activeTab === 'products' && <ProductsPage />}
                 {activeTab === 'warehouses' && <WarehousesPage />}
-                {activeTab === 'bankAccounts' && <BankAccountsPage />}
                 {activeTab === 'cashFlow' && <CashFlowPage />}
                 {activeTab === 'admin' && <AdminPage currentUser={user} projects={projects} onRefreshUser={onRefreshUser} />}
                     </div>

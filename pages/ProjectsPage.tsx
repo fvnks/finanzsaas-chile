@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Search, MapPin, Calendar, Clock, AlertTriangle, CheckCircle2, MoreVertical, Edit2, Trash2, ArrowUpRight, BarChart3, Target, Info, CheckSquare, X, Users, ClipboardList, Check, Wallet, ChevronRight, FileText, Construction, Briefcase, DollarSign, HardHat, ShieldCheck, Zap, UserCheck, Calculator, Flag, Timer, Trash } from 'lucide-react';
-import { Project, Worker, Invoice, CostCenter, DailyReport, User, ProjectMilestone, TimeEntry } from '../types';
+import { Project, Worker, Invoice, CostCenter, User, ProjectMilestone, TimeEntry, Expense } from '../types';
 import { formatCLP } from '../constants';
 
 interface ProjectsPageProps {
@@ -9,8 +9,6 @@ interface ProjectsPageProps {
   invoices: Invoice[];
   expenses: Expense[];
   costCenters: CostCenter[];
-  dailyReports?: DailyReport[]; // Added dailyReports prop
-  users?: User[]; // Added users prop
   onAdd: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   onEdit: (project: Project) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -19,7 +17,7 @@ interface ProjectsPageProps {
 
 import { checkPermission } from '../src/utils/permissions';
 
-const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = [], invoices = [], expenses = [], costCenters = [], dailyReports = [], users = [], onAdd, onEdit, onDelete, currentUser }) => {
+const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = [], invoices = [], expenses = [], costCenters = [], onAdd, onEdit, onDelete, currentUser }) => {
   if (!projects || !workers || !invoices || !expenses || !costCenters) {
     return <div className="p-8 text-center text-slate-500">Cargando datos del sistema...</div>;
   }
@@ -579,43 +577,8 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
                             </div>
                           </div>
 
-                          {/* Historial de Avances (Reportes Diarios) */}
-                          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                            <div className="flex items-center space-x-3">
-                              <div className="p-2 bg-green-50 text-green-600 rounded-xl">
-                                <FileText size={20} />
-                              </div>
-                              <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">Historial de Reportes y Avances</h4>
-                            </div>
-                            <div className="space-y-4 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-                              {dailyReports
-                                .filter(r => r.projectId === viewingProject.id)
-                                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                                .map(report => (
-                                  <div key={report.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 hover:bg-white hover:shadow-md transition-all">
-                                    <div className="flex justify-between items-start">
-                                      <div className="flex items-center space-x-2">
-                                        <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg">
-                                          <Calendar size={14} />
-                                        </div>
-                                        <p className="text-xs font-bold text-slate-700">{new Date(report.date).toLocaleDateString()}</p>
-                                      </div>
-                                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                        {users.find(u => u.id === report.userId)?.name || 'Desconocido'}
-                                      </span>
-                                    </div>
-                                    <p className="text-xs text-slate-600 leading-relaxed pl-2 border-l-2 border-slate-200">
-                                      {report.content}
-                                    </p>
-                                  </div>
-                                ))}
-                              {dailyReports.filter(r => r.projectId === viewingProject.id).length === 0 && (
-                                <p className="text-xs text-slate-400 italic text-center py-4">No hay reportes registrados para este proyecto.</p>
-                              )}
-                            </div>
                           </div>
                         </div>
-                      </div>
                     </>
                   );
                 })()}

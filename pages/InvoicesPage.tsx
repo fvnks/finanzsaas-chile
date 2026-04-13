@@ -460,7 +460,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
 
     const opt = {
       margin: [10, 10] as [number, number], // top, left, bottom, right
-      filename: `Factura_${invoice.number}_${invoice.date}.pdf`,
+      filename: `${getInvoiceTypeLabel(invoice.type).replace(/\s+/g, '_')}_${invoice.number}_${invoice.date}.pdf`,
       image: { type: 'jpeg' as const, quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
@@ -1544,8 +1544,11 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
                       <div className="text-right">
                         <div className="border-4 border-red-600 p-4 inline-block mb-2">
                           <p className="text-red-600 font-bold text-lg uppercase tracking-widest leading-none text-center">R.U.T.: {activeCompany?.rut || 'Sin RUT'}</p>
-                          <p className="text-slate-900 font-black text-xl uppercase tracking-tight my-1 text-center">Factura Electrónica</p>
+                          <p className={`text-slate-900 font-black ${selectedInvoice.type === InvoiceType.GUIA_DESPACHO ? 'text-lg' : 'text-xl'} uppercase tracking-tight my-1 text-center`}>
+                            {getInvoiceTypeLabel(selectedInvoice.type)} Electrónica
+                          </p>
                           <p className="text-red-600 font-bold text-lg text-center">Nº {selectedInvoice.number}</p>
+
                         </div>
                         <p className="text-[10px] font-bold text-red-600 uppercase mt-2">S.I.I. - SANTIAGO CENTRO</p>
                       </div>
@@ -1729,6 +1732,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
                         <option value={InvoiceType.COMPRA}>Factura de Compra</option>
                         <option value={InvoiceType.NOTA_CREDITO}>Nota de Crédito</option>
                         <option value={InvoiceType.NOTA_DEBITO}>Nota de Débito</option>
+                        <option value={InvoiceType.GUIA_DESPACHO}>Guía de Despacho</option>
                       </select>
                     </div>
 
@@ -1833,8 +1837,13 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
                         type="text"
                         className="w-full p-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
                         value={formData.number}
-                        placeholder={formData.type === InvoiceType.NOTA_CREDITO ? "NC-..." : formData.type === InvoiceType.NOTA_DEBITO ? "ND-..." : "F-..."}
+                        placeholder={
+                          formData.type === InvoiceType.NOTA_CREDITO ? "NC-..." : 
+                          formData.type === InvoiceType.NOTA_DEBITO ? "ND-..." : 
+                          formData.type === InvoiceType.GUIA_DESPACHO ? "GD-..." : "F-..."
+                        }
                         onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+
                       />
                     </div>
                     <div className="space-y-1.5">

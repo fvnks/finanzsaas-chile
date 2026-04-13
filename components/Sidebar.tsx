@@ -52,9 +52,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         { id: 'projects', label: 'Proyectos', icon: Briefcase },
         { id: 'tools', label: 'Herramientas', icon: Wrench },
         { id: 'deliveries', label: 'Entregas', icon: Package },
-        { id: 'reports', label: 'Reportes Diarios', icon: FileText },
-        { id: 'docControl', label: 'Control Documental', icon: FileText },
-        { id: 'planos', label: 'Planos y Cuelgues', icon: Map },
       ]
     },
     {
@@ -71,7 +68,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
         { id: 'invoices', label: 'Facturas', icon: FileText },
         { id: 'costCenters', label: 'Centros de Costo', icon: Target },
         { id: 'expenses', label: 'Gastos', icon: TrendingUp },
-        { id: 'bankAccounts', label: 'Tesorería', icon: CreditCard },
         { id: 'cashFlow', label: 'Forecast de Caja', icon: BarChart3 },
       ]
     },
