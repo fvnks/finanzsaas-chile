@@ -564,6 +564,7 @@ router.get("/projects", checkModuleAccess("PROJECTS"), async (req, res) => {
             orderBy: { createdAt: 'desc' },
             include: { client: true, milestones: { orderBy: { order: 'asc' } }, timeEntries: { include: { worker: true }, orderBy: { date: 'desc' } } }
         });
+        console.log(`[Backend] Fetched ${projects.length} projects. First one costCenterIds:`, projects[0]?.costCenterIds);
         res.json(projects);
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch projects" });
@@ -618,6 +619,7 @@ router.put("/projects/:id", async (req, res) => {
             costCenterIds
         });
         if (!updated) return res.status(404).json({ error: "Project not found" });
+        console.log(`[Backend] Updated project ${updated.id}. Linked CCs:`, updated.costCenterIds);
         res.json(updated);
     } catch (err) {
         console.error("Failed to update project", err);

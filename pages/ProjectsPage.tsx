@@ -163,18 +163,27 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
         associatedInvoices.some(inv => inv.costCenterId === cc.id)
       )
       .map(cc => {
-        // Calculate total for this specific cost center using the broadened invoice list
-        const invoiceCC = associatedInvoices
-          .filter(inv => inv.costCenterId === cc.id)
-          .reduce((acc, inv) => acc + (inv.total || 0), 0);
+        const isLinked = (project.costCenterIds || []).includes(cc.id);
+        const relatedInvoices = associatedInvoices.filter(inv => inv.costCenterId === cc.id);
+        const relatedExpenses = associatedExpenses.filter(exp => 
+            exp.distributions?.some(d => d.costCenterId === cc.id && (d.projectId === project.id || isLinked))
+        );
         
-        const expenseCC = associatedExpenses.reduce((acc, exp) => {
+        const invoiceTotal = relatedInvoices.reduce((acc, i) => acc + (i.total || 0), 0);
+        const expenseTotal = relatedExpenses.reduce((acc, exp) => {
             const dist = exp.distributions?.find(d => d.costCenterId === cc.id);
             return acc + (dist?.amount || 0);
         }, 0);
 
-        return { ...cc, total: invoiceCC + expenseCC };
+        return {
+          ...cc,
+          total: invoiceTotal + expenseTotal,
+          isLinked // Explicit linkage marker
+        };
       });
+
+    console.log(`[ProjectsPage] Details for ${project.name}: costCenterIds in project object:`, project.costCenterIds);
+    console.log(`[ProjectsPage] Calculated assignedCostCenters:`, assignedCostCenters.map(c => ({ name: c.name, isLinked: (c as any).isLinked })));
 
     const progress = project.progress || 0;
 
@@ -547,16 +556,21 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {details.assignedCostCenters.map(cc => (
                                 <div key={cc.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-xs font-black text-slate-600 uppercase">{cc.name}</span>
-                                    <span className="text-xs font-black text-slate-900">{formatCLP(cc.total)}</span>
-                                  </div>
-                                  <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full bg-indigo-600"
-                                      style={{ width: `${(cc.total / (details.purchases || 1)) * 100}%` }}
-                                    />
-                                  </div>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-xs font-black text-slate-600 uppercase">{cc.name}</span>
+                                          {(cc as any).isLinked && (
+                                            <span className="text-[8px] font-black bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded uppercase">Vinculado</span>
+                                          )}
+                                        </div>
+                                        <span className="text-xs font-black text-slate-900">{formatCLP(cc.total)}</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full bg-indigo-600"
+                                        style={{ width: `${(cc.total / (details.purchases || 1)) * 100}%` }}
+                                      />
+                                    </div>
                                 </div>
                               ))}
                               {details.assignedCostCenters.length === 0 && (

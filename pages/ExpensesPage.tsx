@@ -597,12 +597,27 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                                         {(() => {
                                                             const p = projects.find(proj => proj.id === formData.selectedProjectId);
                                                             const pCCs = costCenters.filter(cc => p?.costCenterIds?.includes(cc.id));
+                                                            
+                                                            // Debug output for browser console
+                                                            console.log("[ExpensesPage] Selected Project:", p?.name, "(ID:", p?.id, ")");
+                                                            console.log("[ExpensesPage] Project costCenterIds:", p?.costCenterIds);
+                                                            console.log("[ExpensesPage] Available CCs linked:", pCCs.map(cc => cc.name));
+                                                            
+                                                            if (p && (!p.costCenterIds || p.costCenterIds.length === 0)) {
+                                                                return <option disabled>⚠️ Este proyecto no tiene Centros de Costo vinculados</option>;
+                                                            }
+                                                            
+                                                            if (p && p.costCenterIds?.length > 0 && pCCs.length === 0) {
+                                                                return <option disabled>⚠️ Error: CCs vinculados no encontrados en el sistema ({p.costCenterIds.length})</option>;
+                                                            }
+
                                                             return pCCs.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>);
                                                         })()}
                                                     </select>
                                                     {(() => {
                                                         const p = projects.find(proj => proj.id === formData.selectedProjectId);
-                                                        if (p && p.costCenterIds?.length === 1 && formData.selectedCCId === p.costCenterIds[0]) {
+                                                        const pCCs = costCenters.filter(cc => p?.costCenterIds?.includes(cc.id));
+                                                        if (p && p.costCenterIds?.length === 1 && pCCs.length === 1 && formData.selectedCCId === p.costCenterIds[0]) {
                                                             return (
                                                                 <p className="text-[9px] text-blue-500 font-black uppercase flex items-center gap-1">
                                                                     <Check size={10} /> Auto-seleccionado por proyecto
