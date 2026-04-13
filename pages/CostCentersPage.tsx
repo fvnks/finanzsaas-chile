@@ -83,7 +83,10 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
 
   const stats = useMemo(() => {
     const totalPurchasesGlobal = invoices
-      .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
+      .filter(inv => {
+        const type = normalizeInvoiceType(inv.type);
+        return type === 'PURCHASE' || type === 'GUIA_DESPACHO' || type === 'FACTURA_EXENTA';
+      })
       .reduce((sum, inv) => sum + inv.total, 0) +
       expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
@@ -97,7 +100,10 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
     );
 
     const invoicePurchases = associatedInvoices
-      .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
+      .filter(inv => {
+        const type = normalizeInvoiceType(inv.type);
+        return type === 'PURCHASE' || type === 'GUIA_DESPACHO' || type === 'FACTURA_EXENTA';
+      })
       .reduce((sum, inv) => sum + inv.total, 0);
     
     const expensePurchases = associatedExpenses

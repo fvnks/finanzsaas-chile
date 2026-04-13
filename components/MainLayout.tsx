@@ -96,7 +96,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
         try {
             const headers = { 'x-company-id': activeCompany.id };
 
-            const [resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resUsers, resSuppliers, resExpenses, resTools] = await Promise.all([
+            const [
+                resClients, resProjs, resInvoices, resCosts, resWorkers, resCrews, resJobTitles, resUsers,
+                resSuppliers, resExpenses, resTools, resEpp, resEppDeliveries, resToolAssignments
+            ] = await Promise.all([
                 fetch(`${API_URL}/clients`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/projects`, { headers }).then(res => res.json()),
                 fetch(`${API_URL}/invoices`, { headers }).then(res => res.json()),
@@ -129,18 +132,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             setInvoices(normalizedInvoices);
             setCostCenters(Array.isArray(resCosts) ? resCosts : []);
             setWorkers(Array.isArray(resWorkers) ? resWorkers : []);
-            setCrews(Array.isArray(resCrews) ? resCrews : []);
+            
+            const normalizedCrews = Array.isArray(resCrews) ? resCrews.map((crew: any) => ({
+                ...crew,
+                workerIds: crew.workerIds || (Array.isArray(crew.workers) ? crew.workers.map((w: any) => w.id || w) : [])
+            })) : [];
+            setCrews(normalizedCrews);
             setJobTitles(Array.isArray(resJobTitles) ? resJobTitles : []);
             setAllUsers(Array.isArray(resUsers) ? resUsers : []);
             setSuppliers(Array.isArray(resSuppliers) ? resSuppliers : []);
             setExpenses(Array.isArray(resExpenses) ? resExpenses : []);
             setTools(Array.isArray(resTools) ? resTools : []);
-            setEpps(Array.isArray(resTools[5]) ? resTools[5] : []); // Using indexed due to variable scope limits
+            setEpps(Array.isArray(resEpp) ? resEpp : []);
+            setEppDeliveries(Array.isArray(resEppDeliveries) ? resEppDeliveries : []);
+            setToolAssignments(Array.isArray(resToolAssignments) ? resToolAssignments : []);
 
-            // Let's rely on the individual fetches below
-            fetch(`${API_URL}/epp`, { headers }).then(res => res.json()).then(data => setEpps(Array.isArray(data) ? data : []));
-            fetch(`${API_URL}/epp-deliveries`, { headers }).then(res => res.json()).then(data => setEppDeliveries(Array.isArray(data) ? data : []));
-            fetch(`${API_URL}/tool-assignments`, { headers }).then(res => res.json()).then(data => setToolAssignments(Array.isArray(data) ? data : []));
+            // Products and Warehouse are still fetch-requested below for extra safety or due to some previous pattern
             fetch(`${API_URL}/products`, { headers }).then(res => res.json()).then(data => setProducts(Array.isArray(data) ? data : []));
             fetch(`${API_URL}/warehouses`, { headers }).then(res => res.json()).then(data => setWarehouses(Array.isArray(data) ? data : []));
 

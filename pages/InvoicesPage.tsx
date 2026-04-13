@@ -598,7 +598,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
         const d = new Date();
         d.setDate(d.getDate() + 30);
         return d.toISOString().split('T')[0];
-      })(), // Added for Cash flow
+      })(),
       net: 0,
       clientId: '',
       supplierId: '',
@@ -611,8 +611,11 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
       status: 'ISSUED',
       isPaid: false,
       paymentStatus: 'PENDING',
-      items: []
+      items: [],
+      annulInvoice: undefined
     });
+    setPendingSubmit(false);
+    setShowAssignmentWarning(false);
   };
 
   const handleEditClick = (inv: Invoice) => {
@@ -656,7 +659,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
         </div>
         {checkPermission(currentUser as User, 'invoices', 'create') && (
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => { resetForm(); setShowModal(true); }}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all shadow-md shadow-blue-200 active:scale-95"
           >
             <Plus size={20} />
@@ -1701,7 +1704,7 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
                   </div>
                   <h3 className="text-xl font-bold text-slate-800">{isEditing ? 'Editar Factura' : 'Registrar Nueva Factura'}</h3>
                 </div>
-                <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-200 rounded-full transition-colors">
+                <button onClick={() => { resetForm(); setShowModal(false); }} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-200 rounded-full transition-colors">
                   <X size={24} />
                 </button>
               </div>
@@ -1715,19 +1718,25 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-600 uppercase">Tipo Documento</label>
-                      <select
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
-                        value={formData.type}
-                        onChange={(e) => {
-                          const newType = e.target.value as InvoiceType;
-                          setFormData({
-                            ...formData,
-                            type: newType,
-                            number: isEditing ? formData.number : getNextCorrelative(newType), // Auto-update number only for new invoices
-                            relatedInvoiceId: (newType === InvoiceType.NOTA_CREDITO || newType === InvoiceType.NOTA_DEBITO || newType === InvoiceType.VENTA) ? formData.relatedInvoiceId : undefined
-                          });
-                        }}
-                      >
+                        <select
+                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                          value={formData.type}
+                          onChange={(e) => {
+                            const newType = e.target.value as InvoiceType;
+                            const isChangingFlow = (formData.type === InvoiceType.COMPRA && newType !== InvoiceType.COMPRA) || 
+                                                 (formData.type !== InvoiceType.COMPRA && newType === InvoiceType.COMPRA);
+                            
+                            setFormData({
+                              ...formData,
+                              type: newType,
+                              number: isEditing ? formData.number : getNextCorrelative(newType),
+                              // Clear related fields if changing major flow (Compra vs Venta)
+                              clientId: isChangingFlow ? '' : formData.clientId,
+                              supplierId: isChangingFlow ? '' : formData.supplierId,
+                              relatedInvoiceId: (newType === InvoiceType.NOTA_CREDITO || newType === InvoiceType.NOTA_DEBITO || newType === InvoiceType.VENTA) ? formData.relatedInvoiceId : undefined
+                            });
+                          }}
+                        >
                         <option value={InvoiceType.VENTA}>Factura de Venta</option>
                         <option value={InvoiceType.COMPRA}>Factura de Compra</option>
                         <option value={InvoiceType.NOTA_CREDITO}>Nota de Crédito</option>

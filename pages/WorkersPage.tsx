@@ -79,12 +79,12 @@ const WorkersPage: React.FC<WorkersPageProps> = ({
   });
 
   const filteredWorkers = useMemo(() => workers.filter(w =>
-    w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    w.rut.includes(searchTerm)
+    (w.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (w.rut || '').includes(searchTerm)
   ), [workers, searchTerm]);
 
   const filteredCrews = useMemo(() => crews.filter(c =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (c.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   ), [crews, searchTerm]);
 
   const handleOpenWorkerModal = (w?: Worker) => {
@@ -120,7 +120,7 @@ const WorkersPage: React.FC<WorkersPageProps> = ({
 
   const workerStats = useMemo(() => {
     if (!viewingWorker) return null;
-    const workerCrews = crews.filter(c => c.workerIds.includes(viewingWorker.id));
+    const workerCrews = crews.filter(c => Array.isArray(c.workerIds) && c.workerIds.includes(viewingWorker.id));
     const currentCrew = workerCrews[0];
     const currentProject = projects.find(p => p.id === currentCrew?.projectId);
     const crewHistory = workerCrews.map(c => ({
@@ -180,12 +180,14 @@ const WorkersPage: React.FC<WorkersPageProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {filteredWorkers.map(w => {
-                  const isAssigned = crews.some(c => c.workerIds.includes(w.id));
+                  const isAssigned = crews.some(c => Array.isArray(c.workerIds) && c.workerIds.includes(w.id));
                   return (
                     <tr key={w.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-8 py-5 cursor-pointer" onClick={() => setViewingWorker(w)}>
                         <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black">{w.name.charAt(0)}</div>
+                          <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black">
+                            {(w.name || '?').charAt(0).toUpperCase()}
+                          </div>
                           <div className="flex flex-col">
                             <span className="font-bold text-slate-800 text-sm">{w.name}</span>
                             <span className="text-[10px] font-black text-blue-600 uppercase">{w.role}</span>
@@ -234,12 +236,12 @@ const WorkersPage: React.FC<WorkersPageProps> = ({
                     )}
                   </div>
                 </div>
-                <h3 className="text-lg font-black text-slate-800 uppercase mb-2">{c.name}</h3>
+                <h3 className="text-lg font-black text-slate-800 uppercase mb-2">{c.name || 'CUADRILLA SIN NOMBRE'}</h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Proyecto: {projects.find(p => p.id === c.projectId)?.name || 'Sin Asignar'}</p>
                 <div className="flex -space-x-2">
-                  {c.workerIds.map(wid => (
+                  {(c.workerIds || []).map(wid => (
                     <div key={wid} className="w-8 h-8 rounded-full bg-slate-800 border-2 border-white text-white flex items-center justify-center text-[10px] font-black">
-                      {workers.find(w => w.id === wid)?.name.charAt(0)}
+                      {(workers.find(w => w.id === wid)?.name || '?').charAt(0).toUpperCase()}
                     </div>
                   ))}
                 </div>
@@ -256,7 +258,7 @@ const WorkersPage: React.FC<WorkersPageProps> = ({
               <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div className="flex items-center space-x-6">
                   <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-2xl font-black">
-                    {viewingWorker.name.charAt(0)}
+                    {(viewingWorker.name || '?').charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <h3 className="text-2xl font-black text-slate-900 uppercase">{viewingWorker.name}</h3>
@@ -444,10 +446,10 @@ const WorkersPage: React.FC<WorkersPageProps> = ({
                     {workers.map(w => (
                       <label key={w.id} className="flex items-center p-2 hover:bg-slate-50 rounded-lg cursor-pointer">
                         <input type="checkbox" className="mr-3 rounded text-blue-600 focus:ring-blue-500"
-                          checked={crewForm.workerIds.includes(w.id)}
+                          checked={Array.isArray(crewForm.workerIds) && crewForm.workerIds.includes(w.id)}
                           onChange={e => {
-                            if (e.target.checked) setCrewForm({ ...crewForm, workerIds: [...crewForm.workerIds, w.id] });
-                            else setCrewForm({ ...crewForm, workerIds: crewForm.workerIds.filter(id => id !== w.id) });
+                            if (e.target.checked) setCrewForm({ ...crewForm, workerIds: [...(crewForm.workerIds || []), w.id] });
+                            else setCrewForm({ ...crewForm, workerIds: (crewForm.workerIds || []).filter(id => id !== w.id) });
                           }}
                         />
                         <span className="text-sm font-bold text-slate-700">{w.name}</span>

@@ -141,8 +141,8 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
       (exp.distributions?.some(d => (project.costCenterIds || []).includes(d.costCenterId)))
     );
 
-    const sales = associatedInvoices.filter(i => i.type === 'VENTA').reduce((acc, i) => acc + (i.total || 0), 0);
-    const invoicePurchases = associatedInvoices.filter(i => i.type === 'COMPRA' || i.type === 'GUIA_DESPACHO').reduce((acc, i) => acc + (i.total || 0), 0);
+    const sales = associatedInvoices.filter(i => ['VENTA', 'SALE'].includes(i.type)).reduce((acc, i) => acc + (i.total || 0), 0);
+    const invoicePurchases = associatedInvoices.filter(i => ['COMPRA', 'PURCHASE', 'GUIA_DESPACHO'].includes(i.type)).reduce((acc, i) => acc + (i.total || 0), 0);
 
     const expensePurchases = associatedExpenses.reduce((acc, exp) => {
         // Find the amount belonging to this project context
@@ -171,7 +171,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
         );
         
         const invoiceTotal = relatedInvoices
-          .filter(i => i.type === 'COMPRA' || i.type === 'GUIA_DESPACHO')
+          .filter(i => ['COMPRA', 'PURCHASE', 'GUIA_DESPACHO'].includes(i.type))
           .reduce((acc, i) => acc + (i.total || 0), 0);
 
         const expenseTotal = relatedExpenses.reduce((acc, exp) => {
