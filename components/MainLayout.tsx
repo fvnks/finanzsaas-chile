@@ -304,7 +304,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
                 {activeTab === 'dashboard' && <Dashboard invoices={invoices} clients={clients} />}
                 {activeTab === 'invoices' && (
-                    <InvoicesPage invoices={invoices} clients={clients} suppliers={suppliers} costCenters={costCenters} projects={projects} currentUser={user}
+                    <InvoicesPage invoices={invoices} expenses={expenses} clients={clients} suppliers={suppliers} costCenters={costCenters} projects={projects} currentUser={user}
                         onAddSupplier={async (sup) => {
                             try {
                                 const res = await fetch(`${API_URL}/suppliers`, {
@@ -384,6 +384,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 {activeTab === 'expenses' && (
                     <ExpensesPage
                         expenses={expenses}
+                        invoices={invoices}
                         projects={projects}
                         costCenters={costCenters}
                         workers={workers}
@@ -633,6 +634,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 {activeTab === 'projects' && (
                     <ProjectsPage
                         projects={projects}
+                        expenses={expenses}
                         workers={workers}
                         invoices={invoices}
                         costCenters={costCenters}
@@ -735,7 +737,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                 )}
 
                 {activeTab === 'costCenters' && (
-                    <CostCentersPage costCenters={costCenters} invoices={invoices} projects={projects} clients={clients} currentUser={user}
+                    <CostCentersPage costCenters={costCenters} invoices={invoices} expenses={expenses} projects={projects} clients={clients} currentUser={user}
                         onAdd={async (cc) => {
                             try {
                                 const res = await fetch(`${API_URL}/cost-centers`, {

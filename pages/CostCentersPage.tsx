@@ -26,6 +26,7 @@ import { formatCLP } from '../constants';
 interface CostCentersPageProps {
   costCenters: CostCenter[];
   invoices: Invoice[];
+  expenses: Expense[];
   projects: Project[];
   clients: Client[];
   onAdd: (cc: CostCenter) => void;
@@ -62,7 +63,7 @@ const getInvoiceTypeLabel = (value?: string) => {
   }
 };
 
-const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices, projects, clients, onAdd, onUpdate, onDelete, currentUser }) => {
+const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices, expenses, projects, clients, onAdd, onUpdate, onDelete, currentUser }) => {
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingCC, setViewingCC] = useState<CostCenter | null>(null);
@@ -83,16 +84,30 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
   const stats = useMemo(() => {
     const totalPurchasesGlobal = invoices
       .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
-      .reduce((sum, inv) => sum + inv.total, 0);
+      .reduce((sum, inv) => sum + inv.total, 0) +
+      expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
     return { totalPurchasesGlobal };
-  }, [invoices]);
+  }, [invoices, expenses]);
 
   const getCCDetails = (cc: CostCenter) => {
     const associatedInvoices = invoices.filter(inv => inv.costCenterId === cc.id);
-    const purchases = associatedInvoices
+    const associatedExpenses = expenses.filter(exp => 
+      exp.distributions?.some(d => d.costCenterId === cc.id)
+    );
+
+    const invoicePurchases = associatedInvoices
       .filter(inv => normalizeInvoiceType(inv.type) === 'PURCHASE')
       .reduce((sum, inv) => sum + inv.total, 0);
+    
+    const expensePurchases = associatedExpenses
+      .reduce((sum, exp) => {
+        const dist = exp.distributions?.find(d => d.costCenterId === cc.id);
+        return sum + (dist?.amount || 0);
+      }, 0);
+
+    const purchases = invoicePurchases + expensePurchases;
+
     const sales = associatedInvoices
       .filter(inv => normalizeInvoiceType(inv.type) === 'SALE')
       .reduce((sum, inv) => sum + inv.total, 0);
@@ -103,7 +118,7 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
 
     const linkedProjects = projects.filter(p => (cc.projectIds || []).includes(p.id));
 
-    return { associatedInvoices, purchases, sales, execution, share, linkedProjects };
+    return { associatedInvoices, associatedExpenses, purchases, sales, execution, share, linkedProjects };
   };
 
   const handleOpenModal = (cc?: CostCenter) => {
@@ -330,10 +345,10 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                             <table className="w-full text-left text-sm">
                               <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                 <tr>
-                                  <th className="px-8 py-5">Nº Folio</th>
-                                  <th className="px-8 py-5">Entidad Comercial</th>
+                                  <th className="px-8 py-5">Tipo / Folio</th>
+                                  <th className="px-8 py-5">Descripción / Entidad</th>
                                   <th className="px-8 py-5">Fecha</th>
-                                  <th className="px-8 py-5 text-right">Monto Bruto</th>
+                                  <th className="px-8 py-5 text-right">Monto</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-50">
@@ -348,7 +363,7 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                                       </div>
                                     </td>
                                     <td className="px-8 py-5 font-bold text-slate-600">
-                                      {clients.find(c => c.id === inv.clientId)?.razonSocial}
+                                      {clients.find(c => c.id === inv.clientId)?.razonSocial || inv.supplier?.name || 'Varios'}
                                     </td>
                                     <td className="px-8 py-5 text-slate-400 font-medium">{inv.date}</td>
                                     <td className={`px-8 py-5 text-right font-black ${normalizeInvoiceType(inv.type) === 'SALE' ? 'text-green-600' : 'text-slate-900'}`}>
@@ -356,10 +371,32 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                                     </td>
                                   </tr>
                                 ))}
-                                {details.associatedInvoices.length === 0 && (
+                                {details.associatedExpenses.map(exp => {
+                                    const dist = exp.distributions?.find(d => d.costCenterId === viewingCC.id);
+                                    return (
+                                        <tr key={exp.id} className="hover:bg-slate-50/50 transition-colors group">
+                                            <td className="px-8 py-5">
+                                                <div className="flex flex-col">
+                                                    <span className="font-black text-slate-800 italic">GASTO</span>
+                                                    <span className="text-[9px] font-black uppercase text-amber-600">
+                                                        Manual / Rendición
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-5 font-bold text-slate-600">
+                                                {exp.description}
+                                            </td>
+                                            <td className="px-8 py-5 text-slate-400 font-medium">{exp.date.split('T')[0]}</td>
+                                            <td className="px-8 py-5 text-right font-black text-slate-900">
+                                                {formatCLP(dist?.amount || 0)}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {details.associatedInvoices.length === 0 && details.associatedExpenses.length === 0 && (
                                   <tr>
                                     <td colSpan={4} className="px-8 py-20 text-center text-slate-400 italic">
-                                      No hay documentos tributarios asociados a este centro.
+                                      No hay transacciones asociadas a este centro.
                                     </td>
                                   </tr>
                                 )}

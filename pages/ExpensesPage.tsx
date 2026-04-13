@@ -23,6 +23,7 @@ import { useCompany } from '../components/CompanyContext';
 
 interface ExpensesPageProps {
     expenses: Expense[];
+    invoices: Invoice[];
     projects: Project[];
     costCenters: CostCenter[];
     workers: Worker[];
@@ -34,6 +35,7 @@ interface ExpensesPageProps {
 
 const ExpensesPage: React.FC<ExpensesPageProps> = ({
     expenses,
+    invoices,
     projects,
     costCenters,
     workers,
@@ -58,6 +60,10 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
         category: '',
         customCategory: '',
         invoiceNumber: '',
+        invoiceId: '',
+        assignmentMode: 'NONE' as 'NONE' | 'PROJECT' | 'COST_CENTER' | 'MULTIPLE',
+        selectedProjectId: '',
+        selectedCCId: '',
         isProrated: false,
         distributions: [] as { projectId: string; costCenterId: string; amount: number }[]
     });
@@ -113,11 +119,13 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                 ...formData,
                 amount: Number(formData.amount),
                 category: formData.category === 'Otro' ? formData.customCategory : formData.category,
-                distributions: formData.isProrated ? formData.distributions : ([
-                    // If not prorated but project/CC selected, send as single distribution? 
-                    // Or handle in backend. For now sending empty if not prorated, simple expense.
-                    // Actually, let's create a simple distribution if single assignment is needed
-                ])
+                distributions: formData.assignmentMode === 'MULTIPLE' 
+                    ? formData.distributions 
+                    : formData.assignmentMode === 'PROJECT' && formData.selectedProjectId
+                        ? [{ projectId: formData.selectedProjectId, costCenterId: formData.selectedCCId || '', amount: Number(formData.amount) }]
+                        : formData.assignmentMode === 'COST_CENTER' && formData.selectedCCId
+                            ? [{ projectId: '', costCenterId: formData.selectedCCId, amount: Number(formData.amount) }]
+                            : []
             };
 
             // @ts-ignore
@@ -131,6 +139,12 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                 targetCompanyId: activeCompany?.id || '',
                 workerId: '',
                 invoiceNumber: '',
+                invoiceId: '',
+                category: '',
+                customCategory: '',
+                assignmentMode: 'NONE',
+                selectedProjectId: '',
+                selectedCCId: '',
                 isProrated: false,
                 distributions: []
             });
@@ -248,9 +262,10 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className="text-xs font-bold text-slate-400">{expense.date.split('T')[0]}</span>
-                                                    {expense.invoiceNumber && (
-                                                        <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono text-slate-500">
-                                                            #{expense.invoiceNumber}
+                                                    {(expense.invoiceNumber || expense.invoice) && (
+                                                        <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                                                            <CreditCard size={10} />
+                                                            {expense.invoice ? `FAC ${expense.invoice.number}` : `#${expense.invoiceNumber}`}
                                                         </span>
                                                     )}
                                                 </div>
@@ -477,75 +492,201 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                                 ))}
                                             </select>
                                         </div>
+                                        <div className="col-span-2 space-y-1.5">
+                                            <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+                                                <CreditCard size={12} />
+                                                Factura Asociada (Opcional)
+                                            </label>
+                                            <select
+                                                className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:border-blue-500"
+                                                value={formData.invoiceId}
+                                                onChange={(e) => {
+                                                    const selectedInv = invoices.find(inv => inv.id === e.target.value);
+                                                    setFormData({ 
+                                                        ...formData, 
+                                                        invoiceId: e.target.value,
+                                                        invoiceNumber: selectedInv?.number || formData.invoiceNumber
+                                                    });
+                                                }}
+                                            >
+                                                <option value="">-- Sin Factura --</option>
+                                                {invoices
+                                                    .filter(inv => inv.type === 'COMPRA' || inv.type === 'GASTO')
+                                                    .sort((a, b) => b.number.localeCompare(a.number))
+                                                    .map(inv => (
+                                                        <option key={inv.id} value={inv.id}>
+                                                            {inv.number} - {inv.supplier?.name || inv.client?.name || 'Prov.'} ({formatCLP(inv.total)})
+                                                        </option>
+                                                    ))
+                                                }
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Distribution */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-xs font-black text-slate-700 uppercase flex items-center gap-2">
-                                            <Target size={14} className="text-blue-600" />
-                                            Distribución / Prorrateo
-                                        </label>
-                                        <label className="flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                className="accent-blue-600 w-4 h-4"
-                                                checked={formData.isProrated}
-                                                onChange={(e) => setFormData({ ...formData, isProrated: e.target.checked })}
-                                            />
-                                            Prorratear entre varios
-                                        </label>
+                                {/* Assignment Question (The "Integration" Question) */}
+                                <div className="space-y-4 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Target className="text-blue-600" size={18} />
+                                        <label className="text-sm font-black text-slate-800 uppercase tracking-tight">¿A qué se asigna este gasto?</label>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        {[
+                                            { id: 'NONE', label: 'General', icon: Building2 },
+                                            { id: 'PROJECT', label: 'Proyecto', icon: Briefcase },
+                                            { id: 'COST_CENTER', label: 'C. Costo', icon: Target },
+                                            { id: 'MULTIPLE', label: 'Múltiple', icon: Filter }
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.id}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, assignmentMode: opt.id as any })}
+                                                className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1.5 ${
+                                                    formData.assignmentMode === opt.id 
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200' 
+                                                    : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600'
+                                                }`}
+                                            >
+                                                <opt.icon size={18} />
+                                                <span className="text-[10px] font-black uppercase tracking-tighter">{opt.label}</span>
+                                            </button>
+                                        ))}
                                     </div>
 
-                                    {formData.isProrated ? (
-                                        <div className="space-y-2">
-                                            {formData.distributions.map((dist, idx) => (
-                                                <div key={idx} className="flex gap-2 items-center animate-in slide-in-from-left-2">
+                                    {/* Conditional Selectors */}
+                                    {formData.assignmentMode === 'PROJECT' && (
+                                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                            <div>
+                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block">Seleccionar Proyecto Destino</label>
+                                                <select
+                                                    required
+                                                    className="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
+                                                    value={formData.selectedProjectId}
+                                                    onChange={(e) => {
+                                                        const pId = e.target.value;
+                                                        const project = projects.find(p => p.id === pId);
+                                                        let ccId = '';
+                                                        if (project && project.costCenterIds?.length === 1) {
+                                                            ccId = project.costCenterIds[0];
+                                                        }
+                                                        setFormData({ 
+                                                            ...formData, 
+                                                            selectedProjectId: pId,
+                                                            selectedCCId: ccId 
+                                                        });
+                                                    }}
+                                                >
+                                                    <option value="">-- Elige un Proyecto --</option>
+                                                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                </select>
+                                            </div>
+
+                                            {formData.selectedProjectId && (
+                                                <div className="pl-4 border-l-2 border-blue-200 py-2 space-y-2 animate-in slide-in-from-left-2">
+                                                    <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
+                                                        <Target size={12} />
+                                                        Centro de Costo Vinculado
+                                                    </label>
                                                     <select
-                                                        className="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium"
-                                                        value={dist.projectId}
-                                                        onChange={(e) => handleDistributionChange(idx, 'projectId', e.target.value)}
+                                                        className="w-full p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-xs font-bold text-slate-600 outline-none focus:border-blue-400"
+                                                        value={formData.selectedCCId}
+                                                        onChange={(e) => setFormData({ ...formData, selectedCCId: e.target.value })}
                                                     >
-                                                        <option value="">Proyecto (Opcional)</option>
-                                                        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                        <option value="">-- No especificar CC --</option>
+                                                        {(() => {
+                                                            const p = projects.find(proj => proj.id === formData.selectedProjectId);
+                                                            const pCCs = costCenters.filter(cc => p?.costCenterIds?.includes(cc.id));
+                                                            return pCCs.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>);
+                                                        })()}
                                                     </select>
-                                                    <select
-                                                        className="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium"
-                                                        value={dist.costCenterId}
-                                                        onChange={(e) => handleDistributionChange(idx, 'costCenterId', e.target.value)}
-                                                    >
-                                                        <option value="">C. Costo (Opcional)</option>
-                                                        {costCenters.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>)}
-                                                    </select>
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Monto"
-                                                        className="w-24 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-right"
-                                                        value={dist.amount}
-                                                        onChange={(e) => handleDistributionChange(idx, 'amount', Number(e.target.value))}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeDistributionRow(idx)}
-                                                        className="p-2 text-slate-400 hover:text-red-500"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    {(() => {
+                                                        const p = projects.find(proj => proj.id === formData.selectedProjectId);
+                                                        if (p && p.costCenterIds?.length === 1 && formData.selectedCCId === p.costCenterIds[0]) {
+                                                            return (
+                                                                <p className="text-[9px] text-blue-500 font-black uppercase flex items-center gap-1">
+                                                                    <Check size={10} /> Auto-seleccionado por proyecto
+                                                                </p>
+                                                            );
+                                                        }
+                                                        return null;
+                                                    })()}
                                                 </div>
-                                            ))}
-                                            <button
-                                                type="button"
-                                                onClick={addDistributionRow}
-                                                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2"
-                                            >
-                                                <Plus size={12} />
-                                                Agregar fila
-                                            </button>
+                                            )}
                                         </div>
-                                    ) : (
-                                        <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-                                            <p className="text-xs text-slate-400">Sin distribución específica (Gasto General) o activa el prorrateo para asignar.</p>
+                                    )}
+
+                                    {formData.assignmentMode === 'COST_CENTER' && (
+                                        <div className="animate-in fade-in slide-in-from-top-2">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block">Seleccionar Centro de Costo Destino</label>
+                                            <select
+                                                required
+                                                className="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
+                                                value={formData.selectedCCId}
+                                                onChange={(e) => setFormData({ ...formData, selectedCCId: e.target.value })}
+                                            >
+                                                <option value="">-- Elige un Centro de Costo --</option>
+                                                {costCenters.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>)}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {formData.assignmentMode === 'MULTIPLE' && (
+                                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                                            <div className="flex items-center justify-between border-b border-blue-100 pb-2">
+                                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Prorrateo / Múltiple</span>
+                                                <span className="text-[11px] font-bold text-slate-400">Total: {formatCLP(Number(formData.amount))}</span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {formData.distributions.map((dist, idx) => (
+                                                    <div key={idx} className="flex gap-2 items-center animate-in slide-in-from-left-2">
+                                                        <select
+                                                            className="flex-1 p-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
+                                                            value={dist.projectId}
+                                                            onChange={(e) => handleDistributionChange(idx, 'projectId', e.target.value)}
+                                                        >
+                                                            <option value="">Proyecto (Opcional)</option>
+                                                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                        </select>
+                                                        <select
+                                                            className="flex-1 p-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
+                                                            value={dist.costCenterId}
+                                                            onChange={(e) => handleDistributionChange(idx, 'costCenterId', e.target.value)}
+                                                        >
+                                                            <option value="">C. Costo (Opcional)</option>
+                                                            {costCenters.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>)}
+                                                        </select>
+                                                        <input
+                                                            type="number"
+                                                            placeholder="Monto"
+                                                            className="w-24 p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right"
+                                                            value={dist.amount}
+                                                            onChange={(e) => handleDistributionChange(idx, 'amount', Number(e.target.value))}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeDistributionRow(idx)}
+                                                            className="p-2 text-slate-400 hover:text-red-500"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={addDistributionRow}
+                                                    className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2"
+                                                >
+                                                    <Plus size={12} />
+                                                    Agregar fila de prorrateo
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {formData.assignmentMode === 'NONE' && (
+                                        <div className="p-4 bg-slate-100 rounded-xl border border-dashed border-slate-200 text-center">
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase italic">Gasto General (Sin asignación específica)</p>
                                         </div>
                                     )}
                                 </div>

@@ -7,6 +7,7 @@ interface ProjectsPageProps {
   projects: Project[];
   workers: Worker[];
   invoices: Invoice[];
+  expenses: Expense[];
   costCenters: CostCenter[];
   dailyReports?: DailyReport[]; // Added dailyReports prop
   users?: User[]; // Added users prop
@@ -18,8 +19,8 @@ interface ProjectsPageProps {
 
 import { checkPermission } from '../src/utils/permissions';
 
-const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = [], invoices = [], costCenters = [], dailyReports = [], users = [], onAdd, onEdit, onDelete, currentUser }) => {
-  if (!projects || !workers || !invoices || !costCenters) {
+const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = [], invoices = [], expenses = [], costCenters = [], dailyReports = [], users = [], onAdd, onEdit, onDelete, currentUser }) => {
+  if (!projects || !workers || !invoices || !expenses || !costCenters) {
     return <div className="p-8 text-center text-slate-500">Cargando datos del sistema...</div>;
   }
 
@@ -135,8 +136,24 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
       (inv.costCenterId && (project.costCenterIds || []).includes(inv.costCenterId))
     );
 
+    const associatedExpenses = expenses.filter(exp => 
+      exp.projectId === project.id ||
+      (exp.distributions?.some(d => (project.costCenterIds || []).includes(d.costCenterId)))
+    );
+
     const sales = associatedInvoices.filter(i => i.type === 'VENTA').reduce((acc, i) => acc + (i.total || 0), 0);
-    const purchases = associatedInvoices.filter(i => i.type === 'COMPRA').reduce((acc, i) => acc + (i.total || 0), 0);
+    const invoicePurchases = associatedInvoices.filter(i => i.type === 'COMPRA').reduce((acc, i) => acc + (i.total || 0), 0);
+    const expensePurchases = associatedExpenses.reduce((acc, exp) => {
+        // Find the amount belonging to this project context
+        if (exp.projectId === project.id) return acc + exp.amount;
+        // Or sum distributions that match project's cost centers
+        const projectContextAmount = exp.distributions
+            ?.filter(d => (project.costCenterIds || []).includes(d.costCenterId))
+            .reduce((sum, d) => sum + d.amount, 0) || 0;
+        return acc + projectContextAmount;
+    }, 0);
+
+    const purchases = invoicePurchases + expensePurchases;
     const margin = sales - purchases;
 
     // Filter cost centers that are EITHER assigned to the project OR have invoices in this project context
@@ -147,10 +164,16 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
       )
       .map(cc => {
         // Calculate total for this specific cost center using the broadened invoice list
-        const totalCC = associatedInvoices
+        const invoiceCC = associatedInvoices
           .filter(inv => inv.costCenterId === cc.id)
           .reduce((acc, inv) => acc + (inv.total || 0), 0);
-        return { ...cc, total: totalCC };
+        
+        const expenseCC = associatedExpenses.reduce((acc, exp) => {
+            const dist = exp.distributions?.find(d => d.costCenterId === cc.id);
+            return acc + (dist?.amount || 0);
+        }, 0);
+
+        return { ...cc, total: invoiceCC + expenseCC };
       });
 
     const progress = project.progress || 0;

@@ -36,12 +36,13 @@ import {
   Truck, // Added for Dispatch Guides
   RefreshCw // Added for Refacturación
 } from 'lucide-react';
-import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem, Supplier } from '../types';
+import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem, Supplier, Expense } from '../types';
 import { formatCLP, IVA_RATE } from '../constants';
 import SupplierFormModal from '../components/SupplierFormModal';
 
 interface InvoicesPageProps {
   invoices: Invoice[];
+  expenses: Expense[];
   clients: Client[];
   suppliers?: Supplier[]; // Added suppliers prop
   costCenters: CostCenter[];
@@ -93,7 +94,7 @@ const mapTypeToEnum = (value?: string): InvoiceType => {
   return InvoiceType.VENTA;
 };
 
-const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, suppliers = [], costCenters, projects, onAdd, onUpdate, onDelete, onAddSupplier, currentUser }) => {
+const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, expenses, clients, suppliers = [], costCenters, projects, onAdd, onUpdate, onDelete, onAddSupplier, currentUser }) => {
   const { activeCompany } = useCompany();
   const [showModal, setShowModal] = useState(false);
   const [showSupplierModal, setShowSupplierModal] = useState(false); // State for supplier modal
@@ -1456,6 +1457,47 @@ const InvoicesPage: React.FC<InvoicesPageProps> = ({ invoices, clients, supplier
                       </tbody>
                     </table>
                   </div>
+
+                  {/* SECCIÓN GASTOS ASOCIADOS (New Integrate Logic) */}
+                  {(() => {
+                    const linkedExpenses = expenses.filter(exp => exp.invoiceId === selectedInvoice.id);
+                    if (linkedExpenses.length === 0) return null;
+
+                    return (
+                      <div className="mb-8 border-t-2 border-slate-100 pt-6 relative z-10">
+                        <div className="flex items-center space-x-2 mb-4">
+                          <DollarSign size={16} className="text-amber-600" />
+                          <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-widest">Gastos / Rendiciones Asociadas</h4>
+                        </div>
+                        <div className="bg-amber-50/50 rounded-xl border border-amber-100 overflow-hidden">
+                          <table className="w-full text-left text-[10px]">
+                            <thead className="bg-amber-100/30 text-amber-800 font-bold uppercase tracking-wider">
+                              <tr>
+                                <th className="px-4 py-2 text-center w-20">Fecha</th>
+                                <th className="px-4 py-2">Descripción</th>
+                                <th className="px-4 py-2 text-right w-32">Monto</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-amber-100/50">
+                              {linkedExpenses.map(exp => (
+                                <tr key={exp.id}>
+                                  <td className="px-4 py-2 font-mono text-amber-900">{exp.date.split('T')[0]}</td>
+                                  <td className="px-4 py-2 text-amber-800">{exp.description}</td>
+                                  <td className="px-4 py-2 text-right font-bold text-amber-900">{formatCLP(exp.amount)}</td>
+                                </tr>
+                              ))}
+                              <tr className="bg-amber-100/20 font-black text-amber-900">
+                                <td colSpan={2} className="px-4 py-2 text-right uppercase">Total Gastos Adicionales:</td>
+                                <td className="px-4 py-2 text-right font-black">
+                                  {formatCLP(linkedExpenses.reduce((sum, e) => sum + e.amount, 0))}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* FOOTER / TOTALS */}
                   <div className="border-t-2 border-slate-900 pt-4 flex justify-end">

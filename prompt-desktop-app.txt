@@ -1,0 +1,162 @@
+Tengo una aplicación web SaaS de gestión empresarial (ERP/finanzas) con base de datos PostgreSQL.
+El schema ya existe y está en producción.
+
+Quiero crear una aplicación de escritorio NATIVA que se conecte DIRECTAMENTE a esa base de datos PostgreSQL
+sin ningún servidor HTTP intermedio (sin Express, sin API REST, sin navegador embebido).
+
+La app debe leer y escribir datos mediante queries directas a PostgreSQL, y mostrar la información
+al usuario a través de una UI nativa de escritorio.
+
+=============================================================
+STACK TECNOLÓGICO
+=============================================================
+
+- Runtime:     .NET 8 (C#)
+- UI:          Avalonia UI 11 (cross-platform: Windows, macOS, Linux)
+- ORM:         Entity Framework Core 8 + Npgsql provider (PostgreSQL)
+- Patrón:      MVVM (Model - View - ViewModel)
+- Auth local:  BCrypt para verificación de contraseñas (ya almacenadas en la DB)
+- Reportes:    QuestPDF o similar para generación de PDFs nativos
+- Gráficos:    LiveCharts2 para Avalonia (equivalente a Recharts)
+
+=============================================================
+ARQUITECTURA
+=============================================================
+
+FinanzSaaS.Desktop/
+  ├── Models/               # Clases C# que mapean las tablas PostgreSQL (igual al schema Prisma)
+  ├── Data/
+  │   ├── AppDbContext.cs   # EF Core DbContext con todas las entidades
+  │   └── DbConfig.cs       # Lectura/escritura de configuración de conexión
+  ├── ViewModels/           # Un ViewModel por módulo (lógica de negocio, queries)
+  ├── Views/                # Vistas Avalonia XAML (UI nativa)
+  │   ├── MainWindow.axaml
+  │   ├── LoginView.axaml
+  │   ├── DbSetupView.axaml # Pantalla de configuración de DB
+  │   └── [un archivo por módulo]
+  ├── Services/             # Servicios de datos (repositorios)
+  ├── Converters/           # Value converters para binding XAML
+  └── App.axaml             # Entry point Avalonia
+
+=============================================================
+CONFIGURACIÓN DE BASE DE DATOS
+=============================================================
+
+La aplicación debe conectarse a la siguiente base de datos PostgreSQL (Railway) por defecto:
+
+  DATABASE_URL = "postgresql://postgres:VrMdWsSyOVBgSfbgbFHzaKHjsNOqMpPF@shortline.proxy.rlwy.net:37857/railway"
+
+  Desglose:
+    Host:     shortline.proxy.rlwy.net
+    Puerto:   37857
+    Base de datos: railway
+    Usuario:  postgres
+    Contraseña: VrMdWsSyOVBgSfbgbFHzaKHjsNOqMpPF
+
+- El connection string de EF Core/Npgsql equivalente es:
+  "Host=shortline.proxy.rlwy.net;Port=37857;Database=railway;Username=postgres;Password=VrMdWsSyOVBgSfbgbFHzaKHjsNOqMpPF"
+
+- Guardar la configuración en: %APPDATA%/FinanzSaaS/dbconfig.json
+- Pre-poblar el formulario de configuración con estos valores por defecto
+- Permitir al usuario editar y sobreescribir la configuración si fuera necesario
+- Probar la conexión antes de guardar (intentar abrir DbContext)
+- Si la conexión falla: mostrar mensaje de error descriptivo y permitir reconfigurar
+- Botón "Configuración de BD" siempre accesible desde el menú lateral
+
+=============================================================
+MODELOS (mapear el schema PostgreSQL existente)
+=============================================================
+
+Los siguientes modelos deben crearse como clases C# con EF Core y mapear
+exactamente las tablas ya existentes en PostgreSQL:
+
+User, Company, Client, Project, ProjectMilestone, TimeEntry, CostCenter,
+Worker, Crew, JobTitle, Invoice, InvoiceItem, Payment, Supplier,
+DailyReport, ReportTemplate, PurchaseOrder, PurchaseOrderItem,
+Document, DocumentRequirement, DocumentCategory, ClientMonthlyInfo,
+Plan, PlanMark, Expense, ExpenseDistribution, Tool, ToolMaintenance,
+Epp, EppDelivery, ToolAssignment, SubscriptionPlan, Lead, LeadActivity,
+EmailTemplate, Quote, QuoteItem, BankAccount, BankTransaction, ExchangeRate
+
+IMPORTANTE: NO generar migraciones EF Core. La base de datos ya existe.
+Usar solo EF Core en modo "database-first" o con [Table] y [Column] attributes
+para mapear las columnas exactas existentes.
+
+=============================================================
+MÓDULOS / VISTAS REQUERIDAS
+=============================================================
+
+Cada módulo es una Vista + ViewModel con acceso directo a la DB vía EF Core:
+
+1.  LOGIN              → Verificar email/password (bcrypt) contra tabla User
+2.  DASHBOARD          → KPIs: totales de facturas, proyectos activos, flujo de caja
+3.  FACTURACIÓN        → CRUD de Invoice (COMPRA, VENTA, NOTA_CREDITO, NOTA_DEBITO,
+                         GUIA_DESPACHO, FACTURA_EXENTA) + items + pagos
+4.  CLIENTES           → CRUD de Client con búsqueda por RUT/nombre
+5.  PROVEEDORES        → CRUD de Supplier con categorías
+6.  PROYECTOS          → CRUD de Project + hitos (ProjectMilestone) + imputación de horas
+7.  CENTROS DE COSTO   → CRUD de CostCenter con control de presupuesto
+8.  TRABAJADORES       → CRUD de Worker + entregas de EPP + asignación de herramientas
+9.  INVENTARIO         → Products + Warehouses + Stock + InventoryMovement
+10. HERRAMIENTAS       → Tool + mantenciones (ToolMaintenance) + asignaciones (ToolAssignment)
+11. ÓRDENES DE COMPRA  → CRUD de PurchaseOrder + items
+12. GASTOS             → Expense + distribución por proyecto/centro de costo
+13. CRM                → Lead pipeline + QuoteS + LeadActivity
+14. REPORTES DIARIOS   → DailyReport + ReportTemplate
+15. CONTROL DOCUMENTAL → Document + DocumentRequirement + DocumentCategory por cliente
+16. CUENTAS BANCARIAS  → BankAccount + BankTransaction (cartola)
+17. FLUJO DE CAJA      → Proyección mensual cruzando Invoice y Expense
+18. TIPOS DE CAMBIO    → ExchangeRate (UF, USD)
+19. ADMINISTRACIÓN     → Gestión de Users, Companies, roles, módulos habilitados
+
+=============================================================
+MULTI-EMPRESA (MULTI-TENANT)
+=============================================================
+
+- Al hacer login, cargar las empresas asociadas al usuario (relación User ↔ Company)
+- Guardar la empresa activa en el estado de la sesión (equivalente a activeCompanyId)
+- TODOS los queries deben filtrar por CompanyId de la empresa activa
+- Permitir cambiar de empresa desde el menú lateral sin cerrar sesión
+
+=============================================================
+UX / UI NATIVA
+=============================================================
+
+- Sidebar con íconos de navegación por módulo
+- Selector de empresa activa en la parte superior del sidebar
+- DataGrid con paginación y búsqueda para todas las listas
+- Formularios modales para CRUD (no ventanas separadas)
+- Confirmación antes de eliminar registros
+- Indicador de "Cargando..." (spinner) durante queries a la DB
+- Tema: modo oscuro / claro configurable
+- Diseño moderno con colores personalizables por empresa (campo primaryColor en Company)
+
+=============================================================
+DISTRIBUCIÓN
+=============================================================
+
+- Windows: instalador NSIS (.exe) + portable
+- macOS: .dmg
+- Linux: .AppImage
+- Usar dotnet publish con self-contained para incluir el runtime .NET
+- No requerir instalación previa de .NET en el equipo del usuario
+
+=============================================================
+CONSIDERACIONES ADICIONALES
+=============================================================
+
+- No hay servidor HTTP. No hay API REST. No hay Express. No hay Node.js.
+- La app es 100% nativa: ejecutable .NET que habla directamente con PostgreSQL via Npgsql.
+- El PostgreSQL puede ser local o remoto (Railway, Supabase, etc.) — solo importa el connection string.
+- Los arrays PostgreSQL (String[], p.ej. modules[], allowedSections[]) se mapean con EF Core
+  usando el proveedor Npgsql que los soporta nativamente.
+- Las contraseñas en la tabla User están hashed con BCrypt — usar BCrypt.Net para verificarlas.
+- Los UUIDs se mapean como Guid en C#.
+
+Por favor, crea toda la estructura del proyecto .NET/Avalonia con:
+1. El AppDbContext completo con todos los modelos
+2. La pantalla de configuración de BD
+3. La pantalla de login
+4. Al menos 3 módulos completos (Dashboard, Facturación, Clientes) como ejemplo del patrón MVVM
+5. La estructura de navegación principal (MainWindow con sidebar)
+6. El archivo .csproj con todas las dependencias necesarias

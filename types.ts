@@ -336,6 +336,8 @@ export interface Expense {
   workerId?: string;
   worker?: Worker;
   invoiceNumber?: string;
+  invoiceId?: string;
+  invoice?: Invoice;
   status: 'PENDING' | 'SETTLED';
   distributions?: ExpenseDistribution[];
   currency?: 'CLP' | 'UF' | 'USD';

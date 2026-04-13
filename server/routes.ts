@@ -575,7 +575,7 @@ router.post("/projects", checkModuleAccess("PROJECTS"), async (req, res) => {
         const companyId = req.headers['x-company-id'] as string;
         if (!companyId) return res.status(400).json({ error: "Company ID required" });
 
-        const { name, budget, address, status, progress, startDate, endDate, workerIds } = req.body;
+        const { name, budget, address, status, progress, startDate, endDate, workerIds, costCenterIds } = req.body;
 
         const newProject = await prisma.project.create({
             data: {
@@ -587,7 +587,8 @@ router.post("/projects", checkModuleAccess("PROJECTS"), async (req, res) => {
                 progress: progress ? Number(progress) : 0,
                 startDate: startDate ? new Date(startDate) : null,
                 endDate: endDate ? new Date(endDate) : null,
-                workerIds: workerIds || []
+                workerIds: workerIds || [],
+                costCenterIds: costCenterIds || []
             }
         });
         res.json(newProject);
@@ -603,7 +604,7 @@ router.put("/projects/:id", async (req, res) => {
         if (!companyId) return res.status(400).json({ error: "Company ID required" });
 
         const { id } = req.params;
-        const { name, budget, address, status, progress, startDate, endDate, workerIds } = req.body;
+        const { name, budget, address, status, progress, startDate, endDate, workerIds, costCenterIds } = req.body;
 
         const updated = await updateOwnedRecord(prisma.project, id, companyId, {
             name,
@@ -613,7 +614,8 @@ router.put("/projects/:id", async (req, res) => {
             progress: progress !== undefined ? Number(progress) : undefined,
             startDate: startDate ? new Date(startDate) : undefined,
             endDate: endDate ? new Date(endDate) : undefined,
-            workerIds
+            workerIds,
+            costCenterIds
         });
         if (!updated) return res.status(404).json({ error: "Project not found" });
         res.json(updated);
@@ -2394,6 +2396,7 @@ router.get("/expenses", async (req, res) => {
                 originCompany: true,
                 targetCompany: true,
                 worker: true,
+                invoice: true,
                 distributions: {
                     include: { project: true, costCenter: true }
                 }
@@ -2409,7 +2412,7 @@ router.get("/expenses", async (req, res) => {
 
 router.post("/expenses", async (req, res) => {
     try {
-        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, distributions } = req.body;
+        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, invoiceId, distributions } = req.body;
 
         const newExpense = await prisma.expense.create({
             data: {
@@ -2421,6 +2424,7 @@ router.post("/expenses", async (req, res) => {
                 targetCompanyId,
                 workerId: workerId || undefined,
                 invoiceNumber: invoiceNumber || undefined,
+                invoiceId: invoiceId || undefined,
                 status: 'PENDING',
                 distributions: distributions && distributions.length > 0 ? {
                     create: distributions.map((d: any) => ({
@@ -2445,7 +2449,7 @@ router.post("/expenses", async (req, res) => {
 router.put("/expenses/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, status } = req.body;
+        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, invoiceId, status } = req.body;
 
         const updated = await prisma.expense.update({
             where: { id },
@@ -2458,6 +2462,7 @@ router.put("/expenses/:id", async (req, res) => {
                 targetCompanyId,
                 workerId,
                 invoiceNumber,
+                invoiceId,
                 status
             },
             include: {

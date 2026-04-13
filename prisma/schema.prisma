@@ -109,6 +109,7 @@ model Project {
   startDate            DateTime?
   endDate              DateTime?
   workerIds            String[]
+  costCenterIds        String[] @default([])
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   companyId            String
@@ -256,6 +257,7 @@ model Invoice {
   relatedByInvoices   Invoice[]     @relation("InvoiceRelation")
   items               InvoiceItem[]
   payments            Payment[]
+  expenses            Expense[]
 }
 
 model Payment {
@@ -541,6 +543,8 @@ model Expense {
   originCompany   Company               @relation("PaidExpenses", fields: [originCompanyId], references: [id])
   targetCompany   Company               @relation("ReceivedExpenses", fields: [targetCompanyId], references: [id])
   worker          Worker?               @relation(fields: [workerId], references: [id])
+  invoiceId       String?
+  invoice         Invoice?              @relation(fields: [invoiceId], references: [id])
   distributions   ExpenseDistribution[]
 }
 
