@@ -598,11 +598,6 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                                             const p = projects.find(proj => proj.id === formData.selectedProjectId);
                                                             const pCCs = costCenters.filter(cc => p?.costCenterIds?.includes(cc.id));
                                                             
-                                                            // Debug output for browser console
-                                                            console.log("[ExpensesPage] Selected Project:", p?.name, "(ID:", p?.id, ")");
-                                                            console.log("[ExpensesPage] Project costCenterIds:", p?.costCenterIds);
-                                                            console.log("[ExpensesPage] Available CCs linked:", pCCs.map(cc => cc.name));
-                                                            
                                                             if (p && (!p.costCenterIds || p.costCenterIds.length === 0)) {
                                                                 return <option disabled>⚠️ Este proyecto no tiene Centros de Costo vinculados</option>;
                                                             }

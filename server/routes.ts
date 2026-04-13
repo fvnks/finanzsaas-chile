@@ -619,7 +619,6 @@ router.put("/projects/:id", async (req, res) => {
             costCenterIds
         });
         if (!updated) return res.status(404).json({ error: "Project not found" });
-        console.log(`[Backend] Updated project ${updated.id}. Linked CCs:`, updated.costCenterIds);
         res.json(updated);
     } catch (err) {
         console.error("Failed to update project", err);

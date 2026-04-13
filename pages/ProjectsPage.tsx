@@ -113,16 +113,12 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("[ProjectsPage] Submitting form data:", formData);
     if (!formData.name || formData.budget < 0) {
-      console.warn("[ProjectsPage] Validation failed: missing name or negative budget");
       return;
     }
     if (editingProject) {
-      console.log("[ProjectsPage] Editing project id:", editingProject.id);
       onEdit({ ...formData, id: editingProject.id } as Project);
     } else {
-      console.log("[ProjectsPage] Adding new project");
       onAdd({ ...formData });
     }
     setShowModal(false);
@@ -188,8 +184,6 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
         };
       });
 
-    console.log(`[ProjectsPage] Details for ${project.name}: costCenterIds in project object:`, project.costCenterIds);
-    console.log(`[ProjectsPage] Calculated assignedCostCenters:`, assignedCostCenters.map(c => ({ name: c.name, isLinked: (c as any).isLinked })));
 
     const progress = project.progress || 0;
 
