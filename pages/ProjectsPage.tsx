@@ -142,7 +142,8 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
     );
 
     const sales = associatedInvoices.filter(i => i.type === 'VENTA').reduce((acc, i) => acc + (i.total || 0), 0);
-    const invoicePurchases = associatedInvoices.filter(i => i.type === 'COMPRA').reduce((acc, i) => acc + (i.total || 0), 0);
+    const invoicePurchases = associatedInvoices.filter(i => i.type === 'COMPRA' || i.type === 'GUIA_DESPACHO').reduce((acc, i) => acc + (i.total || 0), 0);
+
     const expensePurchases = associatedExpenses.reduce((acc, exp) => {
         // Find the amount belonging to this project context
         if (exp.projectId === project.id) return acc + exp.amount;
@@ -169,7 +170,10 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
             exp.distributions?.some(d => d.costCenterId === cc.id && (d.projectId === project.id || isLinked))
         );
         
-        const invoiceTotal = relatedInvoices.reduce((acc, i) => acc + (i.total || 0), 0);
+        const invoiceTotal = relatedInvoices
+          .filter(i => i.type === 'COMPRA' || i.type === 'GUIA_DESPACHO')
+          .reduce((acc, i) => acc + (i.total || 0), 0);
+
         const expenseTotal = relatedExpenses.reduce((acc, exp) => {
             const dist = exp.distributions?.find(d => d.costCenterId === cc.id);
             return acc + (dist?.amount || 0);

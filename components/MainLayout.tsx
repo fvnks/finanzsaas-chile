@@ -624,9 +624,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                         workers={workers}
                         invoices={invoices}
                         costCenters={costCenters}
-                        dailyReports={dailyReports}
-                        users={allUsers}
                         currentUser={user}
+
                         onAdd={async (proj) => {
                             try {
                                 const res = await fetch(`${API_URL}/projects`, {
