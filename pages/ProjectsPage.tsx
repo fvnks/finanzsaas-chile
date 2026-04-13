@@ -113,10 +113,16 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || formData.budget < 0) return;
+    console.log("[ProjectsPage] Submitting form data:", formData);
+    if (!formData.name || formData.budget < 0) {
+      console.warn("[ProjectsPage] Validation failed: missing name or negative budget");
+      return;
+    }
     if (editingProject) {
+      console.log("[ProjectsPage] Editing project id:", editingProject.id);
       onEdit({ ...formData, id: editingProject.id } as Project);
     } else {
+      console.log("[ProjectsPage] Adding new project");
       onAdd({ ...formData });
     }
     setShowModal(false);
@@ -845,8 +851,8 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
                   <button type="button" onClick={() => setShowModal(false)} className="px-6 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all text-xs">Cancelar</button>
                   <button
                     type="submit"
-                    disabled={!formData.name || !formData.address}
-                    className={`px-8 py-3 rounded-xl font-black text-white shadow-xl transition-all active:scale-95 text-xs uppercase tracking-wide ${!formData.name || !formData.address ? 'bg-slate-300 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
+                    disabled={!formData.name}
+                    className={`px-8 py-3 rounded-xl font-black text-white shadow-xl transition-all active:scale-95 text-xs uppercase tracking-wide ${!formData.name ? 'bg-slate-300 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
                       }`}
                   >
                     {editingProject ? 'Guardar' : 'Aperturar'}
