@@ -15,7 +15,9 @@ import {
     X,
     Trash2,
     Check,
-    Download
+    Download,
+    Pencil,
+    AlertTriangle
 } from 'lucide-react';
 import { Expense, Project, CostCenter, Worker, Company, Invoice } from '../types';
 import { formatCLP } from '../constants';
@@ -48,9 +50,10 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-    // Form State
-    const [formData, setFormData] = useState({
+    const emptyForm = {
         description: '',
         amount: '',
         date: new Date().toISOString().split('T')[0],
@@ -66,7 +69,10 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
         selectedCCId: '',
         isProrated: false,
         distributions: [] as { projectId: string; costCenterId: string; amount: number }[]
-    });
+    };
+
+    // Form State
+    const [formData, setFormData] = useState(emptyForm);
 
     const CATEGORIES = [
         'Materiales',
@@ -111,6 +117,59 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
         setFormData({ ...formData, distributions: newDistributions });
     };
 
+    const handleOpenEdit = (expense: Expense) => {
+        setEditingExpense(expense);
+        // Detect assignment mode from existing distributions
+        let assignmentMode: 'NONE' | 'PROJECT' | 'COST_CENTER' | 'MULTIPLE' = 'NONE';
+        let selectedProjectId = '';
+        let selectedCCId = '';
+        const dists = expense.distributions || [];
+        if (dists.length > 1) {
+            assignmentMode = 'MULTIPLE';
+        } else if (dists.length === 1) {
+            if (dists[0].projectId && dists[0].costCenterId) {
+                assignmentMode = 'PROJECT';
+                selectedProjectId = dists[0].projectId;
+                selectedCCId = dists[0].costCenterId;
+            } else if (dists[0].projectId) {
+                assignmentMode = 'PROJECT';
+                selectedProjectId = dists[0].projectId;
+            } else if (dists[0].costCenterId) {
+                assignmentMode = 'COST_CENTER';
+                selectedCCId = dists[0].costCenterId;
+            }
+        }
+
+        // Detect if category is custom
+        const knownCategory = CATEGORIES.includes(expense.category || '') ? expense.category || '' : 'Otro';
+        const customCategory = CATEGORIES.includes(expense.category || '') ? '' : expense.category || '';
+
+        setFormData({
+            description: expense.description,
+            amount: String(expense.amount),
+            date: expense.date.split('T')[0],
+            originCompanyId: expense.originCompanyId || activeCompany?.id || '',
+            targetCompanyId: expense.targetCompanyId || activeCompany?.id || '',
+            workerId: expense.workerId || '',
+            category: knownCategory,
+            customCategory,
+            invoiceNumber: expense.invoiceNumber || '',
+            invoiceId: expense.invoiceId || '',
+            assignmentMode,
+            selectedProjectId,
+            selectedCCId,
+            isProrated: false,
+            distributions: dists.map(d => ({ projectId: d.projectId || '', costCenterId: d.costCenterId || '', amount: d.amount }))
+        });
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingExpense(null);
+        setFormData(emptyForm);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -128,31 +187,30 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                             : []
             };
 
-            // @ts-ignore
-            await onAdd(expenseData);
-            setShowModal(false);
-            setFormData({
-                description: '',
-                amount: '',
-                date: new Date().toISOString().split('T')[0],
-                originCompanyId: activeCompany?.id || '',
-                targetCompanyId: activeCompany?.id || '',
-                workerId: '',
-                invoiceNumber: '',
-                invoiceId: '',
-                category: '',
-                customCategory: '',
-                assignmentMode: 'NONE',
-                selectedProjectId: '',
-                selectedCCId: '',
-                isProrated: false,
-                distributions: []
-            });
+            if (editingExpense) {
+                // @ts-ignore
+                await onUpdate({ ...editingExpense, ...expenseData });
+            } else {
+                // @ts-ignore
+                await onAdd(expenseData);
+            }
+            handleCloseModal();
         } catch (error) {
             console.error(error);
             alert('Error al guardar el gasto');
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteConfirm = async (id: string) => {
+        try {
+            await onDelete(id);
+        } catch (error) {
+            console.error(error);
+            alert('Error al eliminar el gasto');
+        } finally {
+            setDeleteConfirmId(null);
         }
     };
 
@@ -329,13 +387,22 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                             <span className="text-lg font-black text-slate-900">{formatCLP(expense.amount)}</span>
                                         </td>
                                         <td className="p-5 text-center">
-                                            <button
-                                                onClick={() => onDelete(expense.id)}
-                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors opacity-0 group-hover:opacity-100"
-                                                title="Eliminar Gasto"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                            <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => handleOpenEdit(expense)}
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                                                    title="Editar Gasto"
+                                                >
+                                                    <Pencil size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setDeleteConfirmId(expense.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                                                    title="Eliminar Gasto"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 );
@@ -354,17 +421,48 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                 </div>
             </div>
 
-            {/* MODAL */}
+            {/* DELETE CONFIRMATION DIALOG */}
+            {deleteConfirmId && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-3 bg-red-100 text-red-600 rounded-2xl">
+                                <AlertTriangle size={22} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-900">Eliminar Gasto</h3>
+                                <p className="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => handleDeleteConfirm(deleteConfirmId!)}
+                                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors"
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL CREATE / EDIT */}
             {
                 showModal && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-slate-100 flex flex-col max-h-[90vh]">
                             <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                                 <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                    <CreditCard className="text-blue-600" />
-                                    Registrar Nuevo Gasto
+                                    {editingExpense ? <Pencil className="text-blue-600" /> : <CreditCard className="text-blue-600" />}
+                                    {editingExpense ? 'Editar Gasto' : 'Registrar Nuevo Gasto'}
                                 </h3>
-                                <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-200 rounded-full transition-colors">
+                                <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-200 rounded-full transition-colors">
                                     <X size={24} />
                                 </button>
                             </div>
@@ -705,7 +803,7 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                 <div className="pt-6 border-t border-slate-100 flex justify-end gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => setShowModal(false)}
+                                        onClick={handleCloseModal}
                                         className="px-6 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl"
                                     >
                                         Cancelar
@@ -715,7 +813,7 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                         disabled={isSubmitting || !formData.amount || !formData.description}
                                         className="px-8 py-3 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 shadow-xl shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isSubmitting ? 'Guardando...' : 'Registrar Gasto'}
+                                        {isSubmitting ? 'Guardando...' : editingExpense ? 'Guardar Cambios' : 'Registrar Gasto'}
                                     </button>
                                 </div>
 

@@ -2449,23 +2449,56 @@ router.post("/expenses", async (req, res) => {
 
 router.put("/expenses/:id", async (req, res) => {
     try {
+        const companyId = requireCompanyId(req, res);
+        if (!companyId) return;
         const { id } = req.params;
-        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, invoiceId, status } = req.body;
+        const { description, amount, category, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, invoiceId, status, distributions } = req.body;
 
-        const updated = await prisma.expense.update({
+        // Verify ownership
+        const existing = await prisma.expense.findFirst({
+            where: { id, OR: [{ originCompanyId: companyId }, { targetCompanyId: companyId }] }
+        });
+        if (!existing) return res.status(404).json({ error: "Expense not found" });
+
+        // Run update + distribution recreate in a short transaction (no heavy reads inside)
+        await prisma.$transaction(async (tx) => {
+            await tx.expense.update({
+                where: { id },
+                data: {
+                    description,
+                    amount: amount ? Number(amount) : undefined,
+                    category,
+                    date: date ? new Date(date) : undefined,
+                    originCompanyId,
+                    targetCompanyId,
+                    workerId: workerId || null,
+                    invoiceNumber: invoiceNumber || null,
+                    invoiceId: invoiceId || null,
+                    status
+                }
+            });
+
+            // Recreate distributions if provided
+            if (Array.isArray(distributions)) {
+                await tx.expenseDistribution.deleteMany({ where: { expenseId: id } });
+                if (distributions.length > 0) {
+                    await tx.expenseDistribution.createMany({
+                        data: distributions
+                            .filter((d: any) => Number(d.amount) > 0)
+                            .map((d: any) => ({
+                                expenseId: id,
+                                amount: Number(d.amount),
+                                projectId: d.projectId || null,
+                                costCenterId: d.costCenterId || null
+                            }))
+                    });
+                }
+            }
+        });
+
+        // Fetch the updated record OUTSIDE the transaction to avoid timeout
+        const updated = await prisma.expense.findUnique({
             where: { id },
-            data: {
-                description,
-                amount: amount ? Number(amount) : undefined,
-                category,
-                date: date ? new Date(date) : undefined,
-                originCompanyId,
-                targetCompanyId,
-                workerId,
-                invoiceNumber,
-                invoiceId,
-                status
-            },
             include: {
                 originCompany: true,
                 targetCompany: true,
@@ -2473,6 +2506,7 @@ router.put("/expenses/:id", async (req, res) => {
                 distributions: { include: { project: true, costCenter: true } }
             }
         });
+
         res.json(updated);
     } catch (err) {
         console.error("Error updating expense:", err);
@@ -2500,88 +2534,6 @@ router.delete("/expenses/:id", async (req, res) => {
     }
 });
 
-
-// --- EXPENSES ---
-router.get("/expenses", async (req, res) => {
-    try {
-        const companyId = (req as any).companyId;
-        // Fetch expenses where the company is either the payer (Origin) or beneficiary (Target)
-        const expenses = await prisma.expense.findMany({
-            where: {
-                OR: [
-                    { originCompanyId: companyId },
-                    { targetCompanyId: companyId }
-                ]
-            },
-            include: {
-                originCompany: true,
-                targetCompany: true,
-                worker: true,
-                distributions: {
-                    include: { project: true, costCenter: true }
-                }
-            },
-            orderBy: { date: 'desc' }
-        });
-        res.json(expenses);
-    } catch (err) {
-        console.error("Error fetching expenses:", err);
-        res.status(500).json({ error: "Failed to fetch expenses" });
-    }
-});
-
-router.post("/expenses", async (req, res) => {
-    try {
-        const { description, amount, date, originCompanyId, targetCompanyId, workerId, invoiceNumber, distributions } = req.body;
-
-        const newExpense = await prisma.expense.create({
-            data: {
-                description,
-                amount: Number(amount),
-                date: new Date(date),
-                originCompanyId,
-                targetCompanyId,
-                workerId: workerId || undefined,
-                invoiceNumber: invoiceNumber || undefined,
-                status: 'PENDING',
-                distributions: distributions && distributions.length > 0 ? {
-                    create: distributions.map((d: any) => ({
-                        amount: Number(d.amount),
-                        projectId: d.projectId || undefined,
-                        costCenterId: d.costCenterId || undefined
-                    }))
-                } : undefined
-            },
-            include: {
-                distributions: true
-            }
-        });
-        res.status(201).json(newExpense);
-    } catch (err) {
-        console.error("Error creating expense:", err);
-        res.status(500).json({ error: "Failed to create expense" });
-    }
-});
-
-router.delete("/expenses/:id", async (req, res) => {
-    try {
-        const companyId = requireCompanyId(req, res);
-        if (!companyId) return;
-        const { id } = req.params;
-        const existing = await prisma.expense.findFirst({
-            where: {
-                id,
-                OR: [{ originCompanyId: companyId }, { targetCompanyId: companyId }]
-            }
-        });
-        if (!existing) return res.status(404).json({ error: "Expense not found" });
-        await prisma.expense.delete({ where: { id } });
-        res.json({ success: true });
-    } catch (err) {
-        console.error("Error deleting expense:", err);
-        res.status(500).json({ error: "Failed to delete expense" });
-    }
-});
 
 
 // --- BACKUPS ---
