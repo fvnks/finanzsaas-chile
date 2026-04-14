@@ -19,8 +19,8 @@ async function main() {
       type: i.type,
       status: i.status,
       date: i.date,
-      client: i.client?.razonSocial,
-      supplier: i.supplier?.razonSocial,
+      client: (i.client as any)?.name || (i.client as any)?.razonSocial,
+      supplier: (i.supplier as any)?.razonSocial || (i.supplier as any)?.name,
       companyId: i.companyId
     }));
     

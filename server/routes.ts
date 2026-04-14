@@ -1431,7 +1431,7 @@ router.get("/daily-reports", async (req, res) => {
         const reports = await prisma.dailyReport.findMany({
             where,
             orderBy: { date: 'desc' },
-            include: { template: true }
+            include: { template: true, project: true }
         });
         if (search) {
             const s = (search as string).toLowerCase();

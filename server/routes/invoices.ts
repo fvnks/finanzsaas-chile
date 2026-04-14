@@ -21,7 +21,7 @@ invoicesRouter.get("/invoices", checkModuleAccess("INVOICING"), async (req, res)
         const invoices = await prisma.invoice.findMany({
             where: { companyId },
             orderBy: { date: "desc" },
-            include: { client: true, project: true, supplier: true }
+            include: { client: true, project: true, supplier: true, items: true }
         });
         res.json(invoices);
     } catch (err) {
@@ -254,7 +254,7 @@ invoicesRouter.put("/invoices/:id", checkModuleAccess("INVOICING"), async (req, 
 
             return tx.invoice.findUnique({
                 where: { id },
-                include: { client: true, project: true, supplier: true }
+                include: { client: true, project: true, supplier: true, items: true }
             });
         }, {
             maxWait: 5000,

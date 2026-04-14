@@ -17,7 +17,7 @@ import {
     Check,
     Download
 } from 'lucide-react';
-import { Expense, Project, CostCenter, Worker, Company } from '../types';
+import { Expense, Project, CostCenter, Worker, Company, Invoice } from '../types';
 import { formatCLP } from '../constants';
 import { useCompany } from '../components/CompanyContext';
 

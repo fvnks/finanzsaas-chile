@@ -20,8 +20,10 @@ import {
   Briefcase,
   Check
 } from 'lucide-react';
-import { CostCenter, Invoice, InvoiceType, Client, Project } from '../types';
+import { CostCenter, Invoice, InvoiceType, Client, Project, Expense } from '../types';
 import { formatCLP } from '../constants';
+import InvoiceDetailModal from '../components/InvoiceDetailModal';
+import { normalizeInvoiceType, getInvoiceTypeLabel } from '../src/utils/invoiceUtils';
 
 interface CostCentersPageProps {
   costCenters: CostCenter[];
@@ -38,30 +40,6 @@ interface CostCentersPageProps {
 import { checkPermission } from '../src/utils/permissions';
 import { User } from '../types';
 
-const normalizeInvoiceType = (value?: string) => {
-  if (!value) return "SALE";
-  const aliases: Record<string, string> = {
-    SALE: "SALE", VENTA: "SALE",
-    PURCHASE: "PURCHASE", COMPRA: "PURCHASE",
-    CREDIT_NOTE: "CREDIT_NOTE", NOTA_CREDITO: "CREDIT_NOTE",
-    DEBIT_NOTE: "DEBIT_NOTE", NOTA_DEBITO: "DEBIT_NOTE",
-    GUIA_DESPACHO: "GUIA_DESPACHO", DISPATCH_GUIDE: "GUIA_DESPACHO",
-    FACTURA_EXENTA: "FACTURA_EXENTA", EXEMPT_INVOICE: "FACTURA_EXENTA"
-  };
-  return aliases[value] || value;
-};
-
-const getInvoiceTypeLabel = (value?: string) => {
-  switch (normalizeInvoiceType(value)) {
-    case "PURCHASE": return "Compra";
-    case "SALE": return "Venta";
-    case "CREDIT_NOTE": return "Nota de Crédito";
-    case "DEBIT_NOTE": return "Nota de Débito";
-    case "GUIA_DESPACHO": return "Guía de Despacho";
-    case "FACTURA_EXENTA": return "Factura Exenta";
-    default: return value?.replace(/_/g, ' ') || "Documento";
-  }
-};
 
 const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices, expenses, projects, clients, onAdd, onUpdate, onDelete, currentUser }) => {
   const [showModal, setShowModal] = useState(false);
@@ -69,6 +47,7 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
   const [viewingCC, setViewingCC] = useState<CostCenter | null>(null);
   const [editingCC, setEditingCC] = useState<CostCenter | null>(null);
   const [ccToDelete, setCcToDelete] = useState<CostCenter | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   const [formData, setFormData] = useState<Omit<CostCenter, 'id'>>({
     code: '',
@@ -359,7 +338,11 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                               </thead>
                               <tbody className="divide-y divide-slate-50">
                                 {details.associatedInvoices.map(inv => (
-                                  <tr key={inv.id} className="hover:bg-slate-50/50 transition-colors group">
+                                  <tr 
+                                    key={inv.id} 
+                                    className="hover:bg-blue-50/50 transition-colors group cursor-pointer"
+                                    onClick={() => setSelectedInvoice(inv)}
+                                  >
                                     <td className="px-8 py-5">
                                       <div className="flex flex-col">
                                         <span className="font-black text-slate-800">{inv.number}</span>
@@ -369,7 +352,7 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                                       </div>
                                     </td>
                                     <td className="px-8 py-5 font-bold text-slate-600">
-                                      {clients.find(c => c.id === inv.clientId)?.razonSocial || inv.supplier?.name || 'Varios'}
+                                      {clients.find(c => c.id === inv.clientId)?.razonSocial || inv.supplier?.razonSocial || 'Varios'}
                                     </td>
                                     <td className="px-8 py-5 text-slate-400 font-medium">{inv.date}</td>
                                     <td className={`px-8 py-5 text-right font-black ${normalizeInvoiceType(inv.type) === 'SALE' ? 'text-green-600' : 'text-slate-900'}`}>
@@ -561,6 +544,18 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
           </div>
         )
       }
+
+      {/* Visor de Detalle de Factura */}
+      {selectedInvoice && (
+        <InvoiceDetailModal
+          selectedInvoice={selectedInvoice}
+          clients={clients}
+          costCenters={costCenters}
+          projects={projects}
+          expenses={expenses}
+          onClose={() => setSelectedInvoice(null)}
+        />
+      )}
     </div >
   );
 };
