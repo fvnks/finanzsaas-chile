@@ -20,7 +20,7 @@ import {
   Briefcase,
   Check
 } from 'lucide-react';
-import { CostCenter, Invoice, InvoiceType, Client, Project, Expense, Supplier } from '../types';
+import { CostCenter, Invoice, InvoiceType, Client, Project, Expense, Supplier, User } from '../types';
 import { formatCLP } from '../constants';
 import InvoiceDetailModal from '../components/InvoiceDetailModal';
 import { normalizeInvoiceType, getInvoiceTypeLabel } from '../src/utils/invoiceUtils';
@@ -33,14 +33,13 @@ interface CostCentersPageProps {
   projects: Project[];
   clients: Client[];
   suppliers?: Supplier[];
-  onAdd: (cc: CostCenter) => void;
-  onUpdate: (cc: CostCenter) => void;
-  onDelete: (id: string) => void;
-  currentUser: any;
+  onAdd: (cc: CostCenter) => Promise<void>;
+  onUpdate: (cc: CostCenter) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  currentUser: User | null;
 }
 
 import { checkPermission } from '../src/utils/permissions';
-import { User } from '../types';
 
 
 const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices, expenses, projects, clients, suppliers = [], onAdd, onUpdate, onDelete, currentUser }) => {
@@ -104,7 +103,7 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
     const execution = budget > 0 ? (purchases / budget) * 100 : 0;
     const share = stats.totalPurchasesGlobal > 0 ? (purchases / stats.totalPurchasesGlobal) * 100 : 0;
 
-    const linkedProjects = projects.filter(p => (cc.projectIds || []).includes(p.id));
+    const linkedProjects = projects.filter(p => (p.costCenterIds || []).includes(cc.id));
 
     return { associatedInvoices, associatedExpenses, purchases, sales, execution, share, linkedProjects };
   };
@@ -116,7 +115,9 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
         code: cc.code,
         name: cc.name,
         budget: cc.budget || 0,
-        projectIds: cc.projectIds || []
+        projectIds: projects
+          .filter(project => (project.costCenterIds || []).includes(cc.id))
+          .map(project => project.id)
       });
     } else {
       setEditingCC(null);
@@ -139,14 +140,14 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.code) return;
 
     if (editingCC) {
-      onUpdate({ ...formData, id: editingCC.id });
+      await onUpdate({ ...formData, id: editingCC.id });
     } else {
-      onAdd({ ...formData, id: Math.random().toString(36).substr(2, 9) });
+      await onAdd({ ...formData, id: Math.random().toString(36).substr(2, 9) });
     }
     setShowModal(false);
   };

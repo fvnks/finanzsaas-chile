@@ -5,12 +5,12 @@ import {
     PhoneCall, Users, MessageSquare, Send, TrendingUp, Star,
     ChevronDown, Filter, X, BarChart3, Activity
 } from 'lucide-react';
-import { Lead, Quote, LeadActivity, EmailTemplate } from '../types';
+import { Lead, Quote, LeadActivity, EmailTemplate, User } from '../types';
 import { API_URL } from '../src/config.ts';
 import { useCompany } from '../components/CompanyContext';
 
 interface CrmPageProps {
-    currentUser: any;
+    currentUser: User | null;
 }
 
 const PIPELINE_STAGES = [
@@ -80,7 +80,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
         setLoading(true);
         try {
             const res = await fetch(`${API_URL}/leads`, {
-                headers: { 'company-id': activeCompany?.id || '' }
+                headers: { 'x-company-id': activeCompany?.id || '' }
             });
             if (res.ok) setLeads(await res.json());
         } catch (error) { console.error("Error fetching leads:", error); }
@@ -90,7 +90,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
     const fetchActivities = async (leadId: string) => {
         try {
             const res = await fetch(`${API_URL}/leads/${leadId}/activities`, {
-                headers: { 'company-id': activeCompany?.id || '' }
+                headers: { 'x-company-id': activeCompany?.id || '' }
             });
             if (res.ok) setLeadActivities(await res.json());
         } catch (e) { console.error(e); }
@@ -99,7 +99,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
     const fetchEmailTemplates = async () => {
         try {
             const res = await fetch(`${API_URL}/email-templates`, {
-                headers: { 'company-id': activeCompany?.id || '' }
+                headers: { 'x-company-id': activeCompany?.id || '' }
             });
             if (res.ok) setEmailTemplates(await res.json());
         } catch (e) { console.error(e); }
@@ -112,7 +112,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
             if (editingLead) {
                 const res = await fetch(`${API_URL}/leads/${editingLead.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                    headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                     body: JSON.stringify(leadForm)
                 });
                 if (res.ok) {
@@ -123,7 +123,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
             } else {
                 const res = await fetch(`${API_URL}/leads`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                    headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                     body: JSON.stringify(leadForm)
                 });
                 if (res.ok) {
@@ -139,7 +139,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
         try {
             const res = await fetch(`${API_URL}/leads/${leadId}/score`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'company-id': activeCompany?.id || '' },
+                headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany?.id || '' },
                 body: JSON.stringify({ score })
             });
             if (res.ok) {
@@ -154,7 +154,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
         try {
             const res = await fetch(`${API_URL}/leads/${editingLead.id}/activities`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'company-id': activeCompany?.id || '' },
+                headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany?.id || '' },
                 body: JSON.stringify(newActivity)
             });
             if (res.ok) {
@@ -171,7 +171,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
         try {
             const res = await fetch(`${API_URL}/email-templates${template.id ? `/${template.id}` : ''}`, {
                 method: template.id ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json', 'company-id': activeCompany?.id || '' },
+                headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany?.id || '' },
                 body: JSON.stringify(template)
             });
             if (res.ok) { fetchEmailTemplates(); }
@@ -187,7 +187,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
             const payload = { ...quoteForm, leadId: editingLead.id };
             const res = await fetch(endpoint, {
                 method,
-                headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
@@ -196,7 +196,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
                 if (!editingQuote || quoteForm.status === 'SENT') {
                     await fetch(`${API_URL}/leads/${editingLead.id}/activities`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                        headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                         body: JSON.stringify({ type: 'QUOTE_SENT', content: `Cotización ${quoteForm.number} została wysłana` })
                     });
                 }
@@ -227,21 +227,21 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
             };
             const res = await fetch(`${API_URL}/invoices`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                 body: JSON.stringify(invoicePayload)
             });
             if (res.ok) {
                 alert('Factura creada exitosamente como BORRADOR.');
                 await fetch(`${API_URL}/quotes/${quote.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                    headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                     body: JSON.stringify({ ...quote, status: 'ACCEPTED' })
                 });
                 // Update lead status to WON
                 if (editingLead) {
                     await fetch(`${API_URL}/leads/${editingLead.id}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                        headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                         body: JSON.stringify({ ...editingLead, status: 'WON' })
                     });
                 }
@@ -257,7 +257,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
         try {
             const res = await fetch(`${API_URL}/leads/${id}`, {
                 method: 'DELETE',
-                headers: { 'company-id': activeCompany.id }
+                headers: { 'x-company-id': activeCompany.id }
             });
             if (res.ok) setLeads(leads.filter(l => l.id !== id));
         } catch (error) { console.error("Error deleting lead:", error); }
@@ -343,7 +343,7 @@ const CrmPage: React.FC<CrmPageProps> = ({ currentUser }) => {
             try {
                 const res = await fetch(`${API_URL}/leads/${leadId}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'company-id': activeCompany.id },
+                    headers: { 'Content-Type': 'application/json', 'x-company-id': activeCompany.id },
                     body: JSON.stringify({ ...leadToUpdate, status: statusId })
                 });
                 if (!res.ok) fetchData();

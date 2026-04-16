@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Search, MapPin, Calendar, Clock, AlertTriangle, CheckCircle2, MoreVertical, Edit2, Trash2, ArrowUpRight, BarChart3, Target, Info, CheckSquare, X, Users, ClipboardList, Check, Wallet, ChevronRight, FileText, Construction, Briefcase, DollarSign, HardHat, ShieldCheck, Zap, UserCheck, Calculator, Flag, Timer, Trash } from 'lucide-react';
 import { Project, Worker, Invoice, CostCenter, User, ProjectMilestone, TimeEntry, Expense } from '../types';
 import { formatCLP } from '../constants';
+import { API_URL } from '../src/config';
+import { useCompany } from '../components/CompanyContext';
 
 interface ProjectsPageProps {
   projects: Project[];
@@ -22,6 +24,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
     return <div className="p-8 text-center text-slate-500">Cargando datos del sistema...</div>;
   }
 
+  const { activeCompany } = useCompany();
   const [showModal, setShowModal] = useState(false);
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
@@ -55,7 +58,10 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
         name: project.name,
         budget: project.budget,
         address: project.address || '',
-        tasks: project.tasks || [],
+        tasks: (project.description || '')
+          .split('\n')
+          .map(task => task.trim())
+          .filter(Boolean),
         costCenterIds: project.costCenterIds || [],
         progress: project.progress || 0,
         startDate: project.startDate || '',
@@ -93,20 +99,29 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
   };
 
   const addTask = () => {
-    if (newTask.trim()) {
-      setFormData(prev => ({
+    const task = newTask.trim();
+    if (!task) return;
+
+    setFormData(prev => {
+      const tasks = [...(prev.tasks || []), task];
+      return {
         ...prev,
-        tasks: [...prev.tasks, newTask.trim()]
-      }));
-      setNewTask('');
-    }
+        tasks,
+        description: tasks.join('\n')
+      };
+    });
+    setNewTask('');
   };
 
   const removeTask = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      tasks: prev.tasks.filter((_, i) => i !== index)
-    }));
+    setFormData(prev => {
+      const tasks = (prev.tasks || []).filter((_, i) => i !== index);
+      return {
+        ...prev,
+        tasks,
+        description: tasks.join('\n')
+      };
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -114,10 +129,16 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
     if (!formData.name || formData.budget < 0) {
       return;
     }
+    const payload = {
+      ...formData,
+      description: (formData.tasks || []).length > 0
+        ? formData.tasks.join('\n')
+        : (formData.description || '')
+    };
     if (editingProject) {
-      onEdit({ ...formData, id: editingProject.id } as Project);
+      onEdit({ ...payload, id: editingProject.id } as Project);
     } else {
-      onAdd({ ...formData });
+      onAdd({ ...payload });
     }
     setShowModal(false);
   };
@@ -474,14 +495,12 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
                               </div>
                             </div>
                             <div className="space-y-3">
-                              {(viewingProject.tasks || []).map((task, idx) => (
-                                <div key={idx} className="flex items-center p-3 bg-slate-50 border border-slate-100 rounded-xl">
-                                  <Check size={14} className="text-green-500 mr-3 flex-shrink-0" />
-                                  <span className="text-xs font-bold text-slate-700">{task}</span>
+                              {viewingProject.description ? (
+                                <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                                  <p className="text-sm font-medium text-slate-700 whitespace-pre-wrap">{viewingProject.description}</p>
                                 </div>
-                              ))}
-                              {(viewingProject.tasks || []).length === 0 && (
-                                <p className="py-6 text-center text-slate-400 italic text-sm">Sin tareas definidas.</p>
+                              ) : (
+                                <p className="py-6 text-center text-slate-400 italic text-sm">Sin alcance técnico definido.</p>
                               )}
                             </div>
                           </div>
@@ -672,7 +691,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
                 {/* Sección 2: Alcance Técnico */}
                 <div className="space-y-4">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b pb-1 flex items-center">
-                    <ClipboardList size={12} className="mr-1.5" /> Hitos de Trabajo
+                    <ClipboardList size={12} className="mr-1.5" /> Alcance TÃ©cnico
                   </p>
                   <div className="space-y-3">
                     <div className="flex gap-2">
@@ -858,12 +877,11 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ projects = [], workers = []
 
 // --- Milestones Section ---
 const MilestonesSection: React.FC<{ project: Project; milestones: ProjectMilestone[] }> = ({ project, milestones }) => {
+    const { activeCompany } = useCompany();
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState<ProjectMilestone | null>(null);
     const [form, setForm] = useState({ name: '', description: '', status: 'PENDING', dueDate: '' });
-
-    const API_URL = (window as any).ENV?.API_URL || '';
-    const companyId = localStorage.getItem('companyId');
+    const companyId = activeCompany?.id || localStorage.getItem('activeCompanyId') || '';
 
     const handleSave = async () => {
         if (!form.name) return;
@@ -975,12 +993,11 @@ const MilestonesSection: React.FC<{ project: Project; milestones: ProjectMilesto
 };
 
 // --- Time Tracking Section ---
-const TimeTrackingSection: React.FC<{ project: Project; timeEntries: TimeEntry[]; workers: Worker[]; currentUser: any }> = ({ project, timeEntries, workers, currentUser }) => {
+const TimeTrackingSection: React.FC<{ project: Project; timeEntries: TimeEntry[]; workers: Worker[]; currentUser: User | null }> = ({ project, timeEntries, workers, currentUser }) => {
+    const { activeCompany } = useCompany();
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ workerId: '', date: new Date().toISOString().split('T')[0], hours: 0, description: '' });
-
-    const API_URL = (window as any).ENV?.API_URL || '';
-    const companyId = localStorage.getItem('companyId');
+    const companyId = activeCompany?.id || localStorage.getItem('activeCompanyId') || '';
 
     const handleSave = async () => {
         if (!form.workerId || form.hours <= 0) return;

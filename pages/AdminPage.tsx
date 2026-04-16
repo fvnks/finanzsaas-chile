@@ -21,6 +21,7 @@ import {
 import { User, UserRole, Company, SubscriptionPlan } from '../types';
 
 import { API_URL } from '../src/config.ts';
+import { checkPermission } from '../src/utils/permissions';
 
 interface JobTitle {
     id: string;
@@ -60,14 +61,21 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
 
     // Define available sections for permissions
     const availableSections = [
+        { id: 'dashboard', label: 'Dashboard' },
         { id: 'clients', label: 'Clientes' },
         { id: 'projects', label: 'Proyectos' },
         { id: 'invoices', label: 'Facturas' },
+        { id: 'expenses', label: 'Gastos' },
+        { id: 'cashFlow', label: 'Forecast de Caja' },
+        { id: 'crm', label: 'CRM y Cotizaciones' },
         { id: 'purchaseOrders', label: 'Órdenes de Compra' },
         { id: 'documents', label: 'Documentos' },
         { id: 'inventory', label: 'Inventario' },
+        { id: 'tools', label: 'Herramientas' },
+        { id: 'deliveries', label: 'Entregas' },
         { id: 'workers', label: 'Trabajadores' },
         { id: 'costCenters', label: 'Centros de Costo' },
+        { id: 'admin', label: 'Admin y Config' },
         { id: 'reports', label: 'Reportes Diarios' },
         { id: 'financialReports', label: 'Reportes Financieros' },
         { id: 'planos', label: 'Planos y Cuelgues' },
@@ -457,12 +465,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ currentUser, projects, onRefreshU
         });
     };
 
-    if (currentUser?.role !== UserRole.ADMIN) {
+    if (!checkPermission(currentUser, 'admin', 'read')) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
                 <Shield size={64} className="mb-4 text-slate-300" />
                 <h2 className="text-xl font-black uppercase tracking-widest">Acceso Restringido</h2>
-                <p className="text-sm font-medium">Se requieren privilegios de Administrador.</p>
+                <p className="text-sm font-medium">No tienes permisos para acceder a esta secciÃ³n.</p>
             </div>
         );
     }

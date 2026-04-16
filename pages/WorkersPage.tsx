@@ -26,7 +26,7 @@ import {
   Zap,
   Tag
 } from 'lucide-react';
-import { Worker, Crew, Project, JobTitle } from '../types';
+import { Worker, Crew, Project, JobTitle, User } from '../types';
 import { validateRUT } from '../constants';
 
 interface WorkersPageProps {
@@ -40,11 +40,10 @@ interface WorkersPageProps {
   onAddCrew: (c: Crew) => void;
   onUpdateCrew: (c: Crew) => void;
   onDeleteCrew: (id: string) => void;
-  currentUser: any;
+  currentUser: User | null;
 }
 
 import { checkPermission } from '../src/utils/permissions';
-import { User } from '../types';
 
 const WorkersPage: React.FC<WorkersPageProps> = ({
   workers, crews, projects, jobTitles,

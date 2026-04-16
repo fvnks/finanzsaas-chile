@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, FileText, Check, X, Eye } from 'lucide-react';
 import { API_URL } from '../src/config.ts';
+import { useCompany } from '../components/CompanyContext';
 
 
 interface PurchaseOrder {
@@ -24,10 +25,11 @@ import { checkPermission } from '../src/utils/permissions';
 import { User } from '../types';
 
 interface PurchaseOrdersPageProps {
-    currentUser: any;
+    currentUser: User | null;
 }
 
 export function PurchaseOrdersPage({ currentUser }: PurchaseOrdersPageProps) {
+    const { activeCompany } = useCompany();
     const [orders, setOrders] = useState<PurchaseOrder[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,11 +49,20 @@ export function PurchaseOrdersPage({ currentUser }: PurchaseOrdersPageProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!activeCompany?.id) {
+            setOrders([]);
+            setProjects([]);
+            setLoading(false);
+            return;
+        }
+
         const loadData = async () => {
             try {
+                setLoading(true);
+                const headers = { 'x-company-id': activeCompany.id };
                 const [ordersRes, projectsRes] = await Promise.all([
-                    fetch(`${API_URL}/purchase-orders`),
-                    fetch(`${API_URL}/projects`)
+                    fetch(`${API_URL}/purchase-orders`, { headers }),
+                    fetch(`${API_URL}/projects`, { headers })
                 ]);
 
                 const ordersData = ordersRes.ok ? await ordersRes.json() : [];
@@ -68,17 +79,23 @@ export function PurchaseOrdersPage({ currentUser }: PurchaseOrdersPageProps) {
             }
         };
         loadData();
-    }, []);
+    }, [activeCompany?.id]);
+
+    const getHeaders = (includeJson = false): HeadersInit => ({
+        ...(includeJson ? { 'Content-Type': 'application/json' } : {}),
+        'x-company-id': activeCompany?.id || ''
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!activeCompany?.id) return;
         try {
             const url = editingId ? `${API_URL}/purchase-orders/${editingId}` : `${API_URL}/purchase-orders`;
             const method = editingId ? 'PUT' : 'POST';
 
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: getHeaders(true),
                 body: JSON.stringify(formData)
             });
 
@@ -98,8 +115,12 @@ export function PurchaseOrdersPage({ currentUser }: PurchaseOrdersPageProps) {
 
     const handleDelete = async (id: string) => {
         if (!confirm('¿Eliminar esta orden de compra?')) return;
+        if (!activeCompany?.id) return;
         try {
-            const res = await fetch(`${API_URL}/purchase-orders/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API_URL}/purchase-orders/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
             if (res.ok) {
                 setOrders(orders.filter(o => o.id !== id));
             }

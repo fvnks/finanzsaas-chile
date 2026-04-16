@@ -25,7 +25,7 @@ import {
   ChevronRight,
   FileText
 } from 'lucide-react';
-import { Client, Invoice, InvoiceType, CostCenter, Project, Supplier } from '../types';
+import { Client, Invoice, InvoiceType, CostCenter, Project, Supplier, User } from '../types';
 import SuppliersPage from './SuppliersPage';
 import { validateRUT, formatCLP } from '../constants';
 
@@ -43,11 +43,10 @@ interface ClientsPageProps {
   onDeleteSupplier?: (id: string) => Promise<void>;
 
 
-  currentUser: any; // Using 'any' for now to match prop drilling flexibility, or User type
+  currentUser: User | null;
 }
 
 import { checkPermission } from '../src/utils/permissions';
-import { User } from '../types';
 
 const normalizeInvoiceType = (value?: string) => {
   if (!value) return "SALE";

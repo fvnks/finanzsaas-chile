@@ -24,6 +24,7 @@ import { Activity, Building2, RefreshCw, ShieldCheck, AlertTriangle, Bell, Packa
 
 import { API_URL } from '../src/config.ts';
 import { useCompany } from './CompanyContext';
+import { canAccessTab } from '../src/utils/navigationPermissions';
 
 interface MainLayoutProps {
     user: User;
@@ -33,6 +34,7 @@ interface MainLayoutProps {
 
 const TAB_LABELS: Record<string, string> = {
     dashboard: 'Panel Ejecutivo',
+    purchaseOrders: 'Órdenes de Compra',
     invoices: 'Facturación',
     expenses: 'Gastos y Rendiciones',
     deliveries: 'Entregas Operativas',
@@ -53,6 +55,17 @@ const TAB_LABELS: Record<string, string> = {
 const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const { activeCompany } = useCompany();
+
+    const accessibleTabs = React.useMemo(() => {
+        return Object.keys(TAB_LABELS).filter(tabId => canAccessTab(user, activeCompany, tabId));
+    }, [user, activeCompany]);
+
+    React.useEffect(() => {
+        if (accessibleTabs.length === 0) return;
+        if (!accessibleTabs.includes(activeTab)) {
+            setActiveTab(accessibleTabs[0]);
+        }
+    }, [accessibleTabs, activeTab]);
 
     React.useEffect(() => {
         if (activeCompany?.primaryColor) {
@@ -88,6 +101,49 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
             'Content-Type': 'application/json',
             'x-company-id': activeCompany?.id || ''
         };
+    };
+
+    const syncCostCenterProjects = async (costCenterId: string, nextProjectIds: string[]) => {
+        const currentProjectIds = projects
+            .filter(project => (project.costCenterIds || []).includes(costCenterId))
+            .map(project => project.id);
+
+        const targetProjectIds = new Set(nextProjectIds);
+        const affectedProjects = projects.filter(project =>
+            currentProjectIds.includes(project.id) || targetProjectIds.has(project.id)
+        );
+
+        const updates = affectedProjects
+            .map(project => {
+                const currentIds = project.costCenterIds || [];
+                const nextIds = targetProjectIds.has(project.id)
+                    ? Array.from(new Set([...currentIds, costCenterId]))
+                    : currentIds.filter(id => id !== costCenterId);
+
+                const changed = nextIds.length !== currentIds.length || nextIds.some((id, index) => id !== currentIds[index]);
+                if (!changed) return null;
+
+                return fetch(`${API_URL}/projects/${project.id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        name: project.name,
+                        budget: project.budget,
+                        address: project.address,
+                        status: project.status,
+                        progress: project.progress,
+                        startDate: project.startDate,
+                        endDate: project.endDate,
+                        workerIds: project.workerIds,
+                        costCenterIds: nextIds
+                    })
+                });
+            })
+            .filter(Boolean) as Promise<Response>[];
+
+        if (updates.length > 0) {
+            await Promise.all(updates);
+        }
     };
 
     const refreshData = async () => {
@@ -199,12 +255,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
 
 
     return (
-        <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
+        <div className="min-h-screen text-slate-900">
             <div className="relative flex min-h-screen">
             <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={onLogout} />
             <main className="relative flex-1 overflow-y-auto">
-                <div className="mx-auto max-w-[1480px] p-4 md:p-5 xl:p-6">
-                    <div className="mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="mx-auto max-w-[1520px] px-4 py-4 md:px-5 md:py-5 xl:px-7 xl:py-6">
+                    <div className="mb-6 rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(242,247,252,0.76))] shadow-[var(--shadow-soft)] backdrop-blur-xl">
                         <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="min-w-0">
                                 <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Workspace</div>
@@ -296,7 +352,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                         )}
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+                    <div className="rounded-[30px] border border-white/70 bg-white/78 p-4 shadow-[var(--shadow-panel)] backdrop-blur-xl md:p-5">
                 {activeTab === 'dashboard' && <Dashboard invoices={invoices} clients={clients} />}
                 {activeTab === 'invoices' && (
                     <InvoicesPage invoices={invoices} expenses={expenses} clients={clients} suppliers={suppliers} costCenters={costCenters} projects={projects} currentUser={user}
@@ -374,6 +430,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                             } catch (err) { console.error("Failed to delete invoice", err); }
                         }}
                     />
+                )}
+
+                {activeTab === 'purchaseOrders' && (
+                    <PurchaseOrdersPage currentUser={user} />
                 )}
 
                 {activeTab === 'expenses' && (
@@ -736,28 +796,43 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
                                 const res = await fetch(`${API_URL}/cost-centers`, {
                                     method: 'POST',
                                     headers: getHeaders(),
-                                    body: JSON.stringify(cc)
+                                    body: JSON.stringify({
+                                        code: cc.code,
+                                        name: cc.name,
+                                        budget: cc.budget,
+                                    })
                                 });
                                 if (res.ok) {
                                     const saved = await res.json();
-                                    setCostCenters([saved, ...costCenters]);
+                                    await syncCostCenterProjects(saved.id, cc.projectIds || []);
+                                    await refreshData();
                                 }
                             } catch (e) { console.error(e); }
                         }}
                         onUpdate={async (u) => {
                             try {
-                                await fetch(`${API_URL}/cost-centers/${u.id}`, {
+                                const res = await fetch(`${API_URL}/cost-centers/${u.id}`, {
                                     method: 'PUT',
                                     headers: getHeaders(),
-                                    body: JSON.stringify(u)
+                                    body: JSON.stringify({
+                                        code: u.code,
+                                        name: u.name,
+                                        budget: u.budget,
+                                    })
                                 });
-                                setCostCenters(costCenters.map(c => c.id === u.id ? u : c));
+                                if (res.ok) {
+                                    await syncCostCenterProjects(u.id, u.projectIds || []);
+                                    await refreshData();
+                                }
                             } catch (e) { console.error(e); }
                         }}
                         onDelete={async (id) => {
                             try {
-                                await fetch(`${API_URL}/cost-centers/${id}`, { method: 'DELETE', headers: getHeaders() });
-                                setCostCenters(costCenters.filter(c => c.id !== id));
+                                await syncCostCenterProjects(id, []);
+                                const res = await fetch(`${API_URL}/cost-centers/${id}`, { method: 'DELETE', headers: getHeaders() });
+                                if (res.ok) {
+                                    await refreshData();
+                                }
                             } catch (e) { console.error(e); }
                         }}
                     />

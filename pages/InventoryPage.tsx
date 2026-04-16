@@ -7,7 +7,7 @@ import { checkPermission } from '../src/utils/permissions';
 import { User, Product, InventoryMovement, Warehouse } from '../types';
 
 interface InventoryPageProps {
-    currentUser: any;
+    currentUser: User | null;
 }
 
 export function InventoryPage({ currentUser }: InventoryPageProps) {

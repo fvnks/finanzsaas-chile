@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Package, Search, Plus, Wrench, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
-import { User, UserRole, Epp, EppDelivery, ToolAssignment, Tool, Worker } from '../types';
+import { User, Epp, EppDelivery, ToolAssignment, Tool, Worker } from '../types';
 import { API_URL } from '../src/config';
+import { checkPermission } from '../src/utils/permissions';
+import { useCompany } from '../components/CompanyContext';
 
 interface DeliveriesPageProps {
     epps: Epp[];
@@ -14,6 +16,7 @@ interface DeliveriesPageProps {
 }
 
 export default function DeliveriesPage({ epps, eppDeliveries, toolAssignments, tools, workers, currentUser, refreshData }: DeliveriesPageProps) {
+    const { activeCompany } = useCompany();
     const [activeTab, setActiveTab] = useState<'EPP' | 'TOOLS'>('EPP');
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -36,8 +39,10 @@ export default function DeliveriesPage({ epps, eppDeliveries, toolAssignments, t
     const [assignWorkerId, setAssignWorkerId] = useState('');
     const [assignNotes, setAssignNotes] = useState('');
 
-    const canEdit = currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.SUPERVISOR;
-    const getHeaders = () => ({ 'Content-Type': 'application/json', 'x-company-id': epps[0]?.companyId || tools[0]?.companyId || '' });
+    const canEdit = checkPermission(currentUser, 'deliveries', 'create')
+        || checkPermission(currentUser, 'deliveries', 'update')
+        || checkPermission(currentUser, 'deliveries', 'delete');
+    const getHeaders = () => ({ 'Content-Type': 'application/json', 'x-company-id': activeCompany?.id || '' });
 
     // Filter available tools
     const availableTools = tools.filter(t => t.status === 'AVAILABLE');

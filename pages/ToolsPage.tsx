@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Search, Edit2, Trash2, Wrench, Calendar, FileText, AlertTriangle } from 'lucide-react';
-import { Tool, User, UserRole, ToolMaintenance } from '../types';
+import { Tool, User, ToolMaintenance } from '../types';
+import { checkPermission } from '../src/utils/permissions';
 
 interface ToolsPageProps {
     tools: Tool[];
@@ -46,7 +47,9 @@ export default function ToolsPage({ tools, currentUser, onAddTool, onUpdateTool,
     const [maintCost, setMaintCost] = useState('');
     const [maintProvider, setMaintProvider] = useState('');
 
-    const canEdit = currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.SUPERVISOR;
+    const canEdit = checkPermission(currentUser, 'tools', 'create')
+        || checkPermission(currentUser, 'tools', 'update')
+        || checkPermission(currentUser, 'tools', 'delete');
 
     const filteredTools = tools.filter(t =>
         t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

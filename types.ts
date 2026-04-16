@@ -92,7 +92,7 @@ export interface Project {
   clientId?: string;
   budget: number;
   address?: string;
-  tasks: string[];
+  tasks?: string[];
   costCenterIds: string[];
   progress: number;
   startDate?: string;

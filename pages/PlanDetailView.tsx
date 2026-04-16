@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plan, PlanMark, User, UserRole } from '../types';
+import { Plan, PlanMark, User } from '../types';
 import { ArrowLeft, Plus, Trash2, MapPin, ZoomIn, ZoomOut, Save, X, ChevronRight, Layout } from 'lucide-react';
 import { API_URL } from '../src/config';
 import { checkPermission } from '../src/utils/permissions';
+import { useCompany } from '../components/CompanyContext';
 
 interface PlanDetailViewProps {
     plan: Plan;
@@ -17,6 +18,7 @@ interface UserSummary {
 }
 
 export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, currentUser }) => {
+    const { activeCompany } = useCompany();
     const [marks, setMarks] = useState<PlanMark[]>([]);
     const [loading, setLoading] = useState(false);
     const [zoom, setZoom] = useState(1);
@@ -31,19 +33,25 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
     // Workers Selection State
     const [workers, setWorkers] = useState<any[]>([]); // Using any for simplicity or import Worker type
     const [selectedWorkerIds, setSelectedWorkerIds] = useState<string[]>([]);
+    const getHeaders = () => ({ 'x-company-id': activeCompany?.id || '' });
 
     useEffect(() => {
-        fetch(`${API_URL}/workers`)
+        if (!activeCompany?.id) {
+            setWorkers([]);
+            return;
+        }
+
+        fetch(`${API_URL}/workers`, { headers: getHeaders() })
             .then(res => res.json())
             .then(data => setWorkers(data))
             .catch(err => console.error("Error fetching workers:", err));
-    }, []);
+    }, [activeCompany?.id]);
 
     // Permission Check
-    const isAdminOrSupervisor = currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.SUPERVISOR;
+    const canManagePlanMarks = checkPermission(currentUser, 'planos', 'update');
 
-    // Sidebar State - Open by default only for Admin/Supervisor
-    const [isSidebarOpen, setIsSidebarOpen] = useState(isAdminOrSupervisor);
+    // Sidebar State - Open by default only for users with permission to manage plan marks
+    const [isSidebarOpen, setIsSidebarOpen] = useState(canManagePlanMarks);
 
     const imageRef = useRef<HTMLImageElement>(null);
 
@@ -73,12 +81,12 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
     const visibleMarks = React.useMemo(() => {
         if (!Array.isArray(marks)) return [];
         let filtered = marks;
-        if (!isAdminOrSupervisor) {
+        if (!canManagePlanMarks) {
             filtered = marks.filter(m => m.userId === currentUser?.id);
         }
         // Filter by Stage
         return filtered.filter(m => (m.stage || 1) === currentStage);
-    }, [marks, currentUser, isAdminOrSupervisor, currentStage]);
+    }, [marks, currentUser, canManagePlanMarks, currentStage]);
 
     const userSummary = React.useMemo(() => {
         if (!Array.isArray(marks)) return [];
@@ -98,10 +106,10 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
     }, [marks]);
 
     const fetchMarks = async () => {
-        if (!plan.id) return;
+        if (!plan.id || !activeCompany?.id) return;
         try {
             setLoading(true);
-            const res = await fetch(`${API_URL}/plans/${plan.id}/marks`);
+            const res = await fetch(`${API_URL}/plans/${plan.id}/marks`, { headers: getHeaders() });
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
@@ -121,7 +129,7 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
 
     useEffect(() => {
         fetchMarks();
-    }, [plan.id]);
+    }, [plan.id, activeCompany?.id]);
 
 
     // --- DRAWING STATE ---
@@ -247,6 +255,7 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
 
             const res = await fetch(`${API_URL}/plans/${plan.id}/marks`, {
                 method: 'POST',
+                headers: getHeaders(),
                 body: formData
             });
 
@@ -271,13 +280,13 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
         const markToDelete = marks.find(m => m.id === id);
         if (!markToDelete) return; // Should not happen
 
-        if (!isAdminOrSupervisor && markToDelete.userId !== currentUser?.id) {
+        if (!canManagePlanMarks && markToDelete.userId !== currentUser?.id) {
             alert("No tienes permiso para eliminar marcas de otros usuarios.");
             return;
         }
 
         try {
-            await fetch(`${API_URL}/plans/marks/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/plans/marks/${id}`, { method: 'DELETE', headers: getHeaders() });
             setMarks(marks.filter(m => m.id !== id));
         } catch (error) {
             console.error("Error deleting mark:", error);
@@ -288,9 +297,6 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
     if (!plan) {
         return <div className="p-8 text-center text-red-500">Error: No se pudo cargar la información del plano.</div>;
     }
-
-    // Logging for debug
-    console.log("Rendering PlanDetailView for:", plan.name);
 
     // Safe Date Helper
     const formatDate = (dateString: string | Date) => {
@@ -354,10 +360,10 @@ export const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan, onBack, cu
                     <button onClick={() => setZoom(z => Math.max(0.5, z - 0.2))} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><ZoomOut size={20} /></button>
                     <span className="text-sm font-medium w-12 text-center">{Math.round(zoom * 100)}%</span>
                     <button onClick={() => setZoom(z => Math.min(3, z + 0.2))} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><ZoomIn size={20} /></button>
-                    {isAdminOrSupervisor && (
+                    {canManagePlanMarks && (
                         <div className="h-6 w-px bg-slate-300 mx-2" />
                     )}
-                    {isAdminOrSupervisor && (
+                    {canManagePlanMarks && (
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                             className={`p-2 rounded-lg transition-colors ${isSidebarOpen ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-100 text-slate-600'}`}

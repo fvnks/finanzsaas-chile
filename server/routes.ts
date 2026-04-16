@@ -564,7 +564,6 @@ router.get("/projects", checkModuleAccess("PROJECTS"), async (req, res) => {
             orderBy: { createdAt: 'desc' },
             include: { client: true, milestones: { orderBy: { order: 'asc' } }, timeEntries: { include: { worker: true }, orderBy: { date: 'desc' } } }
         });
-        console.log(`[Backend] Fetched ${projects.length} projects. First one costCenterIds:`, projects[0]?.costCenterIds);
         res.json(projects);
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch projects" });
@@ -1599,7 +1598,7 @@ router.post("/daily-reports/:id/approve", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
-        const userRole = (req as any).user?.role;
+        const userRole = (req as any).currentUser?.role;
         if (userRole !== 'ADMIN' && userRole !== 'SUPERVISOR') {
             return res.status(403).json({ error: "Only admins or supervisors can approve reports" });
         }
@@ -1620,7 +1619,7 @@ router.post("/daily-reports/:id/reject", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
-        const userRole = (req as any).user?.role;
+        const userRole = (req as any).currentUser?.role;
         if (userRole !== 'ADMIN' && userRole !== 'SUPERVISOR') {
             return res.status(403).json({ error: "Only admins or supervisors can reject reports" });
         }
@@ -3056,7 +3055,7 @@ router.post("/leads", checkModuleAccess(['CRM', 'INVOICING']), async (req, res) 
         });
         // Log activity
         await prisma.leadActivity.create({
-            data: { leadId: lead.id, type: 'STATUS_CHANGE', content: `Lead creado con estado: ${lead.status}`, userId: (req as any).user?.id }
+            data: { leadId: lead.id, type: 'STATUS_CHANGE', content: `Lead creado con estado: ${lead.status}`, userId: (req as any).currentUser?.id }
         });
         res.json(lead);
     } catch (err: any) {
@@ -3078,7 +3077,7 @@ router.put("/leads/:id", checkModuleAccess(['CRM', 'INVOICING']), async (req, re
         // Log status change activity
         if (status && status !== existing.status) {
             await prisma.leadActivity.create({
-                data: { leadId: id, type: 'STATUS_CHANGE', content: `Estado cambiado de ${existing.status} a ${status}`, userId: (req as any).user?.id }
+                data: { leadId: id, type: 'STATUS_CHANGE', content: `Estado cambiado de ${existing.status} a ${status}`, userId: (req as any).currentUser?.id }
             });
         }
         res.json(lead);
@@ -3117,7 +3116,7 @@ router.post("/leads/:id/activities", checkModuleAccess(['CRM', 'INVOICING']), as
         const lead = await prisma.lead.findFirst({ where: { id, companyId } });
         if (!lead) return res.status(404).json({ error: "Lead not found" });
         const activity = await prisma.leadActivity.create({
-            data: { leadId: id, type, content, userId: (req as any).user?.id }
+            data: { leadId: id, type, content, userId: (req as any).currentUser?.id }
         });
         res.json(activity);
     } catch (err: any) {

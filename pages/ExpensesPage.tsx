@@ -19,7 +19,7 @@ import {
     Pencil,
     AlertTriangle
 } from 'lucide-react';
-import { Expense, Project, CostCenter, Worker, Company, Invoice } from '../types';
+import { Expense, Project, CostCenter, Worker, Company, Invoice, User } from '../types';
 import { formatCLP } from '../constants';
 import { useCompany } from '../components/CompanyContext';
 import { normalizeInvoiceType } from '../src/utils/invoiceUtils';
@@ -30,7 +30,7 @@ interface ExpensesPageProps {
     projects: Project[];
     costCenters: CostCenter[];
     workers: Worker[];
-    currentUser: any;
+    currentUser: User | null;
     onAdd: (expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
     onUpdate: (expense: Expense) => Promise<void>;
     onDelete: (id: string) => Promise<void>;

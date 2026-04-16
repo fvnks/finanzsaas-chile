@@ -33,7 +33,7 @@ import {
   Truck, // Added for Dispatch Guides
   RefreshCw // Added for Refacturación
 } from 'lucide-react';
-import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem, Supplier, Expense } from '../types';
+import { Invoice, InvoiceType, Client, CostCenter, Project, InvoiceItem, Supplier, Expense, User } from '../types';
 import { formatCLP, IVA_RATE } from '../constants';
 import SupplierFormModal from '../components/SupplierFormModal';
 import InvoiceDetailModal from '../components/InvoiceDetailModal';
@@ -50,11 +50,10 @@ interface InvoicesPageProps {
   onUpdate: (invoice: Invoice) => void;
   onDelete: (id: string) => void;
   onAddSupplier?: (supplier: Omit<Supplier, 'id' | 'companyId'>) => Promise<any>; // Added callback
-  currentUser: any;
+  currentUser: User | null;
 }
 
 import { checkPermission } from '../src/utils/permissions';
-import { User } from '../types';
 import { useCompany } from '../components/CompanyContext';
 
 // Normalize and label helpers (mirrors server/lib/domain.ts logic)
