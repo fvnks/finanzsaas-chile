@@ -730,6 +730,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, onLogout, onRefreshUser }
 
                 {activeTab === 'costCenters' && (
                     <CostCentersPage costCenters={costCenters} invoices={invoices} expenses={expenses} projects={projects} clients={clients} currentUser={user}
+                        suppliers={suppliers}
                         onAdd={async (cc) => {
                             try {
                                 const res = await fetch(`${API_URL}/cost-centers`, {

@@ -6,7 +6,14 @@ type SessionPayload = {
 };
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
-const SESSION_SECRET = process.env.SESSION_SECRET || "dev-session-secret-change-me";
+const DEFAULT_DEV_SESSION_SECRET = "dev-session-secret-change-me";
+const SESSION_SECRET = process.env.SESSION_SECRET || (
+    process.env.NODE_ENV === "production" ? null : DEFAULT_DEV_SESSION_SECRET
+);
+
+if (!SESSION_SECRET) {
+    throw new Error("SESSION_SECRET is required in production.");
+}
 
 const encode = (value: string) => Buffer.from(value, "utf8").toString("base64url");
 const decode = (value: string) => Buffer.from(value, "base64url").toString("utf8");

@@ -277,7 +277,7 @@ model Payment {
 
 model Supplier {
   id          String   @id @default(uuid())
-  rut         String   @unique
+  rut         String
   razonSocial String
   fantasyName String?
   email       String?
@@ -289,6 +289,8 @@ model Supplier {
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id])
   invoices    Invoice[]
+
+  @@unique([rut, companyId])
 }
 
 model InvoiceItem {

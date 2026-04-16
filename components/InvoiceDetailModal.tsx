@@ -127,7 +127,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                 <div>
                   <p className="font-black text-slate-800 text-sm uppercase leading-tight h-10 overflow-hidden">
                     {normalizeInvoiceType(selectedInvoice.type) === 'PURCHASE' 
-                      ? (supplier?.name || 'Proveedor Desconocido')
+                      ? (supplier?.razonSocial || 'Proveedor Desconocido')
                       : (client?.razonSocial || 'Cliente Desconocido')}
                   </p>
                   <p className="font-mono text-slate-500 font-bold mt-2 text-xs">
@@ -332,7 +332,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 pb-1">Señor(es)</p>
                   <div className="space-y-1">
                     <p className="text-sm font-black text-slate-900">
-                      {normalizeInvoiceType(selectedInvoice.type) === 'PURCHASE' ? supplier?.name : client?.razonSocial}
+                      {normalizeInvoiceType(selectedInvoice.type) === 'PURCHASE' ? supplier?.razonSocial : client?.razonSocial}
                     </p>
                     <p className="text-xs font-bold text-slate-500">
                       {normalizeInvoiceType(selectedInvoice.type) === 'PURCHASE' ? supplier?.rut : client?.rut}

@@ -833,6 +833,7 @@ router.get("/suppliers", async (req, res) => {
 router.post("/suppliers", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
+        if (!companyId) return res.status(400).json({ error: "Company ID required" });
         const { rut, razonSocial, fantasyName, email, phone, address, category } = req.body;
 
         const existing = await prisma.supplier.findFirst({
@@ -865,6 +866,7 @@ router.post("/suppliers", async (req, res) => {
 router.put("/suppliers/categories/rename", async (req, res) => {
     try {
         const companyId = (req as any).companyId;
+        if (!companyId) return res.status(400).json({ error: "Company ID required" });
         const { oldCategory, newCategory } = req.body;
 
         if (!oldCategory || !newCategory) {
@@ -887,7 +889,20 @@ router.put("/suppliers/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
+        if (!companyId) return res.status(400).json({ error: "Company ID required" });
         const { rut, razonSocial, fantasyName, email, phone, address, category } = req.body;
+
+        const duplicate = await prisma.supplier.findFirst({
+            where: {
+                rut,
+                companyId,
+                id: { not: id }
+            }
+        });
+
+        if (duplicate) {
+            return res.status(400).json({ error: "Un proveedor con este RUT ya existe." });
+        }
 
         const updated = await updateOwnedRecord(prisma.supplier, id, companyId, {
             rut,
@@ -910,6 +925,7 @@ router.delete("/suppliers/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = (req as any).companyId;
+        if (!companyId) return res.status(400).json({ error: "Company ID required" });
 
         const deleted = await deleteOwnedRecord(prisma.supplier, id, companyId);
         if (!deleted) return res.status(404).json({ error: "Supplier not found" });

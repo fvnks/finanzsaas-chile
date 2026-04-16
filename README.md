@@ -1,47 +1,38 @@
-# Vertikal Finanzas - ERP & Facturación Electrónica
+# Vertikal Finanzas
 
-Este proyecto es una plataforma integral de gestión tributaria y operativa diseñada para el mercado chileno. Permite la gestión de facturas (Venta/Compra), Clientes, Centros de Costo, Proyectos y Capital Humano (Cuadrillas).
+SaaS ERP/finanzas orientado al mercado chileno. El repositorio unifica frontend, backend API y esquema Prisma en una sola base de código.
 
-## 🚀 Arquitectura Técnica (IMPORTANTE PARA CURSOR/IA)
+## Arquitectura real
 
-Este proyecto NO utiliza bundlers (Webpack/Vite). Se basa en **Native ES Modules** y **React 19** cargado dinámicamente.
+- Frontend: `React 19` + `Vite 6`
+- Backend: `Express 5` + `tsx`
+- Base de datos: `PostgreSQL` + `Prisma 6`
+- Build productivo: el backend sirve `dist/` en producción
 
-### ⚠️ Reglas Críticas de Desarrollo
+## Estructura principal
 
-1.  **Extensiones en Imports**: Debido a que el navegador resuelve los módulos directamente, **TODAS** las importaciones locales deben incluir la extensión del archivo.
-    *   ❌ `import App from './App';`
-    *   ✅ `import App from './App.tsx';`
-2.  **Versiones de React**: No cambiar las versiones en `index.html`. El proyecto utiliza `react@19.0.0` y `react-dom@19.0.0` vía `esm.sh`. Cualquier discrepancia causará una **pantalla blanca**.
-3.  **Import Map**: El archivo `index.html` centraliza las dependencias. Si se añade una librería nueva, debe registrarse ahí primero.
-4.  **Punto de Entrada**: El flujo de carga es: `index.html` -> `index.tsx` -> `App.tsx`.
+- `App.tsx`, `components/`, `pages/`: interfaz principal
+- `server/`: API, middlewares, servicios y arranque
+- `prisma/`: esquema y migraciones
+- `types.ts`: contratos compartidos de UI
 
-## 🛠️ Stack Tecnológico
+## Scripts
 
-*   **Frontend**: React 19 (Functional Components & Hooks).
-*   **Estilos**: Tailwind CSS (vía CDN).
-*   **Iconos**: Lucide React.
-*   **Gráficos**: Recharts.
-*   **IA**: Google Gemini API (@google/genai) para generación de Branding.
+- `npm run dev`: frontend Vite
+- `npm run server`: backend en modo watch
+- `npm run dev:all`: frontend + backend
+- `npm run build`: build del frontend
+- `npm run typecheck`: chequeo TypeScript
+- `npm run smoke:api`: smoke test de API
 
-## 📂 Estructura de Archivos
+## Variables de entorno mínimas
 
-*   `/components`: Componentes reutilizables (Sidebar, etc).
-*   `/pages`: Vistas principales de la aplicación.
-*   `/services`: Lógica de integración con APIs externas (Gemini).
-*   `types.ts`: Definiciones de interfaces de TypeScript (Contrato de datos).
-*   `constants.ts`: Lógica de validación de RUT, formateo CLP e IVA.
+- `DATABASE_URL`: conexión PostgreSQL
+- `SESSION_SECRET`: obligatorio en producción
+- `CORS_ALLOWED_ORIGINS`: lista separada por comas para CORS
 
-## 🇨🇱 Especificaciones de Negocio (Chile)
+## Notas operativas
 
-*   **RUT**: Validación mediante algoritmo de módulo 11 (implementado en `constants.ts`).
-*   **IVA**: Tasa fija del 19% (`IVA_RATE`).
-*   **Moneda**: Formateo en Pesos Chilenos (CLP).
-*   **SII**: La aplicación simula la validación de documentos electrónicos.
-
-## 🔧 Resolución de Problemas (Pantalla Blanca)
-
-Si la aplicación no carga:
-1. Revisa la consola del navegador (`F12`).
-2. Verifica que no falten extensiones `.tsx` en los archivos modificados recientemente.
-3. Asegura que el `importmap` en `index.html` tenga las versiones de `react` y `react-dom` sincronizadas exactamente en `19.0.0`.
-4. Verifica que `process.env.API_KEY` esté disponible antes de llamar a servicios de IA.
+- La app usa contexto de empresa activa mediante header `x-company-id`.
+- En producción, `API_URL` es relativa (`/api`) porque Express sirve el frontend.
+- El proyecto todavía contiene deuda histórica; antes de refactors grandes, valida los flujos críticos con `npm run typecheck`.

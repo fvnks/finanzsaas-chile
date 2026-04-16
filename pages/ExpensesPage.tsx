@@ -22,6 +22,7 @@ import {
 import { Expense, Project, CostCenter, Worker, Company, Invoice } from '../types';
 import { formatCLP } from '../constants';
 import { useCompany } from '../components/CompanyContext';
+import { normalizeInvoiceType } from '../src/utils/invoiceUtils';
 
 interface ExpensesPageProps {
     expenses: Expense[];
@@ -609,11 +610,14 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({
                                             >
                                                 <option value="">-- Sin Factura --</option>
                                                 {invoices
-                                                    .filter(inv => inv.type === 'COMPRA' || inv.type === 'GASTO')
+                                                    .filter(inv => {
+                                                        const type = normalizeInvoiceType(inv.type);
+                                                        return type === 'PURCHASE' || type === 'GUIA_DESPACHO' || type === 'FACTURA_EXENTA';
+                                                    })
                                                     .sort((a, b) => b.number.localeCompare(a.number))
                                                     .map(inv => (
                                                         <option key={inv.id} value={inv.id}>
-                                                            {inv.number} - {inv.supplier?.name || inv.client?.name || 'Prov.'} ({formatCLP(inv.total)})
+                                                            {inv.number} - {inv.supplier?.razonSocial || (inv as any).client?.razonSocial || 'Prov.'} ({formatCLP(inv.total)})
                                                         </option>
                                                     ))
                                                 }

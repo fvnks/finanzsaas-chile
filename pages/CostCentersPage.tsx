@@ -20,10 +20,11 @@ import {
   Briefcase,
   Check
 } from 'lucide-react';
-import { CostCenter, Invoice, InvoiceType, Client, Project, Expense } from '../types';
+import { CostCenter, Invoice, InvoiceType, Client, Project, Expense, Supplier } from '../types';
 import { formatCLP } from '../constants';
 import InvoiceDetailModal from '../components/InvoiceDetailModal';
 import { normalizeInvoiceType, getInvoiceTypeLabel } from '../src/utils/invoiceUtils';
+import { useCompany } from '../components/CompanyContext';
 
 interface CostCentersPageProps {
   costCenters: CostCenter[];
@@ -31,6 +32,7 @@ interface CostCentersPageProps {
   expenses: Expense[];
   projects: Project[];
   clients: Client[];
+  suppliers?: Supplier[];
   onAdd: (cc: CostCenter) => void;
   onUpdate: (cc: CostCenter) => void;
   onDelete: (id: string) => void;
@@ -41,7 +43,8 @@ import { checkPermission } from '../src/utils/permissions';
 import { User } from '../types';
 
 
-const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices, expenses, projects, clients, onAdd, onUpdate, onDelete, currentUser }) => {
+const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices, expenses, projects, clients, suppliers = [], onAdd, onUpdate, onDelete, currentUser }) => {
+  const { activeCompany } = useCompany();
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingCC, setViewingCC] = useState<CostCenter | null>(null);
@@ -352,7 +355,10 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
                                       </div>
                                     </td>
                                     <td className="px-8 py-5 font-bold text-slate-600">
-                                      {clients.find(c => c.id === inv.clientId)?.razonSocial || inv.supplier?.razonSocial || 'Varios'}
+                                      {clients.find(c => c.id === inv.clientId)?.razonSocial
+                                        || suppliers.find(s => s.id === inv.supplierId)?.razonSocial
+                                        || inv.supplier?.razonSocial
+                                        || 'Varios'}
                                     </td>
                                     <td className="px-8 py-5 text-slate-400 font-medium">{inv.date}</td>
                                     <td className={`px-8 py-5 text-right font-black ${normalizeInvoiceType(inv.type) === 'SALE' ? 'text-green-600' : 'text-slate-900'}`}>
@@ -548,8 +554,10 @@ const CostCentersPage: React.FC<CostCentersPageProps> = ({ costCenters, invoices
       {/* Visor de Detalle de Factura */}
       {selectedInvoice && (
         <InvoiceDetailModal
-          selectedInvoice={selectedInvoice}
+          invoice={selectedInvoice}
+          activeCompany={activeCompany}
           clients={clients}
+          suppliers={suppliers}
           costCenters={costCenters}
           projects={projects}
           expenses={expenses}
