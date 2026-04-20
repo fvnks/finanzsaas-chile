@@ -193,14 +193,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogo
       </nav>
 
       <div className="relative z-10 border-t border-white/10 p-4">
-        {!isCollapsed && (
-          <div className="mb-4 rounded-2xl border border-white/10 bg-white/6 px-3 py-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Empresa activa</p>
-            <p className="mt-2 truncate text-sm font-semibold text-white">{activeCompany?.name || 'Sin empresa'}</p>
-            <p className="truncate text-xs text-slate-400">{activeCompany?.planStatus || 'Configuracion local'}</p>
-          </div>
-        )}
-
         <div className={`mb-4 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-1`}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-sm font-semibold text-slate-100">
             {user?.name.charAt(0).toUpperCase()}

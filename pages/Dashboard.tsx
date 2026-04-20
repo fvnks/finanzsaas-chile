@@ -21,6 +21,13 @@ interface DashboardProps {
   clients: any[];
 }
 
+const formatStackedCLP = (value: number) => {
+  return {
+    prefix: formatCLP(value),
+    lines: [] as string[]
+  };
+};
+
 const Dashboard: React.FC<DashboardProps> = ({ invoices, clients }) => {
   const totalSales = invoices
     .filter(i => i.type === InvoiceType.VENTA)
@@ -80,28 +87,32 @@ const Dashboard: React.FC<DashboardProps> = ({ invoices, clients }) => {
   const headlineCards = [
     {
       label: 'Ventas',
-      value: formatCLP(totalSales),
+      value: formatStackedCLP(totalSales),
+      rawValue: formatCLP(totalSales),
       icon: TrendingUp,
       tint: 'from-sky-500/20 to-transparent',
       chip: 'Ingresos'
     },
     {
       label: 'Compras',
-      value: formatCLP(totalPurchases),
+      value: formatStackedCLP(totalPurchases),
+      rawValue: formatCLP(totalPurchases),
       icon: TrendingDown,
       tint: 'from-orange-500/20 to-transparent',
       chip: 'Egresos'
     },
     {
       label: 'Margen',
-      value: formatCLP(margin),
+      value: formatStackedCLP(margin),
+      rawValue: formatCLP(margin),
       icon: DollarSign,
       tint: margin >= 0 ? 'from-emerald-500/20 to-transparent' : 'from-rose-500/20 to-transparent',
       chip: margin >= 0 ? 'Saludable' : 'En revision'
     },
     {
       label: 'Clientes',
-      value: `${clients.length}`,
+      value: { prefix: `${clients.length}`, lines: [] as string[] },
+      rawValue: `${clients.length} clientes`,
       icon: Users,
       tint: 'from-violet-500/20 to-transparent',
       chip: 'Relacion'
@@ -123,20 +134,30 @@ const Dashboard: React.FC<DashboardProps> = ({ invoices, clients }) => {
               La interfaz prioriza lo que exige accion: ventas versus compras, velocidad de cobranza y el mes con mejor rendimiento operativo.
             </p>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-5 flex flex-col gap-2">
               {headlineCards.map(card => (
-                <div key={card.label} className={`relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white px-4 py-4 shadow-[var(--shadow-panel)]`}>
-                  <div className={`pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-br ${card.tint}`} />
-                  <div className="relative flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">{card.label}</p>
-                      <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">{card.value}</p>
+                <div key={card.label} title={card.rawValue} className="relative overflow-hidden rounded-[26px] border border-slate-200/80 bg-white px-5 py-2 shadow-[var(--shadow-panel)] min-w-0">
+                  <div className={`pointer-events-none absolute inset-y-0 left-0 w-44 bg-gradient-to-r ${card.tint}`} />
+                  <div className="relative flex items-center justify-between gap-4">
+                    <div className="flex shrink-0 min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700">
+                        <card.icon size={18} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">{card.label}</p>
+                        <p className="mt-1 truncate text-xs text-slate-400">{card.rawValue}</p>
+                      </div>
                     </div>
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-700">
-                      <card.icon size={19} />
+
+                    <div className="min-w-0 flex-1 text-right">
+                      <div className="text-slate-950">
+                        <div className="truncate whitespace-nowrap text-[clamp(1.25rem,2.1vw,2.25rem)] font-semibold leading-none tracking-[-0.06em]">
+                          {card.value.prefix}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="relative mt-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-600">
+                  <div className="relative mt-2 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-600">
                     <ArrowUpRight size={12} />
                     {card.chip}
                   </div>
