@@ -302,7 +302,7 @@ invoicesRouter.post("/invoices/:id/payments", async (req, res) => {
         if (!invoice) return res.status(404).json({ error: "Invoice not found" });
 
         const payment = await prisma.$transaction((tx) =>
-            createInvoicePayment(tx, {
+            createInvoicePayment(tx as any, {
                 invoiceId: id,
                 amount: asNumber(amount),
                 date: asRequiredDate(date, "date"),
@@ -335,7 +335,7 @@ invoicesRouter.delete("/payments/:id", async (req, res) => {
         const invoice = await findOwnedRecord(prisma.invoice, payment.invoiceId, companyId);
         if (!invoice) return res.status(404).json({ error: "Invoice not found" });
 
-        await prisma.$transaction((tx) => deleteInvoicePayment(tx, id));
+        await prisma.$transaction((tx) => deleteInvoicePayment(tx as any, id));
 
         res.json({ success: true });
     } catch (error) {
@@ -365,7 +365,7 @@ invoicesRouter.patch("/invoices/:id/payment", async (req, res) => {
             });
 
             if (paymentStatus === undefined && isPaid !== undefined) {
-                await recalculateInvoicePaymentStatus(tx, id);
+                await recalculateInvoicePaymentStatus(tx as any, id);
                 return tx.invoice.findUnique({ where: { id } });
             }
 
