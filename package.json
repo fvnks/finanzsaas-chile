@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "tsx -r dotenv/config --watch server/index.ts",
-    "start": "npx prisma migrate deploy && tsx -r dotenv/config server/index.ts",
+    "server": "tsx --watch server/index.ts",
+    "start": "npx prisma migrate deploy && tsx server/index.ts",
     "postinstall": "cd ${INIT_CWD:-.} && prisma generate --schema=./prisma/schema.prisma",
     "prisma": {
       "schema": "./prisma/schema.prisma"

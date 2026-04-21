@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config({ override: true });
+
 import app from "./app";
 import { startExchangeRateCron } from "./services/exchangeRateService";
 import { startSubscriptionCron } from "./services/subscriptionService";
