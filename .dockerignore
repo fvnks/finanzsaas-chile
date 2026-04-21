@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+*.log
+tmp
+scratch
+backups
+.playwright-mcp
+.agents
+.claude
+.kiro
+.drift
