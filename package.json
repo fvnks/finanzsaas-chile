@@ -9,9 +9,9 @@
     "preview": "vite preview",
     "server": "tsx --watch server/index.ts",
     "start": "npx prisma migrate deploy && tsx server/index.ts",
-    "postinstall": "prisma generate --schema=prisma/schema.prisma",
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "prisma": {
-      "schema": "prisma/schema.prisma"
+      "schema": "./prisma/schema.prisma"
     },
     "dev:all": "concurrently \"npm run server\" \"npm run dev\"",
     "typecheck": "node node_modules\\typescript\\bin\\tsc --noEmit",
