@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "server": "tsx --watch server/index.ts",
     "start": "npx prisma migrate deploy && tsx server/index.ts",
-    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
+    "postinstall": "pwd && ls -d prisma && prisma generate --schema=./prisma/schema.prisma",
     "prisma": {
       "schema": "./prisma/schema.prisma"
     },
